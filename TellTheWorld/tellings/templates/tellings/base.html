@@ -1,0 +1,75 @@
+{% comment %} 
+ * Filename:     base.html
+ * Author:       Andrew Laing
+ * Email:        parisianconnections@gmail.com
+ * Last updated: 02/09/2019.
+ * Description:  Main base template for site pages.
+{% endcomment %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>{% block title %}Default title{% endblock title %}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+{% load static %}  
+  <!-- Stylesheets and JS for Bootstrap -->
+  <link rel="stylesheet" href="{% static 'tellings/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'tellings/css/bootstrap-tagsinput.css' %}">
+  <script type="text/javascript" src="{% static 'tellings/js/jquery.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'tellings/js/jquery.redirect.js' %}"></script>
+  <script type="text/javascript" src="{% static 'tellings/js/bootstrap.min.js' %}"></script> 
+  <script type="text/javascript" src="{% static 'tellings/js/bootstrap-tagsinput.js' %}"></script>
+  <script type="text/javascript" src="{% static 'tellings/js/typeahead.bundle.js' %}"></script>
+
+  <!-- My JQuery scripts -->
+  <script type="text/javascript" src="{% static 'tellings/js/JQScripts.js' %}"></script>
+
+  <!-- My stylesheet -->
+  <link rel="stylesheet" href="{% static 'tellings/css/style.css' %}">
+
+</head> <!-- END OF HEAD SECTION -->
+
+<body>
+    <header class="header">
+      <!-- Page title -->
+      <div id="title" class="jumbotron  jumbotron-fluid">
+        <h1>{% block headertitle1 %}Default title 1{% endblock headertitle1 %}</h1>
+        <p>It uses utility classes for typography and spacing to space content out within the larger container.</p>
+      </div>
+  
+      <!-- Navigation bar -->
+      <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            {% include "tellings/includes/navbar.html" %}
+        </div>
+      </nav> 
+    </header> <!-- END OF HEADER SECTION -->
+
+    <!-- Include the login and add update modals -->
+    {% include "tellings/includes/modals.html" %}
+
+    <noscript>
+        <style type="text/css">
+            .main-content {
+                display: none;
+            }
+        </style>
+        <div class="noscriptmsg">
+            You must have JavaScript enabled to be able to use the full functionality of this website.
+            Here are <a href="https://www.enable-javascript.com/">
+                instructions for how to enable JavaScript in your web browser
+            </a>.
+        </div>
+    </noscript>
+
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer class="footer footerDivs">
+    {% include "tellings/includes/footerContents.html" %}
+    </footer> <!-- END OF FOOTER SECTION -->
+</body>
+
+</html>

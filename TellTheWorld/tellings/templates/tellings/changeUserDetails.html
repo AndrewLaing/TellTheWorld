@@ -1,0 +1,47 @@
+{% extends 'tellings/base.html' %}
+{% block title %}Welcome to Today I Have ... Change User Details{% endblock title %}
+{% block headertitle1 %}Change User Details{% endblock headertitle1 %}
+{% comment %}
+ * -------------------------------------------------------------------------------
+ * Filename:     changeUserDetails.html
+ * Author:       Andrew Laing
+ * Email:        parisianconnections@gmail.com
+ * Last updated: 03/09/2019
+ * Description:  Template for the Change User Details page.
+ * -------------------------------------------------------------------------------
+{% endcomment %}
+{% block content %}
+<!-- Main content. -->
+<div class="container-fluid main-content">
+    <div class="container">
+        <h2>Change My Details</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+            {% for field in form %}
+              <br />
+              <label class="control-label" for="id_{{ field.name }}">{{ field.label }}</label>
+                <div>
+                  <input type="text" class="form-control input-lg"
+                    name="{{ field.name }}"
+                    id="id_{{ field.name }}"
+                    value="{{ field.value }}" > 
+                    <p class="help-text">{{ field.help_text }} </p>
+                </div>
+            {% endfor %}
+            </div>
+
+            {% include "tellings/includes/formErrors.html" %}
+
+            <br />
+            <button type="submit" class="btn btn-success btn-block btn-lg">SAVE CHANGES</button>
+        </form>
+        <br />
+        <a href="{% url 'tellings:index' %}" class="btn btn-danger btn-block btn-lg">CANCEL</a> 
+        <br /><br />
+
+        {% include "tellings/includes/JSMessagePopup.html" %}
+
+    </div>    <!-- END OF CONTAINER -->
+</div>      <!-- END OF CONTAINER-FLUID -->
+{% endblock %}

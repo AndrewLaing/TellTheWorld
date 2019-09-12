@@ -1,0 +1,26 @@
+{% extends 'tellings/base.html' %}
+{% block title %}Today I Have ... Error Page{% endblock title %} 
+{% block headertitle1 %}Error Page{% endblock headertitle1 %} 
+{% comment %} 
+ * -------------------------------------------------------------------------------
+ * Filename:     errorPage.html
+ * Author:       Andrew Laing
+ * Email:        parisianconnections@gmail.com
+ * Last updated: 02/09/2019
+ * Description:  Template for the error page.
+ * -------------------------------------------------------------------------------
+{% endcomment %}
+{% block content %}
+<!-- Main content. -->
+<div class="container-fluid main-content"> 
+  <div class="row">
+    <div class="col col-sm-12 content">
+      <h1>Error</h1> 
+      <br />
+      <p>Oops! Something went wrong when processing your data.</p>
+      <p>Please contact the site's administrator at <a href="mailto:admin@tellings.com?Subject=Website%20Error" target="_top">admin@tellings.com</a> and let us know as soon as possible</p>
+      <br />
+    </div>
+  </div>    <!-- END OF ROW -->
+</div>      <!-- END OF CONTAINER-FLUID -->
+{% endblock %}

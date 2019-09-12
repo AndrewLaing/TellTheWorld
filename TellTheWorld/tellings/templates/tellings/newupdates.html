@@ -1,0 +1,22 @@
+{% extends 'tellings/base.html' %}
+{% block title %}Welcome to Today I Have ... New Updates{% endblock title %} 
+{% block headertitle1 %}New Updates{% endblock headertitle1 %} 
+{% comment %} 
+ * -------------------------------------------------------------------------------
+ * Filename:     newupdates.html
+ * Author:       Andrew Laing
+ * Email:        parisianconnections@gmail.com
+ * Last updated: 02/09/2019
+ * Description:  Template for the NewUpdates page.
+ * -------------------------------------------------------------------------------
+{% endcomment %}
+{% block content %}
+
+<!-- Main content. -->
+<div class="container-fluid main-content"> 
+  <div class="container allUserUpdates" id="userUpdates">
+      <!-- Include the page content HTML -->
+      {{contents|safe}}
+  </div>    <!-- END OF CONTAINER -->
+</div>      <!-- END OF CONTAINER-FLUID -->
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'tellings/base.html' %}
+{% block title %}Welcome to Today I Have ... Sign Up{% endblock title %} 
+{% block headertitle1 %}Account Deleted{% endblock headertitle1 %} 
+{% comment %} 
+ * -------------------------------------------------------------------------------
+ * Filename:     accountDeleted.html
+ * Author:       Andrew Laing
+ * Email:        parisianconnections@gmail.com
+ * Last updated: 05/09/2019
+ * Description:  Template for the Account Deleted page.
+ * -------------------------------------------------------------------------------
+{% endcomment %}
+{% block content %}
+
+<!-- Main content. -->
+<style type="text/css">
+    .navbar-right {
+        display: none;
+    }
+</style>
+
+<div class="container-fluid main-content">
+    <div class="container">
+        <h2>Your account has been successfully deleted.</h2>
+        <p>Your account has been deleted.</p>
+
+        {% include "tellings/includes/JSMessagePopup.html" %}
+
+    </div>    <!-- END OF CONTAINER -->
+</div>      <!-- END OF CONTAINER-FLUID -->
+{% endblock %}

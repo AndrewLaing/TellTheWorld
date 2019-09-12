@@ -1,0 +1,204 @@
+{% comment %} 
+ * -------------------------------------------------------------------------------
+ * Filename:     modals.html
+ * Author:       Andrew Laing
+ * Email:        parisianconnections@gmail.com
+ * Last updated: 19/08/2019.
+ * Description:  This is used to create the login and addUpdate modals.
+
+ * Note:         Files which include this script must also extend base.html.
+ * -------------------------------------------------------------------------------
+{% endcomment %} 
+
+{% load static %}
+<!-- START OF #loginModal -->
+<div class="modal fade" id="loginModal" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <!-- MODAL HEADER-->
+      <div class="modal-header login-modal-header">
+        <!-- Close button -->
+        <button type="button" class="close" data-dismiss="modal">&times;</button>  
+        <h3>Login to your Account </h3>
+      </div>
+
+      <!-- MODAL BODY-->
+      <div class="modal-body login-modal-body">
+        <form role="form" name="frmLogin" method="post">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" class="form-control" id="username" 
+                   name="username" placeholder="Enter username" maxlength="34">
+            <br />
+            
+            <label for="password">Password</label>
+            <input type="password" class="form-control" id="pwd" 
+                   name="pwd" placeholder="Enter password" maxlength="50">
+          </div>
+          <div class="modal-login-btn">
+            <br />
+            <button type="submit" class="btn btn-success btn-block" name="LoginBtn" 
+                    value="LoginBtn" onClick="return $.validate_login();">Login</button>
+            <br />
+          </div>
+          <div class="modal-login-btn">
+            <button type="button" class="btn btn-danger btn-block" data-dismiss="modal">Cancel</button> 
+          </div>     
+        </form>
+      </div>
+
+      <!-- MODAL FOOTER-->
+      <div class="modal-footer">
+        <p><a href="mailto:admin@tellings.com?Subject=Forgotten%20Password">Forgotten your Password?</a></p>
+      </div>
+    </div> <!-- End of .modal-content -->
+  </div>   <!-- End of .modal-dialog -->
+</div>     <!-- End of #loginModal -->   
+
+
+
+<!-- START OF #addUpdateModal -->
+<div class="modal fade" id="addUpdateModal" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <!-- MODAL HEADER-->
+      <div class="modal-header addUpdate-modal-header">
+        <!-- Close button -->
+        <button type="button" class="close" data-dismiss="modal">&times;</button>  
+        <h3>Add new update</h3>
+      </div>
+
+      <!-- MODAL BODY-->
+      <div class="modal-body addUpdate-modal-body">
+        <form role="form" name="frmAddUpdate" id="frmAddUpdate" action="javascript:void(0);">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="postTitle">Title</label>
+            <br />
+            <input type="text" class="form-control" id="postTitle" name="postTitle" 
+                   placeholder="Enter a unique title for your post ..." maxlength="34" required>
+            <br />
+
+            <label for="postText">Text</label>
+            <br />
+            <textarea placeholder="Enter post text" rows="7" class="form-control" id="postText" 
+                   name="postText" maxlength="254" required></textarea>
+            <br />
+
+            <label for="postTags">Tags</label>
+            <br />
+
+            <div id="tagDiv">
+              <input type="text" class="form-control" id="postTags" name="postTags" data-role="tagsinput" maxlength="49"/>
+            </div>    
+            
+            <!-- Script used for tag suggestions  -->
+            <script>
+              var tagnames = new Bloodhound({
+                  datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
+                  queryTokenizer: Bloodhound.tokenizers.whitespace,
+                  prefetch: {
+                    url: "{% static 'tellings/data/tagNames.json' %}",
+                    filter: function(list) {
+                      return $.map(list, function(tagname) {
+                        return { name: tagname }; });
+                    }
+                  }
+                });
+
+                tagnames.initialize();
+
+                  $('#tagDiv').tagsinput({
+                    typeaheadjs: {
+                      name: 'tagnames',
+                      displayKey: 'name',
+                      valueKey: 'name',
+                      source: tagnames.ttAdapter()
+                    }
+                });
+            </script>
+          </div>
+          <div class="modal-login-btn">
+            <button type="submit" class="btn btn-success btn-block" name="postBtn" 
+                    value="postBtn" onClick="return $.validate_addUpdate_fields();">Post Update</button>
+            <br />
+          </div>      
+          <div class="modal-login-btn">
+            <button type="button" class="btn btn-danger btn-block" data-dismiss="modal">Cancel</button> 
+          </div>     
+
+        </form>
+      </div>
+
+    </div> <!-- End of .modal-content -->
+  </div>   <!-- End of .modal-dialog -->
+</div>     <!-- End of #addUpdateModal -->   
+
+
+<!-- START OF #deleteAccountModal -->
+<div class="modal fade" id="deleteAccountModal" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <!-- MODAL HEADER-->
+      <div class="modal-header addUpdate-modal-header">
+        <!-- Close button -->
+        <button type="button" class="close" data-dismiss="modal">&times;</button>  
+        <h3>Delete Your Account</h3>
+      </div>
+      
+      <!-- MODAL BODY-->
+      <div class="modal-body addUpdate-modal-body">
+      
+        <p>Hi,</p>
+        <p>We're sorry to hear that you want to delete your account and hope that you have enjoyed the time spent with us.</p>
+        <br>
+        <p><strong>Protecting Your Data</strong></p>
+        <p>We take the safety and security of the SITENAME community very seriously. People place their trust in us when they share their hopes and dreams on SITENAME. We will make no compromises when it comes to safeguarding your data.</p>   
+        <hr>
+        
+        <form role="form" name="frmDeleteAccount" id="frmDeleteAccount" action="javascript:void(0);">
+          {% csrf_token %}
+          
+          <div class="form-group">
+            <label for="reasonsList">Why are you deleting your account?</label>
+            <br />
+            <select class="form-control" name="reasonsList" id="reasonsList">
+               <option value="somethingelse">Something else</option>
+               <option value="difficulty">Too difficult to use</option>
+               <option value="bullying">Online bullying</option>
+               <option value="privacy">Privacy concerns</option>
+               <option value="secondacct">I created a second account</option>
+               <option value="nofriends">Cannot find people to share with</option>
+               <option value="toomanyads">Too many ads</option>
+               <option value="toremovepost">Want to remove a post</option>
+            </select>
+            <br>
+
+            <label for="pwd">To continue, please re-enter your password</label>
+            <br />
+            <input type="password" class="form-control" id="pwd_deleteModal" name="pwd_deleteModal"  placeholder="Enter password" maxlength="50">
+            <p><a href="mailto:admin@tellings.com?Subject=Forgotten%20Password">Forgotten your Password?</a></p>
+            <br />
+            <p>When you press the button below, your posts and all other data will be removed forever and will not be recoverable in the future.</p>
+            <br />
+            <hr>
+          </div>
+          <div class="modal-login-btn">
+            <button type="submit" class="btn btn-success btn-block" name="deleteBtn" 
+                    value="deleteBtn" onClick="return $.validate_deleteAccount();">Permanently delete my account</button>
+            <br />
+          </div>      
+          <div class="modal-login-btn">
+            <button type="button" class="btn btn-danger btn-block" data-dismiss="modal">Cancel</button> 
+          </div>     
+
+        </form>
+      </div>
+
+    </div> <!-- End of .modal-content -->
+  </div>   <!-- End of .modal-dialog -->
+</div>     <!-- End of #deleteAccountModal -->   

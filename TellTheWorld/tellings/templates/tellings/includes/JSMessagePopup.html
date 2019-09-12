@@ -1,0 +1,16 @@
+{% comment %} 
+ * -------------------------------------------------------------------------------
+ * Filename:     JSMessagePopup.html
+ * Author:       Andrew Laing
+ * Email:        parisianconnections@gmail.com
+ * Last updated: 03/09/2019.
+ * Description:  This is used to create the HTML used to a JavaScript message popup.
+ * -------------------------------------------------------------------------------
+{% endcomment %} 
+{% block messages %}
+    {% if message %}
+        <script>
+            alert('{{ message }}');
+        </script>            
+    {% endif %}
+{% endblock %}

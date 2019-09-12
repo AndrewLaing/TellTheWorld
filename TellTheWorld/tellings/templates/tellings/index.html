@@ -1,0 +1,22 @@
+{% extends 'tellings/base.html' %}
+{% block title %}Today I Have ... Welcome{% endblock title %} 
+{% block headertitle1 %}Welcome to SiteTitle{% endblock headertitle1 %} 
+{% comment %} 
+ * -------------------------------------------------------------------------------
+ * Filename:     index.html
+ * Author:       Andrew Laing
+ * Email:        parisianconnections@gmail.com
+ * Last updated: 02/09/2019
+ * Description:  Template for the site's home page.
+ * -------------------------------------------------------------------------------
+{% endcomment %}
+
+{% load static %}
+
+{% block content %}
+<!-- Main content. -->
+<div class="img-wrapper"> 
+    <img class="img-responsive" src="{% static 'tellings/imgs/todayIHaveLogo.jpg' %}" 
+          title="Today I Have Logo" alt="Today I Have Logo">
+</div>      <!-- END OF CONTAINER-FLUID -->
+{% endblock %}

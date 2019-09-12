@@ -1,0 +1,59 @@
+{% extends 'tellings/base.html' %}
+{% block title %}Today I Have ... Login Page{% endblock title %} 
+{% block headertitle1 %}Login Page{% endblock headertitle1 %} 
+{% comment %} 
+ * -------------------------------------------------------------------------------
+ * Filename:     loginpage.html
+ * Author:       Andrew Laing
+ * Email:        parisianconnections@gmail.com
+ * Last updated: 04/09/2019
+ * Description:  Template for the login page.
+ * -------------------------------------------------------------------------------
+{% endcomment %}
+{% block content %}
+
+<!-- Hide the right navbar -->
+<style type="text/css">
+    .navbar-right {
+        display: none;
+    }
+</style>
+
+<!-- Main content. -->
+<div class="container-fluid main-content"> 
+    <div class="container">
+        <h2>Login to your account</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+            {% for field in form %}
+              <br />
+              <label class="control-label" for="id_{{ field.name }}">{{ field.label }}</label>
+                <div>
+
+                  {% if field.name == "username" %}
+                    <input type="text" class="form-control input-lg"
+                  {% else %}
+                    <input type="password" class="form-control input-lg"
+                  {% endif %}
+
+                    name="{{ field.name }}"
+                    id="id_{{ field.name }}"
+                    value="" > 
+                    <p class="help-text">{{ field.help_text }} </p>
+                </div>
+            {% endfor %}
+            </div>
+
+            {% include "tellings/includes/formErrors.html" %}
+
+            <br />
+            <button type="submit" class="btn btn-success btn-block btn-lg">Login</button>
+        </form>
+
+        {% include "tellings/includes/JSMessagePopup.html" %}
+        <br /><br />
+
+    </div>    <!-- END OF CONTAINER -->
+</div>      <!-- END OF CONTAINER-FLUID -->
+{% endblock %}
