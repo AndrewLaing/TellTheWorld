@@ -1,0 +1,15 @@
+﻿
+# get a list of all values in a field (without flat=True creates tuples for each value)
+tags = list(Tags.objects.values_list('tagName', flat=True))
+---------------------------------------------------------------------------------------
+# alphabetical dict of tags
+from collections import defaultdict
+
+tagList = list(Tags.objects.values_list('tagName', flat=True))
+result = defaultdict(list)
+tagsToAdd = [(name[0].lower(), name) for name in tagList]
+for tag in tagsToAdd:
+    result[tag[0]].append(tag[1])
+
+resultKeys = sorted(list(result.keys()))
+

@@ -21,6 +21,18 @@ import tellings.databaseQueries as DBQ
 from tellings.forms import ChangeUserDetailsForm
 from tellings.models import Posts, Tags, Tagmap
 
+from tellings.page_extras import random_quotes
+import random
+
+# #########################################################################################
+# SHARED FUNCTIONS ------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------
+
+def get_random_quote():
+    secure_random = random.SystemRandom()
+    return secure_random.choice(random_quotes)
+
+
 # #########################################################################################
 # PAGE VIEWS ------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------
@@ -36,8 +48,10 @@ class ChangeUserDetailsPage(View):
                         sent by a site user. 
         :returns: A HTML page.
         """
+        
+        quote = get_random_quote()
         form = ChangeUserDetailsForm(instance=request.user)
-        return render(request, 'tellings/changeUserDetails.html', {'form': form})
+        return render(request, 'tellings/changeUserDetails.html', {'form': form, 'quote': quote})
 
     @method_decorator(login_required)
     def post(self, request):
@@ -51,8 +65,9 @@ class ChangeUserDetailsPage(View):
         if form.is_valid():
             return self.changeDetails(request, form)
         else:
+            quote = get_random_quote()
             messages.error(request, 'Please correct the error below.')
-            return render(request, 'tellings/changeUserDetails.html', {'form': form})
+            return render(request, 'tellings/changeUserDetails.html', {'form': form, 'quote': quote})
 
     def changeDetails(self, request, form):
         """ Handles changing the users details.
@@ -66,8 +81,9 @@ class ChangeUserDetailsPage(View):
         u.last_name = request.POST['last_name']
         u.email = request.POST['email']
         u.save()
+        quote = get_random_quote()
         return render(request, 'tellings/changeUserDetails.html', 
-                                {'message':'Your details have been updated', 'form': form})
+                                {'message':'Your details have been updated', 'form': form, 'quote': quote})
 
 
 class ChangePasswordPage(View):
@@ -81,8 +97,9 @@ class ChangePasswordPage(View):
                         sent by a site user. 
         :returns: A HTML page.
         """
+        quote = get_random_quote()
         form = PasswordChangeForm(request.user)
-        return render(request, 'tellings/changePassword.html', {'form': form})
+        return render(request, 'tellings/changePassword.html', {'form': form, 'quote': quote})
 
     @method_decorator(login_required)
     def post(self, request):
@@ -96,7 +113,8 @@ class ChangePasswordPage(View):
         if form.is_valid():
             return self.changePassword(request, form)
         else:
-            return render(request, 'tellings/changePassword.html', {'form': form})
+            quote = get_random_quote()
+            return render(request, 'tellings/changePassword.html', {'form': form, 'quote': quote})
 
     def changePassword(self, request, form):
         """ Handles changing the user's password.
@@ -109,8 +127,9 @@ class ChangePasswordPage(View):
         form.save()
         user = form.save()
         update_session_auth_hash(request, user)  # Important!
+        quote = get_random_quote()
         return render(request, 'tellings/changePassword.html', 
-                      {'message':'Your password was successfully updated!', 'form': form})
+                      {'message':'Your password was successfully updated!', 'form': form, 'quote': quote})
 
 
 class SignUpPage(View):
@@ -123,8 +142,9 @@ class SignUpPage(View):
                         sent by a site user. 
         :returns: A HTML page.
         """
+        quote = get_random_quote()
         form = UserCreationForm()
-        return render(request, 'tellings/signup.html', {'form': form})
+        return render(request, 'tellings/signup.html', {'form': form, 'quote': quote})
 
     def post(self, request):
         """ Handles POST requests for the Sign Up page.
@@ -154,10 +174,12 @@ class SignUpPage(View):
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=raw_password)
             login(request, user)
-            return render(request, 'tellings/index.html')
+            quote = get_random_quote()
+            return render(request, 'tellings/index.html', {'quote': quote})
         else:
+            quote = get_random_quote()
             messages.error(request, 'Please correct the error below.')
-            return render(request, 'tellings/signup.html', {'form': form})
+            return render(request, 'tellings/signup.html', {'form': form, 'quote': quote})
 
     def login(self, request):
         """ Handles user authentication.
@@ -186,7 +208,8 @@ class IndexPage(View):
                         sent by a site user. 
         :returns: A HTML page.
         """
-        return render(request, 'tellings/index.html')
+        quote = get_random_quote()
+        return render(request, 'tellings/index.html', {'quote': quote})
 
     def post(self, request):
         """ Handles POST requests for the home page.
@@ -198,7 +221,8 @@ class IndexPage(View):
         if ('username' in request.POST) and ('pwd' in request.POST):
             return self.login(request)
         else:
-            return render(request, 'tellings/index.html')
+            quote = get_random_quote()
+            return render(request, 'tellings/index.html', {'quote': quote})
 
     def login(self, request):
         """ Handles user authentication.
@@ -248,9 +272,10 @@ class NewUpdatesPage(View):
                         sent by a site user. 
         :returns: A HTML page.
         """
+        quote = get_random_quote()
         postDetails = DBQ.getAllPostDetails()
         contents = CUH.createInnerHTML(postDetails)
-        return render(request, 'tellings/newupdates.html', {'contents': contents})
+        return render(request, 'tellings/newupdates.html', {'contents': contents, 'quote': quote})
 
 
 class TagsPage(View):
@@ -303,9 +328,10 @@ class TagsPage(View):
                         sent by a site user. 
         :returns: A HTML page.
         """
+        quote = get_random_quote()
         tagNames = DBQ.getAllTagNames()
         contents = CTH.createInnerHTML(tagNames)
-        return render(request, 'tellings/tags.html', {'contents': contents})
+        return render(request, 'tellings/tags.html', {'contents': contents, 'quote': quote})
 
 
 class MyUpdatesPage(View):
@@ -339,10 +365,11 @@ class MyUpdatesPage(View):
                         sent by a site user. 
         :returns: A HTML page.
         """
+        quote = get_random_quote()
         current_user_id = request.user.id
         postDetails = DBQ.getAllPostsByUserID(current_user_id)
         contents = CUH.createInnerHTML(postDetails)
-        return render(request, 'tellings/myupdates.html', {'contents': contents})
+        return render(request, 'tellings/myupdates.html', {'contents': contents, 'quote': quote})
 
 
 class ErrorPage(View):
@@ -355,7 +382,8 @@ class ErrorPage(View):
                         sent by a site user. 
         :returns: A HTML page.
         """
-        return render(request, 'tellings/errorPage.html')
+        quote = get_random_quote()
+        return render(request, 'tellings/errorPage.html', {'quote': quote})
 
     def post(self, request):
         """ Handles POST requests for the Error page.
@@ -367,7 +395,8 @@ class ErrorPage(View):
         if ('username' in request.POST) and ('pwd' in request.POST):
             return self.login(request)
         else:
-            return render(request, 'tellings/errorPage.html')
+            quote = get_random_quote()
+            return render(request, 'tellings/errorPage.html', {'quote': quote})
 
     def login(self, request):
         """ Handles user authentication.
@@ -419,10 +448,11 @@ class AccountDeletedPage(View):
         :returns: A HTML page.
         """
         try:
+            quote = get_random_quote()
             u = request.user;
             logout(request);
             u.delete();
-            return render(request, 'tellings/accountDeleted.html')
+            return render(request, 'tellings/accountDeleted.html', {'quote': quote})
         except:
             return HttpResponseRedirect('/errorpage/')
 

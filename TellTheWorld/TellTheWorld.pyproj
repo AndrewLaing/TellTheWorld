@@ -39,6 +39,7 @@
     <Compile Include="tellings\forms.py" />
     <Compile Include="tellings\migrations\__init__.py" />
     <Compile Include="tellings\models.py" />
+    <Compile Include="tellings\page_extras.py" />
     <Compile Include="tellings\tests\test_createTagLinksHTML.py" />
     <Compile Include="tellings\tests\test_createUpdatesHTML.py" />
     <Compile Include="tellings\tests\test_databaseQueries.py" />
@@ -56,6 +57,7 @@
     <Compile Include="TellTheWorld\wsgi.py" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Notes.txt" />
     <Content Include="requirements.txt" />
     <Content Include="static\tellings\data\tagNames.json" />
     <Content Include="tellings\static\tellings\css\bootstrap-tagsinput.css" />
