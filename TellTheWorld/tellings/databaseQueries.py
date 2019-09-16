@@ -31,25 +31,18 @@ def getAllTagNames():
 
     :returns: A list of all tagnames.
     """
-    sql = "SELECT * FROM tellings_tags ORDER BY tellings_tags.tagName ASC;"
-    tag_obj = Tags.objects.raw(sql)
-    tagList = [tag.tagName for tag in tag_obj]
+    tagList = list(Tags.objects.values_list('tagName', flat=True))
     return tagList
 
 
-def getTagNamesByPostID(postID):
+def getTagNamesByPostID(in_postID):
     """ Gets a list of all tagnames attached to a user update.
 
     :param postID: A post ID number. (e.g., 42)
     :returns: A list of tagnames.
     """
-    sql =  "SELECT tellings_tags.tagID, tellings_tags.tagName, tellings_tagmap.postID"
-    sql += " FROM tellings_tags"
-    sql += " INNER JOIN tellings_tagmap ON (tellings_tags.tagID=tellings_tagmap.tagID)"
-    sql += " WHERE tellings_tagmap.postID=%s"
-    sql += " ORDER BY tellings_tags.tagName ASC;" 
-    tag_obj = Tags.objects.raw(sql, (postID,))
-    tagList = [tag.tagName for tag in tag_obj]
+    tagmaps = Tagmap.objects.filter(postID=in_postID)
+    tagList = sorted([tag.tagID.tagName for tag in tagmaps])
     return tagList
 
 
@@ -58,11 +51,9 @@ def getAllPostDetails():
 
     :returns: A list of all user updates. (e.g., [ [postID, dateOfPost, username, postTitle, postText], [postID, ...])
     """
-    postDetails = []
-    posts_obj = Posts.objects.raw("SELECT * FROM tellings_posts ORDER BY dateOfPost DESC;")
-    for post in posts_obj:
-        dateOfPost = post.dateOfPost.strftime("%d %B %Y")
-        postDetails.append([post.postID, dateOfPost, post.user.username, post.postTitle, post.postText])
+    posts = Posts.objects.all().order_by('-dateOfPost')
+    postDetails = [[post.postID, post.dateOfPost.strftime("%d %B %Y"), 
+                    post.user.username, post.postTitle, post.postText] for post in posts]
     return postDetails  
 
 
@@ -72,11 +63,8 @@ def getAllPostsByUserID(in_userID):
     :param in_userID: A user ID number (e.g., 42) 
     :returns: A list of user updates. (e.g., [ [postID, dateOfPost, username, postTitle, postText], [postID, ...])
     """
-    postDetails = []
-    posts_obj = Posts.objects.raw("SELECT * FROM tellings_posts WHERE user=%s ORDER BY dateOfPost DESC;", (in_userID,))
-    for post in posts_obj:
-        dateOfPost = post.dateOfPost.strftime("%d %B %Y")
-        postDetails.append([post.postID, dateOfPost, post.user.username, post.postTitle, post.postText])
+    posts = Posts.objects.filter(user=in_userID).order_by('-dateOfPost')
+    postDetails = [[post.postID, post.dateOfPost.strftime("%d %B %Y"), post.user.username, post.postTitle, post.postText] for post in posts]
     return postDetails  
 
 
@@ -145,14 +133,9 @@ def userHasPostedToday(in_userID):
     :returns: True if the user has posted an update today,
               otherwise false
     """
-    postsToday = 0
     yesterday = date.today() - timedelta(1)
-    sql = "select * FROM tellings_posts WHERE user=%s"
-    results = Posts.objects.raw(sql, (in_userID,))
-    for result in results:
-        if(result.dateOfPost > yesterday):
-            postsToday+=1
-    return postsToday > 0
+    posts = Posts.objects.filter(user=in_userID).filter(dateOfPost__gt=yesterday)
+    return len(posts) > 0
 
 
 def postTitleExists(in_postTitle):
@@ -162,11 +145,8 @@ def postTitleExists(in_postTitle):
     :returns: True if the post title does exist in the Posts table,
               otherwise false.
     """
-    postsWithTitle = 0
-    sql = 'select * FROM tellings_posts WHERE postTitle=%s;'
-    results = Posts.objects.raw(sql, (in_postTitle,))
-    postsWithTitle += sum(1 for result in results)
-    return postsWithTitle > 0
+    posts = Posts.objects.filter(postTitle=in_postTitle)
+    return len(posts) > 0
 
 
 def addNewPostUpdateRecords(request):

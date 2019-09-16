@@ -134,7 +134,7 @@ def createUpdatePanelContents(updateDetails, count):
   </div>
   <div class="col-sm-4">
     <p class="align-panel-text-right">
-      <a data-toggle="collapse" href="#collapse{cnt}">View Update</a>
+      <button class="btn btn-info" data-toggle="collapse" data-target="#collapse{cnt}">View Update</button>
     </p>               
   </div>         
 </div> <!-- End of Panel header -->

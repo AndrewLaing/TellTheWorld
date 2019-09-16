@@ -1,4 +1,6 @@
 ﻿
+from tellings.models import Posts, Tags, Tagmap
+
 # get a list of all values in a field (without flat=True creates tuples for each value)
 tags = list(Tags.objects.values_list('tagName', flat=True))
 ---------------------------------------------------------------------------------------
@@ -12,4 +14,37 @@ for tag in tagsToAdd:
     result[tag[0]].append(tag[1])
 
 resultKeys = sorted(list(result.keys()))
+
+---------------------------------------------------------------------------------------
+# get a list of all posts
+posts = Posts.objects.all().order_by('-dateOfPost')
+postList = [[post.postID, post.dateOfPost.strftime("%d %B %Y"), 
+             post.user.username, post.postTitle, post.postText] for post in posts]
+---------------------------------------------------------------------------------------
+# get all posts by userID
+
+def getByUserID(userID):
+    posts = Posts.objects.all().filter(user=userID).order_by('-dateOfPost')
+	postList = [[post.postID, post.dateOfPost.strftime("%d %B %Y"), post.user.username, post.postTitle, post.postText] for post in posts]
+	return postList
+---------------------------------------------------------------------------------------
+# post title exists
+
+def postTitleExists(in_postTitle):
+    posts = Posts.objects.all().filter(postTitle=in_postTitle)
+    return len(posts) > 0
+----------------------------------------------------------------------------------------
+#user has posted today
+
+def userHasPostedToday(in_userID):
+    yesterday = date.today() - timedelta(1)
+    posts = Posts.objects.all().filter(user=in_userID).filter(dateOfPost__gt=yesterday)
+    return len(posts) > 0
+
+----------------------------------------------------------------------------------------
+# get tagnames by postID
+def getTagNamesByPostID(in_postID):
+    tagmaps = Tagmap.objects.all().filter(postID=in_postID)
+	tagList = sorted([tag.tagID.tagName for tag in tagmaps])
+	return tagList
 
