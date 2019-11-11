@@ -1,7 +1,7 @@
 ﻿# Filename:     createUpdatesHTML.html
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last updated: 19/08/2019.
+# Last updated: 11/11/2019.
 # Description:  Contains functions used to create the content HTML for
 #               the user updates shown on tags.html, myupdates.html 
 #               and newupdates.html.
@@ -23,7 +23,7 @@ def sanitiseString(user_str):
     return user_str
 
 
-def createInnerHTML(postDetails):
+def createInnerHTML(postDetails, username):
     """ Creates the content HTML for the user updates shown on 
         tags.html, myupdates.html and newupdates.html
 
@@ -38,7 +38,8 @@ def createInnerHTML(postDetails):
             previousDate = updateDetails[1]
 
         postID = updateDetails[0]
-        innerHTML += createUpdateHTML(previousDate, isFirstPost, updateDetails, count)
+
+        innerHTML += createUpdateHTML(previousDate, isFirstPost, updateDetails, count, username)
 
         if isFirstPost:
             isFirstPost = False
@@ -70,7 +71,7 @@ def createNoResultsHTML():
     return innerHTML
 
 
-def createUpdateHTML(previousDate, isFirstPost, updateDetails, count):
+def createUpdateHTML(previousDate, isFirstPost, updateDetails, count, username):
     """ Creates the HTML for a user update panel.
 
     :param previousDate: The date of the previous post (e.g., '02 August 2019')
@@ -89,8 +90,16 @@ def createUpdateHTML(previousDate, isFirstPost, updateDetails, count):
         innerHTML += createNewRowHeaderHTML(dateOfPost)
     else:
         innerHTML += createNewUpdatePanelHeader()
-            
-    innerHTML += createUpdatePanelContents(updateDetails, count)
+           
+    
+    # Allow users to edit their own posts
+    postUsername = updateDetails[2]
+
+    if(postUsername==username):
+        innerHTML += createUpdatePanelContentsForCurrentUser(updateDetails, count)
+    else:
+        innerHTML += createUpdatePanelContents(updateDetails, count)
+
     return innerHTML
 
 
@@ -132,10 +141,47 @@ def createUpdatePanelContents(updateDetails, count):
     <p><a href="#" class="posterName" name="{user}" onclick="return false;">
     {user} says</a> ... {title}</p>
   </div>
-  <div class="col-sm-4">
-    <p class="align-panel-text-right">
+  <div class="col-sm-4 align-panel-text-right">
       <button class="btn btn-info" data-toggle="collapse" data-target="#collapse{cnt}">View Update</button>
-    </p>               
+  </div>         
+</div> <!-- End of Panel header -->
+<div id="collapse{cnt}" class="panel-collapse collapse">
+  <div class="panel-body">
+    <p>{text}</p>
+  </div>
+</div>'''.format(user=username, title=postTitle, text=postText, cnt=count)
+    return innerHTML
+
+
+def createUpdatePanelContentsForCurrentUser(updateDetails, count):
+    """ Creates the HTML for a user update panel.
+
+    :param updateDetails: A list of user update details. (e.g., [29, '02 August 2019', 'admin', 'posttitle', 'postText.'])
+    :param count: A number used to make all update panels uniquely collapsable.
+    :returns: A string containing HTML.
+    """
+    username  = sanitiseString(updateDetails[2])
+    postTitle = sanitiseString(updateDetails[3])
+    postText  = sanitiseString(updateDetails[4])
+    innerHTML = '''
+  <div class="col-sm-8 panel-postTitle">
+    <p><a href="#" class="posterName" name="{user}" onclick="return false;">
+    {user} says</a> ... {title}</p>
+  </div>
+  <div class="col-sm-4 align-panel-text-right">
+    <!-- View Update button -->
+    <button class="btn btn-info" data-toggle="collapse" data-target="#collapse{cnt}">View Update</button>
+
+    <!-- Edit button -->
+    <div class="btn-group">
+        <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Edit
+        </button>
+        <div class="dropdown-menu">
+        <a class="dropdown-item" href="#">Edit Post</a><br />
+        <a class="dropdown-item" href="#">Delete Post</a>
+        </div>
+    </div>    
   </div>         
 </div> <!-- End of Panel header -->
 <div id="collapse{cnt}" class="panel-collapse collapse">

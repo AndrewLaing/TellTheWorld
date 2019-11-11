@@ -2,7 +2,7 @@
  * Filename:     base.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 12/09/2019.
+ * Last updated: 11/11/2019.
  * Description:  Main base template for site pages.
 {% endcomment %}
 
@@ -37,7 +37,7 @@
       <div id="title" class="jumbotron jumbotron-fluid">
         <h1>{% block headertitle1 %}Default title 1{% endblock headertitle1 %}</h1>
         {% if quote %}
-            <p>{{quote}}</p>
+            <span>{{quote}}</span>
         {% else %}
             <p>Just say it. It needs to be said sometime.</p>
         {% endif %}

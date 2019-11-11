@@ -2,7 +2,7 @@
  * Filename:    style.css
  * Author:      Andrew Laing
  * Email:       parisianconnections@gmail.com
- * Date:        05/08/2019.
+ * Date:        11/11/2019.
  * Description: The main CSS file used to style the 'Tell the World' website.
  */
 
@@ -40,6 +40,12 @@ body {
 
 .jumbotron h1 {
     padding: 10% 0% 3% 0%;
+}
+
+.jumbotron span {
+    font-size: 1.5em;
+    padding: 5px;
+    background-color: rgba(255,255,255,0.7);
 }
 
 .img-wrapper img {

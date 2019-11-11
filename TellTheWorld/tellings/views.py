@@ -274,7 +274,9 @@ class NewUpdatesPage(View):
         """
         quote = get_random_quote()
         postDetails = DBQ.getAllPostDetails()
-        contents = CUH.createInnerHTML(postDetails)
+        username = request.user.username
+        contents = CUH.createInnerHTML(postDetails, username)
+
         return render(request, 'tellings/newupdates.html', {'contents': contents, 'quote': quote})
 
 
@@ -368,7 +370,8 @@ class MyUpdatesPage(View):
         quote = get_random_quote()
         current_user_id = request.user.id
         postDetails = DBQ.getAllPostsByUserID(current_user_id)
-        contents = CUH.createInnerHTML(postDetails)
+        username = request.user.username
+        contents = CUH.createInnerHTML(postDetails, username)
         return render(request, 'tellings/myupdates.html', {'contents': contents, 'quote': quote})
 
 
@@ -634,7 +637,8 @@ class AddUpdatesForTag(View):
         """
         tagName = request.POST['postTag']
         postDetails = DBQ.getAllPostsByTagname(tagName)
-        contents = CUH.createInnerHTML(postDetails)
+        username = request.user.username
+        contents = CUH.createInnerHTML(postDetails, username)
 
         return HttpResponse(contents)
         
@@ -678,7 +682,8 @@ class AddUpdatesForTagByLoggedInUser(View):
         tagName = request.POST['postTag']
         current_user_id = request.user.id
         postDetails = DBQ.getAllPostsByTagnameForUserID(tagName, current_user_id)
-        contents = CUH.createInnerHTML(postDetails)
+        username = request.user.username
+        contents = CUH.createInnerHTML(postDetails, username)
 
         return HttpResponse(contents)
 
@@ -724,7 +729,8 @@ class AddUpdatesForUsername(View):
         try:
             userID = User.objects.get(username=uname).id
             postDetails = DBQ.getAllPostsByUserID(userID)
-            contents = CUH.createInnerHTML(postDetails)
+            username = request.user.username
+            contents = CUH.createInnerHTML(postDetails, username)
         except User.DoesNotExist:
             contents = CUH.createNoResultsHTML()
 

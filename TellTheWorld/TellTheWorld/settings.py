@@ -26,7 +26,12 @@ SECRET_KEY = 'c0d78a49-f036-4d3e-ac75-647176325b15'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+if DEBUG:
+    import mimetypes
+    mimetypes.add_type("application/javascript", ".js", True)
+
 ALLOWED_HOSTS = []
+#ALLOWED_HOSTS = ['localhost','192.168.1.118']
 
 # Application references
 # https://docs.djangoproject.com/en/2.1/ref/settings/#std:setting-INSTALLED_APPS
