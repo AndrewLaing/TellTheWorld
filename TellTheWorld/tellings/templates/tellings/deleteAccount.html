@@ -1,0 +1,53 @@
+{% extends 'tellings/base.html' %}
+{% block title %}Tell the World{% endblock title %} 
+{% block headertitle1 %}Delete Account{% endblock headertitle1 %} 
+{% comment %} 
+ * -------------------------------------------------------------------------------
+ * Filename:     deleteAccount.html
+ * Author:       Andrew Laing
+ * Email:        parisianconnections@gmail.com
+ * Last updated: 13/11/2019
+ * Description:  Template for the delete account page.
+ * -------------------------------------------------------------------------------
+{% endcomment %}
+{% block content %}
+<!-- Main content. -->
+<div class="container-fluid main-content">
+    <div class="container">
+      <h1>Delete Your Account</h1> 
+      <br />
+      <p>Hi.</p>
+      <p>We are sorry to hear that you want to delete your account.</p>
+      <p>If you are leaving because of the actions of another user, please contact the site's administrator at <a href="mailto:admin@tellings.com?Subject=Website%20Error" target="_top">admin@tellings.com</a> and let us know about it as soon as possible. <br />
+         We take online bullying very seriously and will investigate, taking action where necessary to prevent our users from being abused by other members of this website. </p>
+      <br />
+
+      <form method="post" action="{% url 'tellings:accountdeleted' %}">
+          {% csrf_token %}
+          <p style="font-weight: bold">Why are you deleting your account?</p>
+            <select class="form-control" name="reason" id="reason" style="width: 20%;">
+                <option value="I don't use my account">I don't use my account</option>
+                <option value="Site too difficult to use">Site too difficult to use</option>
+                <option value="Creating another account">Creating another account</option>
+                <option value="Online Abuse">Online Abuse</option>
+                <option value="Content uninteresting">Content uninteresting</option>
+                <option value="Too many ads">Too many ads</option>
+                <option value="Something else">Something else</option>
+            </select>
+          <br />
+          <p style="font-weight: bold">To continue, please re-enter your password.</p>
+          <input  class="form-control" type="password" name="user_password"  style="width: 20%;" required>
+          <br />
+          <a href="mailto:admin@tellings.com?Subject=Forgotten%20Password">Forgotten your Password?</a>
+          <br /><br />
+          <br /><br />
+          <p>When you press the button below, all your data will be removed from our servers and will not be recoverable. If you decide to create another account in the future, you will not be able to sign up with your current username.</p>
+          <hr>
+          <input type="submit" class="btn btn-danger btn-block" value="Permanently delete my account">
+      </form> 
+        <br />
+      <button type="button" class="btn btn-success btn-block">Cancel</button> 
+      <br />
+  </div>    <!-- END OF CONTAINER -->
+</div>      <!-- END OF CONTAINER-FLUID -->
+{% endblock %}

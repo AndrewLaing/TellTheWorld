@@ -79,6 +79,7 @@
     <Content Include="tellings\templates\tellings\base.html" />
     <Content Include="tellings\templates\tellings\changePassword.html" />
     <Content Include="tellings\templates\tellings\changeUserDetails.html" />
+    <Content Include="tellings\templates\tellings\deleteAccount.html" />
     <Content Include="tellings\templates\tellings\errorPage.html" />
     <Content Include="tellings\templates\tellings\includes\footerContents.html" />
     <Content Include="tellings\templates\tellings\includes\formErrors.html" />

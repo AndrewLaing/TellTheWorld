@@ -174,12 +174,12 @@ def createUpdatePanelContentsForCurrentUser(updateDetails, count):
 
     <!-- Edit button -->
     <div class="btn-group">
-        <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        Edit
+        <button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <span class = "caret"></span>
         </button>
         <div class="dropdown-menu">
-        <a class="dropdown-item" href="#">Edit Post</a><br />
-        <a class="dropdown-item" href="#">Delete Post</a>
+        <a class="dropdown-item" href="#" onclick="alert('Edit post');">Edit Post</a><br />
+        <a class="dropdown-item" href="#" onclick="alert('Delete post');">Delete Post</a>
         </div>
     </div>    
   </div>         

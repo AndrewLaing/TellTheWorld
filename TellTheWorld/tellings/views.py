@@ -418,6 +418,31 @@ class ErrorPage(View):
             return HttpResponseRedirect('/loginpage/')
 
 
+class DeleteAccountPage(View):
+    """ Creates the Delete Account Page for the site """
+    @method_decorator(login_required)
+    def get(self, request):
+        """ Handles GET requests for the Delete Account page.
+
+        :param request: A dictionary-like object containing all HTTP parameters, 
+                        sent by a site user. 
+        :returns: A HTML page.
+        """
+        quote = get_random_quote()
+        return render(request, 'tellings/deleteAccount.html', {'quote': quote})
+
+    @method_decorator(login_required)
+    def post(self, request):
+        """ Handles POST requests for the Delete Account page.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters, 
+                        sent by a site user. 
+        :returns: A HTML page.
+        """
+        quote = get_random_quote()
+        return render(request, 'tellings/deleteAccount.html', {'quote': quote})
+
+
 class AccountDeletedPage(View):
     """ Creates the Account Deleted page for the website."""
     
@@ -438,6 +463,7 @@ class AccountDeletedPage(View):
                         sent by a site user. 
         :returns: A HTML page.
         """
+        print(request.POST)
         if ('reason' in request.POST):
             return self.deleteAccount(request)
         else:
