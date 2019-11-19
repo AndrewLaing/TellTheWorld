@@ -459,4 +459,44 @@ $(document).ready(function(){
         });
     }); 
 
+
+    $.hide_post = function (postID) {
+        var panelID = "#panel_post_" + postID
+        var msg = "You clicked hide " + panelID
+        alert(msg);
+        $(panelID).hide();
+
+        alert("wowie");
+        // $('#list-team-single-container').children(':visible').length;
+        var parentID = $(panelID).parent().attr('id')
+        //var postsInPanelGroup = $(panelID).parent.children(':hidden').length;
+        alert(parentID);
+    };
+
+
+    $.edit_post = function (postID) {
+        var msg = "You clicked edit post!" + postID
+        alert(msg);
+    };
+
+
+    /**
+     * Confirms that the user logout wishes to delete their post.
+     */
+    $.confirm_delete_post = function() {
+        return confirm("Are you sure you want to delete this post?");
+    };
+
+
+    $.delete_post = function (postID) {
+        if($.confirm_delete_post()==true) {
+            var msg = "I will now delete post number " + postID
+            alert(msg);            
+        }
+        else {
+            alert("Delete cancelled");
+        }
+
+    };
+
 });

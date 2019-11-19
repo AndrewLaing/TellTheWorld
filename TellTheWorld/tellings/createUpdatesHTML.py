@@ -82,14 +82,15 @@ def createUpdateHTML(previousDate, isFirstPost, updateDetails, count, username):
     """
 
     innerHTML = ''
+    postID = updateDetails[0]
     dateOfPost = updateDetails[1]
 
     if isFirstPost:
-        innerHTML += createFirstRowHeaderHTML(dateOfPost)
+        innerHTML += createFirstRowHeaderHTML(postID, dateOfPost)
     elif dateOfPost != previousDate:
-        innerHTML += createNewRowHeaderHTML(dateOfPost)
+        innerHTML += createNewRowHeaderHTML(postID, dateOfPost)
     else:
-        innerHTML += createNewUpdatePanelHeader()
+        innerHTML += createNewUpdatePanelHeader(postID)
            
     
     # Allow users to edit their own posts
@@ -133,6 +134,7 @@ def createUpdatePanelContents(updateDetails, count):
     :param count: A number used to make all update panels uniquely collapsable.
     :returns: A string containing HTML.
     """
+    postID = updateDetails[0]
     username  = sanitiseString(updateDetails[2])
     postTitle = sanitiseString(updateDetails[3])
     postText  = sanitiseString(updateDetails[4])
@@ -143,13 +145,23 @@ def createUpdatePanelContents(updateDetails, count):
   </div>
   <div class="col-sm-4 align-panel-text-right">
       <button class="btn btn-info" data-toggle="collapse" data-target="#collapse{cnt}">View Update</button>
+
+      <!-- Edit post -->
+      <div class="btn-group">
+          <button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <span class = "caret"></span>
+          </button>
+          <div class="dropdown-menu">
+          <a class="dropdown-item" id="hide_post_{id}" onclick="$.hide_post({id});">Hide Post</a>
+          </div>
+      </div>  
   </div>         
 </div> <!-- End of Panel header -->
 <div id="collapse{cnt}" class="panel-collapse collapse">
   <div class="panel-body">
-    <p>{text}</p>
+    <p id="text_post_{id}">{text}</p>
   </div>
-</div>'''.format(user=username, title=postTitle, text=postText, cnt=count)
+</div>'''.format(id=postID, user=username, title=postTitle, text=postText, cnt=count)
     return innerHTML
 
 
@@ -160,6 +172,7 @@ def createUpdatePanelContentsForCurrentUser(updateDetails, count):
     :param count: A number used to make all update panels uniquely collapsable.
     :returns: A string containing HTML.
     """
+    postID = updateDetails[0]
     username  = sanitiseString(updateDetails[2])
     postTitle = sanitiseString(updateDetails[3])
     postText  = sanitiseString(updateDetails[4])
@@ -172,27 +185,28 @@ def createUpdatePanelContentsForCurrentUser(updateDetails, count):
     <!-- View Update button -->
     <button class="btn btn-info" data-toggle="collapse" data-target="#collapse{cnt}">View Update</button>
 
-    <!-- Edit button -->
+    <!-- Edit post -->
     <div class="btn-group">
         <button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <span class = "caret"></span>
         </button>
         <div class="dropdown-menu">
-        <a class="dropdown-item" href="#" onclick="alert('Edit post');">Edit Post</a><br />
-        <a class="dropdown-item" href="#" onclick="alert('Delete post');">Delete Post</a>
+        <a class="dropdown-item" id="hide_post_{id}" onclick="$.hide_post({id});">Hide Post</a><br /><br />
+        <a class="dropdown-item" id="edit_post_{id}" onclick="$.edit_post({id});">Edit Post</a><br />
+        <a class="dropdown-item" id="delete_post_{id}" onclick="$.delete_post({id});">Delete Post</a>
         </div>
     </div>    
   </div>         
 </div> <!-- End of Panel header -->
 <div id="collapse{cnt}" class="panel-collapse collapse">
   <div class="panel-body">
-    <p>{text}</p>
+    <p id="text_post_{id}">{text}</p>
   </div>
-</div>'''.format(user=username, title=postTitle, text=postText, cnt=count)
+</div>'''.format(id=postID, user=username, title=postTitle, text=postText, cnt=count)
     return innerHTML
 
 
-def createFirstRowHeaderHTML(dateOfPosts):
+def createFirstRowHeaderHTML(postID, dateOfPosts):
     """ Creates the HTML for the header of the first row of user update panels.
 
     :param dateOfPost: The date of a group of user update posts (e.g., '02 August 2019')
@@ -203,12 +217,12 @@ def createFirstRowHeaderHTML(dateOfPosts):
   <h1>{date}</h1>   
   <div class="panel-group">  
     <!-- Update panel --> 
-    <div class="panel panel-default">
-      <div>  <!-- Panel header -->'''.format(date=dateOfPosts)
+    <div class="panel panel-default" id="panel_post_{id}">
+      <div>  <!-- Panel header -->'''.format(date=dateOfPosts, id=postID)
     return innerHTML
 
 
-def createNewRowHeaderHTML(dateOfPosts):
+def createNewRowHeaderHTML(postID, dateOfPosts):
     """ Creates the HTML for the header of a row of user update panels.
 
     :param dateOfPost: The date of a group of user update posts (e.g., '02 August 2019')
@@ -221,20 +235,20 @@ def createNewRowHeaderHTML(dateOfPosts):
   <h1>{date}</h1>   
   <div class="panel-group">  
     <!-- Update panel -->   
-    <div class="panel panel-default">
-      <div>  <!-- Panel header -->'''.format(date=dateOfPosts)
+    <div class="panel panel-default" id="panel_post_{id}">
+      <div>  <!-- Panel header -->'''.format(date=dateOfPosts, id=postID)
     return innerHTML
 
 
-def createNewUpdatePanelHeader():
+def createNewUpdatePanelHeader(postID):
     """ Creates the HTML for the header for a user update panel.
 
     :returns: A string containing HTML.
     """
     innerHTML = '''
     <!-- Update panel -->
-    <div class="panel panel-default">
-       <div>  <!-- Panel header -->'''
+    <div class="panel panel-default" id="panel_post_{id}">
+       <div>  <!-- Panel header -->'''.format(id=postID)
     return innerHTML
 
 
