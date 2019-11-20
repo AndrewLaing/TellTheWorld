@@ -806,3 +806,103 @@ class CheckUserPassword(View):
             return HttpResponse('True')
         else:
             return HttpResponse('False')
+
+
+
+# ===================================================================================
+# ===================================================================================
+# ===================================================================================0
+
+class DeleteUserPost(View):
+    """ An AJAX handler used to delete a post made by the currently
+        logged in user.
+    """
+
+    @method_decorator(login_required)
+    def get(self, request):
+        """ Handles GET requests.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters, 
+                        sent by a site user. 
+        :returns: A HTML page.
+        """
+        return HttpResponseRedirect('/errorpage/')
+
+    @method_decorator(login_required)
+    def post(self, request):
+        """ Handles POST requests.
+
+        :param request: A dictionary-like object containing all HTTP parameters, 
+                        sent by a site user. 
+        :returns: A string 'True' if the password is valid, otherwise 'False'.
+        """
+        if ('postID' in request.POST):
+            postID = request.POST.get('postID')
+            return HttpResponse("POST RECEIVED FOR DELETING:)")
+        else:
+            return HttpResponseRedirect('/errorpage/')
+
+    
+
+    def postWasMadeByCurrentUser(self, username, currentUser):
+        """ Add a description.
+        """
+        return username == currentUser
+
+    def getUsernameForPostID(self, in_postID):
+        """ Add a description.
+        """
+        try:
+            id = int(in_postID)
+            post = Posts.objects.get(postID=id)
+            username = post.user.username
+            return username
+        except:
+            return None
+
+    def deletePost(self, in_postID):
+        """ Add a description.
+        """
+        try:
+            post = Posts.objects.get(postID=in_postID)
+            post.delete()
+            return True
+        except:
+            return False
+
+
+
+# ===================================================================================
+# ===================================================================================
+# ===================================================================================
+
+
+
+class EditUserPost(View):
+    """ An AJAX handler used to delete a post made by the currently
+        logged in user.
+    """
+
+    @method_decorator(login_required)
+    def get(self, request):
+        """ Handles GET requests.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters, 
+                        sent by a site user. 
+        :returns: A HTML page.
+        """
+        return HttpResponseRedirect('/errorpage/')
+
+    @method_decorator(login_required)
+    def post(self, request):
+        """ Handles POST requests.
+
+        :param request: A dictionary-like object containing all HTTP parameters, 
+                        sent by a site user. 
+        :returns: A string 'True' if the password is valid, otherwise 'False'.
+        """
+        if ('postID' in request.POST):
+            postID = request.POST.get('postID')
+            return HttpResponse("POST RECEIVED FOR EDITING:)")
+        else:
+            return HttpResponseRedirect('/errorpage/')

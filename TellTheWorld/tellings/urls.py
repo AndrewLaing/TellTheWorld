@@ -5,7 +5,7 @@ from tellings.views import IndexPage, TagsPage, MyUpdatesPage, NewUpdatesPage, E
 from tellings.views import SignUpPage, ChangePasswordPage, ChangeUserDetailsPage
 from tellings.views import HasPostedToday, TitleExists, AddNewUpdate, AddUpdatesForTag
 from tellings.views import AddUpdatesForTagByLoggedInUser, AddUpdatesForUsername, CheckUserPassword
-from tellings.views import DeleteAccountPage
+from tellings.views import DeleteAccountPage, DeleteUserPost
 
 app_name = 'tellings'
 urlpatterns = [
@@ -27,4 +27,5 @@ urlpatterns = [
     path('checkuserpassword/', CheckUserPassword.as_view(), name='checkuserpassword'),
     path('loginpage/', LoginView.as_view(template_name='tellings/loginpage.html'), name='loginpage'),
     path('deleteaccount/', DeleteAccountPage.as_view(), name='deleteaccount'),
+    path('deleteuserpost/', DeleteUserPost.as_view(), name='deleteuserpost'),
 ]

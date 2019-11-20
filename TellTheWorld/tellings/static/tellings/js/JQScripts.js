@@ -488,10 +488,32 @@ $(document).ready(function(){
     };
 
 
-    $.delete_post = function (postID) {
+    $.delete_post = function (in_postID) {
         if($.confirm_delete_post()==true) {
-            var msg = "I will now delete post number " + postID
-            alert(msg);            
+            var msg = "I will now delete post number " + in_postID
+            alert(msg);
+
+            var csrftoken = getCookie('csrftoken');
+
+            $.post("/deleteuserpost/",
+                {
+                    postID: in_postID,
+                    csrfmiddlewaretoken: csrftoken,
+                },
+                function (data, status) {
+                    if (status === 'success') {
+                        if (data === 'True') {
+                            alert('Post deleted.');
+                        } else {
+                            alert(data);
+                        }
+                    }
+                    else {
+                        alert("Database error: please contact the administrator.");
+                    }
+                });
+
+
         }
         else {
             alert("Delete cancelled");
