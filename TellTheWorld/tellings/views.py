@@ -838,12 +838,17 @@ class DeleteUserPost(View):
         """
         if ('postID' in request.POST):
             postID = request.POST.get('postID')
-            return HttpResponse("POST RECEIVED FOR DELETING:)")
+            currentUser = request.user.username
+            username = self.getUsernameForPostID(postID)
+            # Check that the post was made by the user deleting it
+            if(self.postWasMadeByCurrentUser(username, currentUser)):
+                return HttpResponse("POST RECEIVED FOR DELETING:)")
+            else:
+                return HttpResponse("YOU CANNOT DELETE OTHER USERS POSTS!!!")
         else:
             return HttpResponseRedirect('/errorpage/')
 
     
-
     def postWasMadeByCurrentUser(self, username, currentUser):
         """ Add a description.
         """
@@ -903,6 +908,29 @@ class EditUserPost(View):
         """
         if ('postID' in request.POST):
             postID = request.POST.get('postID')
-            return HttpResponse("POST RECEIVED FOR EDITING:)")
+            currentUser = request.user.username
+            username = self.getUsernameForPostID(postID)
+            # Check that the post was made by the user deleting it
+            if(self.postWasMadeByCurrentUser(username, currentUser)):
+                return HttpResponse("POST RECEIVED FOR EDITTING:)")
+            else:
+                return HttpResponse("YOU CANNOT EDIT OTHER USERS POSTS!!!")
         else:
             return HttpResponseRedirect('/errorpage/')
+
+
+    def postWasMadeByCurrentUser(self, username, currentUser):
+        """ Add a description.
+        """
+        return username == currentUser
+
+    def getUsernameForPostID(self, in_postID):
+        """ Add a description.
+        """
+        try:
+            id = int(in_postID)
+            post = Posts.objects.get(postID=id)
+            username = post.user.username
+            return username
+        except:
+            return None
