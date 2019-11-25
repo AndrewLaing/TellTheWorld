@@ -308,6 +308,7 @@ $(document).ready(function(){
             if (status === 'success') {
                 if(data==='True') {
                     alert('Your update has been added.');
+                    location.reload();
                 } else if (data!=='False') {
                     alert("Database error: please contact the administrator.");    
                 } else {
@@ -465,8 +466,6 @@ $(document).ready(function(){
      */
     $.hide_post = function (postID) {
         var panelID = "#panel_post_" + postID
-        var msg = "You clicked hide " + panelID
-        alert(msg);
         $(panelID).hide();
     };
 
@@ -480,7 +479,7 @@ $(document).ready(function(){
 
 
     /**
-     * Handles the delete user post event.
+     * Handles the edit user post event.
      */
     $.edit_post = function (in_postID) {
         if($.confirm_edit_post()==true) {
@@ -499,7 +498,7 @@ $(document).ready(function(){
                 function (data, status) {
                     if (status === 'success') {
                         if (data === 'True') {
-                            alert('Post deleted.');
+                            alert('Your post has been updated.');
                         } else {
                             alert(data);
                         }
@@ -510,7 +509,7 @@ $(document).ready(function(){
                 });
         }
         else {
-            alert("Delete cancelled");
+            alert("Cancelled");
         }
 
     };
@@ -529,9 +528,6 @@ $(document).ready(function(){
      */
     $.delete_post = function (in_postID) {
         if($.confirm_delete_post()==true) {
-            var msg = "I will now delete post number " + in_postID
-            alert(msg);
-
             var csrftoken = getCookie('csrftoken');
 
             $.post("/deleteuserpost/",
@@ -542,7 +538,9 @@ $(document).ready(function(){
                 function (data, status) {
                     if (status === 'success') {
                         if (data === 'True') {
-                            alert('Post deleted.');
+                            $.hide_post(in_postID)
+                            alert('Your post has been deleted.');
+                            location.reload();
                         } else {
                             alert(data);
                         }

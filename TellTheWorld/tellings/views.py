@@ -842,7 +842,10 @@ class DeleteUserPost(View):
             username = self.getUsernameForPostID(postID)
             # Check that the post was made by the user deleting it
             if(self.postWasMadeByCurrentUser(username, currentUser)):
-                return HttpResponse("POST RECEIVED FOR DELETING:)")
+                if self.deletePost(postID):
+                    return HttpResponse("True")
+                else:
+                    return HttpResponse("Something went wrong. We were unable to delete your post.")
             else:
                 return HttpResponse("YOU CANNOT DELETE OTHER USERS POSTS!!!")
         else:
