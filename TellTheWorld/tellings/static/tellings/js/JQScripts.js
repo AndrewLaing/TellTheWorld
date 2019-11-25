@@ -128,7 +128,7 @@ $(document).ready(function(){
 
         var r_pattern = /[\<\>\&]+/
 
-        if (val.match(r_pattern) || val.match(r_pattern).toString() == val) {
+        if (val.match(r_pattern)) {
             e.preventDefault()
             alert('Sorry you cannot enter the <, > or & characters into this form!');
             return false
@@ -151,7 +151,7 @@ $(document).ready(function(){
 
         var r_pattern = /[\<\>\&]+/
 
-        if (val.match(r_pattern) || val.match(r_pattern).toString() == val) {
+        if (val.match(r_pattern)) {
             e.preventDefault()
             alert('Sorry you cannot enter the <, > or & characters into this form!');
             return false
