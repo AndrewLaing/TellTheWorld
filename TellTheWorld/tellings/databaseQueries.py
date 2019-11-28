@@ -1,7 +1,7 @@
 ﻿# Filename:     databaseQueries.html
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last updated: 22/08/2019.
+# Last updated: 28/11/2019.
 # Description:  Contains the query and insert functions used in tellings/views.py.
 
 from django.conf import settings as djangoSettings

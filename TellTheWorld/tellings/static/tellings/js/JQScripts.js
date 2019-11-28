@@ -2,7 +2,7 @@
  * Filename:     JQScripts.js
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 19/08/2019.
+ * Last updated: 28/11/2019.
  * Description:  JQuery scripts used by the 'Today I Have ...' website.
  */
 

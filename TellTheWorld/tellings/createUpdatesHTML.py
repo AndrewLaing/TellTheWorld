@@ -1,7 +1,7 @@
 ﻿# Filename:     createUpdatesHTML.html
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last updated: 11/11/2019.
+# Last updated: 28/11/2019.
 # Description:  Contains functions used to create the content HTML for
 #               the user updates shown on tags.html, myupdates.html 
 #               and newupdates.html.
