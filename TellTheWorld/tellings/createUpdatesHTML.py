@@ -183,7 +183,7 @@ def createUpdatePanelContentsForCurrentUser(updateDetails, count):
   </div>
   <div class="col-sm-4 align-panel-text-right">
     <!-- View Update button -->
-    <button class="btn btn-info" data-toggle="collapse" data-target="#collapse{cnt}">View Update</button>
+    <button class="btn btn-info collapse_btn" data-toggle="collapse" data-target="#collapse{cnt}">View Update</button>
 
     <!-- Edit post -->
     <div class="btn-group">
@@ -192,7 +192,7 @@ def createUpdatePanelContentsForCurrentUser(updateDetails, count):
         </button>
         <div class="dropdown-menu">
         <a class="dropdown-item" id="hide_post_{id}" onclick="$.hide_post({id});">Hide Post</a><br /><br />
-        <a class="dropdown-item" id="edit_post_{id}" onclick="$.edit_post({id});">Edit Post</a><br />
+        <a class="dropdown-item" id="edit_post_{id}" onclick="$.edit_post({id},{cnt});">Edit Post</a><br />
         <a class="dropdown-item" id="delete_post_{id}" onclick="$.delete_post({id});">Delete Post</a>
         </div>
     </div>    

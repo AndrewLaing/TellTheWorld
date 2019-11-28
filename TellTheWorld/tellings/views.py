@@ -155,6 +155,7 @@ class SignUpPage(View):
         """
         if ('username' in request.POST) and ('password1' in request.POST):
             return self.signUp(request)
+
         elif ('username' in request.POST) and ('pwd' in request.POST):
             return self.login(request)
         else:
@@ -174,8 +175,7 @@ class SignUpPage(View):
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=raw_password)
             login(request, user)
-            quote = get_random_quote()
-            return render(request, 'tellings/index.html', {'quote': quote})
+            return HttpResponseRedirect('/')
         else:
             quote = get_random_quote()
             messages.error(request, 'Please correct the error below.')
@@ -909,13 +909,19 @@ class EditUserPost(View):
                         sent by a site user. 
         :returns: A string 'True' if the password is valid, otherwise 'False'.
         """
-        if ('postID' in request.POST):
+        if ('postID' in request.POST and 'postText' in request.POST):
             postID = request.POST.get('postID')
+            postText = request.POST.get('postText')
             currentUser = request.user.username
             username = self.getUsernameForPostID(postID)
             # Check that the post was made by the user deleting it
             if(self.postWasMadeByCurrentUser(username, currentUser)):
-                return HttpResponse("POST RECEIVED FOR EDITTING:)")
+                print(postText)
+                try:
+                    DBQ.updatePostsRecordPostText(postID, postText)
+                    return HttpResponse("True")
+                except:
+                    return HttpResponse("Unable to make changes to the post. Please contact the site administrator.")
             else:
                 return HttpResponse("YOU CANNOT EDIT OTHER USERS POSTS!!!")
         else:

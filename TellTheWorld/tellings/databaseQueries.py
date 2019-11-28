@@ -193,6 +193,20 @@ def addNewPostUpdateRecords(request):
         addTagmapRecord(postID, tagID)
 
 
+
+def updatePostsRecordPostText(in_postID, in_postText):
+    """ Used to update the postText of a Posts record.
+    
+    :param in_postID:   A Posts record ID   
+    :param in_postText: Text for a post. (e.g., 'It was a fantastic day.')       
+    :returns: N/A
+    """
+    post = Posts.objects.get(postID=in_postID)
+    postText = sanitiseString(in_postText)[:MAX_POST_TEXT_LEN]
+    post.postText = postText
+    post.save()
+
+
 def addTagRecord(name):
     """ Used to add a new Tag record to the database.
     

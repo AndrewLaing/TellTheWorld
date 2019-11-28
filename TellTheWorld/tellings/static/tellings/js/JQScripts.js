@@ -7,6 +7,14 @@
  */
 
 $(document).ready(function(){
+
+    /**
+     * Variables used for editing posts.
+     */
+    var originalPostText;
+    var editingPost = false;
+
+
     /**
      * Opens the loginModal
      */
@@ -479,40 +487,115 @@ $(document).ready(function(){
 
 
     /**
-     * Handles the edit user post event.
+     * Handles the edit user post link click.
      */
-    $.edit_post = function (in_postID) {
+    $.edit_post = function (in_postID, in_collapseID) {
+    
+      // Only allow the user to edit one post at a time
+      if (editingPost) {
+        alert("You have unsaved changes!");
+        return false;
+      }
+      
+      editingPost = true;
+      
+      var textPostID = "#text_post_" + in_postID;
+      originalPostText = $(textPostID).html();  // Store the current post text
+      
+      // If the collapse is not showing, show it
+      var collapsePostID = "#collapse" + in_collapseID;
+
+      $(collapsePostID).collapse("show");
+      
+    
+      var editBox = '<style>textarea {width: 100%; margin: 5px 0 5px 0; padding: 5px;}</style>' +
+                    '<textarea rows="4" id="edit_box" value=""></textarea>' +
+                    '<div>' + 
+                    ' <button id="cancel_btn" onclick="$.cancel_edit_post(' + in_postID +  ')">CANCEL</button>' + 
+                    ' <button id="save_btn" onclick="$.save_edit_post(' + in_postID +  ')">SAVE CHANGES</button>' + 
+                    '</div>'
+    
+      $(textPostID).html(editBox);
+    
+      // Focus on the input and position cursor at end of text to edit
+      $("#edit_box").focus().val(originalPostText);
+      return true;
+
+    };
+
+
+    /**
+     * Adds the edited post text to the page, hiding the edit box.
+     */
+    $.show_saved_post = function(textPostID, newText) {
+        $(textPostID).html(newText);
+        editingPost = false;
+    }
+
+
+    /**
+     * Handles saving changes to a user's postText.
+     */
+    $.save_edit_post = function (in_postID) {
+        var textPostID = "#text_post_" + in_postID;
+        var currentText = $("#edit_box").val();
+
         if($.confirm_edit_post()==true) {
-            var msg = "I will now edit post number " + in_postID
-            alert(msg);
-
             var csrftoken = getCookie('csrftoken');
-
-            // Add post details to this!!!!
 
             $.post("/edituserpost/",
                 {
                     postID: in_postID,
+                    postText: currentText,
                     csrfmiddlewaretoken: csrftoken,
                 },
                 function (data, status) {
                     if (status === 'success') {
                         if (data === 'True') {
                             alert('Your post has been updated.');
+                            $.show_saved_post(textPostID, currentText);
+
                         } else {
                             alert(data);
+                            $.show_saved_post(textPostID, originalPostText);
                         }
                     }
                     else {
                         alert("Database error: please contact the administrator.");
+                        // redirect to error page instead?
+                        $.show_saved_post(textPostID, originalPostText);
                     }
                 });
         }
         else {
             alert("Cancelled");
-        }
+        } 
 
+      };    
+
+
+    /**
+     * Retores the original postText when editing is cancelled.
+     */
+    $.cancel_edit_post = function (postID) {
+      var textPostID = "#text_post_" + postID;
+    
+      alert("Cancelled");
+
+      $(textPostID).html(originalPostText);   
+      editingPost = false;
     };
+
+
+    /**
+     * Stops user from opening or closing posts whilst editing.
+     */
+    $('.collapse_btn').on('click', function(event) {
+      if($('#edit_box').length) {
+          alert("You still have unsaved changes!");
+          event.stopPropagation();
+      }
+    });
 
 
     /**
