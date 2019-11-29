@@ -2,7 +2,7 @@
 # Filename:     test_urls.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 19/08/2019
+# Last Updated: 29/11/2019
 # Description:  Test cases for tellings urls
 """
 
@@ -11,10 +11,7 @@ from django.test import SimpleTestCase
 from django.urls import reverse, resolve
 
 from django.contrib.auth.views import LoginView
-from tellings.views import ChangeUserDetailsPage, ChangePasswordPage, SignUpPage
-from tellings.views import IndexPage, TagsPage, MyUpdatesPage, NewUpdatesPage, ErrorPage
-from tellings.views import HasPostedToday, TitleExists, AddNewUpdate, AddUpdatesForTag
-from tellings.views import AddUpdatesForTagByLoggedInUser, AddUpdatesForUsername
+from tellings.views import *
 
 
 class URLTests(SimpleTestCase):
@@ -80,3 +77,22 @@ class URLTests(SimpleTestCase):
         url = reverse('tellings:addupdatesforusername')
         self.assertEquals(resolve(url).func.view_class, AddUpdatesForUsername)
 
+    def test_accountdeleted_url_resolves(self):
+        url = reverse('tellings:accountdeleted')
+        self.assertEquals(resolve(url).func.view_class, AccountDeletedPage)
+
+    def test_changeuserdetails_url_resolves(self):
+        url = reverse('tellings:changeuserdetails')
+        self.assertEquals(resolve(url).func.view_class, ChangeUserDetailsPage)
+
+    def test_checkuserpassword_url_resolves(self):
+        url = reverse('tellings:checkuserpassword')
+        self.assertEquals(resolve(url).func.view_class, CheckUserPassword)
+
+    def test_deleteuserpost_url_resolves(self):
+        url = reverse('tellings:deleteuserpost')
+        self.assertEquals(resolve(url).func.view_class, DeleteUserPost)
+
+    def test_edituserpost_url_resolves(self):
+        url = reverse('tellings:edituserpost')
+        self.assertEquals(resolve(url).func.view_class, EditUserPost)

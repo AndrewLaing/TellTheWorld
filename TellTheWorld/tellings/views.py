@@ -418,31 +418,6 @@ class ErrorPage(View):
             return HttpResponseRedirect('/loginpage/')
 
 
-class DeleteAccountPage(View):
-    """ Creates the Delete Account Page for the site """
-    @method_decorator(login_required)
-    def get(self, request):
-        """ Handles GET requests for the Delete Account page.
-
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        quote = get_random_quote()
-        return render(request, 'tellings/deleteAccount.html', {'quote': quote})
-
-    @method_decorator(login_required)
-    def post(self, request):
-        """ Handles POST requests for the Delete Account page.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        quote = get_random_quote()
-        return render(request, 'tellings/deleteAccount.html', {'quote': quote})
-
-
 class AccountDeletedPage(View):
     """ Creates the Account Deleted page for the website."""
     
@@ -765,7 +740,7 @@ class AddUpdatesForUsername(View):
 
 class CheckUserPassword(View):
     """ An AJAX handler used to check a user's password.
-        Used in the Delete Account modal"""
+        Used by the Delete Account modal. """
 
     @method_decorator(login_required)
     def get(self, request):
@@ -807,11 +782,6 @@ class CheckUserPassword(View):
         else:
             return HttpResponse('False')
 
-
-
-# ===================================================================================
-# ===================================================================================
-# ===================================================================================0
 
 class DeleteUserPost(View):
     """ An AJAX handler used to delete a post made by the currently
@@ -858,7 +828,7 @@ class DeleteUserPost(View):
         return username == currentUser
 
     def getUsernameForPostID(self, in_postID):
-        """ Add a description.
+        """ Returns the name of the user who made the post.
         """
         try:
             id = int(in_postID)
@@ -877,13 +847,6 @@ class DeleteUserPost(View):
             return True
         except:
             return False
-
-
-
-# ===================================================================================
-# ===================================================================================
-# ===================================================================================
-
 
 
 class EditUserPost(View):
@@ -914,6 +877,7 @@ class EditUserPost(View):
             postText = request.POST.get('postText')
             currentUser = request.user.username
             username = self.getUsernameForPostID(postID)
+
             # Check that the post was made by the user deleting it
             if(self.postWasMadeByCurrentUser(username, currentUser)):
                 print(postText)
@@ -927,14 +891,16 @@ class EditUserPost(View):
         else:
             return HttpResponseRedirect('/errorpage/')
 
-
     def postWasMadeByCurrentUser(self, username, currentUser):
         """ Add a description.
         """
         return username == currentUser
 
     def getUsernameForPostID(self, in_postID):
-        """ Add a description.
+        """ Returns the name of the user who made a specific post.
+
+            :param request: The unique identifier for a Posts record.
+            :returns: The name of the user who made the post.        
         """
         try:
             id = int(in_postID)

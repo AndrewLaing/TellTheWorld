@@ -62,7 +62,7 @@ $(document).ready(function(){
     $.confirm_deleteAccount = function (data) {
         if (data === 'True') {
             if (confirm("Are you sure you want to delete your account?")) {
-                alert("You're account will now be deleted!");
+                alert("Your account will now be deleted!");
                 $("#deleteAccountModal").modal('toggle');
                 $.delete_user_account();
                 return true;

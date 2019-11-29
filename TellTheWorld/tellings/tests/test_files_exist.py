@@ -2,7 +2,7 @@
 # Filename:     test_files_exist.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 25/08/2019
+# Last Updated: 29/11/2019
 # Description:  Tests that include and static files used by the site
 #               are accessible
 """
@@ -30,6 +30,7 @@ class tellingsFilesExistTests(TestCase):
                                'databaseQueries.py',
                                'forms.py',
                                'models.py',
+                               'page_extras.py',
                                'urls.py',
                                'views.py' ]
 

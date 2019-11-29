@@ -64,7 +64,7 @@ class CreateUpdatesHTMLTests(TestCase):
     def test_createInnerHTML(self):
         self.createNewUpdate()
         postDetails = DBQ.getAllPostDetails()
-        result = CU.createInnerHTML(postDetails)
+        result = CU.createInnerHTML(postDetails, self.user1.username)
         self.assertTrue((self.user1.username in result), "Username '%s' not found in HTML" % self.user1.username)
         self.assertTrue((self.test_postTitle1 in result), "Post title '%s' not found in HTML" % self.test_postTitle1)
         self.assertTrue((self.test_postText1 in result), "Post text '%s' not found in HTML" % self.test_postText1)
@@ -72,7 +72,7 @@ class CreateUpdatesHTMLTests(TestCase):
             self.assertTrue((tag in result), "Tag '%s' not found in HTML" % tag)
 
     def test_createInnerHTML_without_postDetails(self):
-        result = CU.createInnerHTML(self.test_postDetails_empty)
+        result = CU.createInnerHTML(self.test_postDetails_empty, self.user1.username)
         self.assertTrue((self.no_results_text in result), "'%s' not found in HTML" % self.no_results_text)
 
 

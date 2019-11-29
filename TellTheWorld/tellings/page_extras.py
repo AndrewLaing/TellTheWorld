@@ -1,4 +1,14 @@
-﻿random_quotes = [
+﻿"""
+# Filename:     page_extras.py
+# Author:       Andrew Laing
+# Email:        parisianconnections@gmail.com
+# Last Updated: 29/11/2019
+# Description:  Extra data used on the pages.
+#               At present this contains the random quotes used in the header of each page.
+"""
+
+
+random_quotes = [
     "\"I am no bird; and no net ensnares me: I am a free human being with an independent will.\" - Charlotte Brontë, Jane Eyre",
     "\"Lock up your libraries if you like; but there is no gate, no lock, no bolt that you can set upon the freedom of my mind.\" ― Virginia Woolf, A Room of One's Own",
     "\"When a man is denied the right to live the life he believes in, he has no choice but to become an outlaw.\" ― Nelson Mandela", 

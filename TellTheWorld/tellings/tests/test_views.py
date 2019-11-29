@@ -2,7 +2,7 @@
 # Filename:     test_views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 03/09/2019
+# Last Updated: 29/11/2019
 # Description:  Test cases for tellings views
 """
 
@@ -206,8 +206,7 @@ class SignUpPageTests(TestCase):
 
     def test_signup_POST_valid(self):
         response = self.client.post(reverse('tellings:signup'), self.registration_data)
-        self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, 'tellings/index.html')
+        self.assertRedirects(response, reverse('tellings:index'))
 
     def test_signup_POST_invalid(self):
         response = self.client.post(reverse('tellings:signup'), self.registration_data_invalid)
