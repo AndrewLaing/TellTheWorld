@@ -1,7 +1,7 @@
 # Filename:     views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last updated: 05/09/2019
+# Last updated: 01/12/2019
 # Description:  Contains the views for the website.
 
 from django.contrib import messages
@@ -31,6 +31,24 @@ import random
 def get_random_quote():
     secure_random = random.SystemRandom()
     return secure_random.choice(random_quotes)
+
+
+def user_login(request):
+    """ Handles user authentication.
+
+    :param request: A dictionary-like object containing all HTTP POST parameters, 
+                    sent by a site user. 
+    :returns: A redirect to a HTML page.
+    """
+    username = request.POST['username']
+    password = request.POST['pwd']
+    user = authenticate(request, username=username, password=password)
+    if user is not None:
+        login(request, user)
+        return HttpResponseRedirect('/')
+    else:
+        return HttpResponseRedirect('/loginpage/')
+
 
 
 # #########################################################################################
@@ -157,7 +175,7 @@ class SignUpPage(View):
             return self.signUp(request)
 
         elif ('username' in request.POST) and ('pwd' in request.POST):
-            return self.login(request)
+            return user_login(request)
         else:
             return HttpResponseRedirect('/errorpage/')
 
@@ -181,21 +199,6 @@ class SignUpPage(View):
             messages.error(request, 'Please correct the error below.')
             return render(request, 'tellings/signup.html', {'form': form, 'quote': quote})
 
-    def login(self, request):
-        """ Handles user authentication.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        username = request.POST['username']
-        password = request.POST['pwd']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return HttpResponseRedirect('/')
-        else:
-            return HttpResponseRedirect('/loginpage/')
 
 
 class IndexPage(View):
@@ -219,26 +222,10 @@ class IndexPage(View):
         :returns: A HTML page.
         """
         if ('username' in request.POST) and ('pwd' in request.POST):
-            return self.login(request)
+            return user_login(request)
         else:
             quote = get_random_quote()
             return render(request, 'tellings/index.html', {'quote': quote})
-
-    def login(self, request):
-        """ Handles user authentication.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        username = request.POST['username']
-        password = request.POST['pwd']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return render(request, 'tellings/index.html')
-        else:
-            return HttpResponseRedirect('/loginpage/')
 
 
 class NewUpdatesPage(View):
@@ -303,25 +290,10 @@ class TagsPage(View):
         :returns: A HTML page.
         """
         if ('username' in request.POST) and ('pwd' in request.POST):
-            return self.login(request)
+            return user_login(request)
         else:
             return self.tagsPage(request)
 
-    def login(self, request):
-        """ Handles user authentication.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        username = request.POST['username']
-        password = request.POST['pwd']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return HttpResponseRedirect('/')
-        else:
-            return HttpResponseRedirect('/loginpage/')
 
     def tagsPage(self, request):
         """ Creates and returns the Tags page.
@@ -396,26 +368,10 @@ class ErrorPage(View):
         :returns: A HTML page.
         """
         if ('username' in request.POST) and ('pwd' in request.POST):
-            return self.login(request)
+            return user_login(request)
         else:
             quote = get_random_quote()
             return render(request, 'tellings/errorPage.html', {'quote': quote})
-
-    def login(self, request):
-        """ Handles user authentication.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        username = request.POST['username']
-        password = request.POST['pwd']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return HttpResponseRedirect('/')
-        else:
-            return HttpResponseRedirect('/loginpage/')
 
 
 class AccountDeletedPage(View):
@@ -784,8 +740,7 @@ class CheckUserPassword(View):
 
 
 class DeleteUserPost(View):
-    """ An AJAX handler used to delete a post made by the currently
-        logged in user.
+    """ An AJAX handler used to delete posts for the current user.
     """
 
     @method_decorator(login_required)
@@ -850,8 +805,7 @@ class DeleteUserPost(View):
 
 
 class EditUserPost(View):
-    """ An AJAX handler used to delete a post made by the currently
-        logged in user.
+    """ An AJAX handler used to delete posts made by the current user.
     """
 
     @method_decorator(login_required)
@@ -870,7 +824,7 @@ class EditUserPost(View):
 
         :param request: A dictionary-like object containing all HTTP parameters, 
                         sent by a site user. 
-        :returns: A string 'True' if the password is valid, otherwise 'False'.
+        :returns: A string 'True' if the post could be edited, otherwise an error message.
         """
         if ('postID' in request.POST and 'postText' in request.POST):
             postID = request.POST.get('postID')

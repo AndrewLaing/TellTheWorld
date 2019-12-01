@@ -2,7 +2,7 @@
 # Filename:     test_views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 29/11/2019
+# Last Updated: 01/12/2019
 # Description:  Test cases for tellings views
 """
 
@@ -126,13 +126,6 @@ class ChangePasswordPageTests(TestCase):
             'new_password1': 'ch@n63d70n3w',
             'new_password1': 'ch@n63d70n3w'
         }
-
-    def check_templates_are_included(self, response, template):
-        self.assertTemplateUsed(response, template)
-        self.assertTemplateUsed(response, 'tellings/base.html')
-        self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
-        self.assertTemplateUsed(response, 'tellings/includes/modals.html')
-        self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
 
     def check_templates_are_included(self, response, template):
         self.assertTemplateUsed(response, template)
@@ -278,7 +271,7 @@ class IndexPageViewTests(TestCase):
         user = User.objects.get(username=self.credentials['username'])
         response = self.client.post(reverse('tellings:index'), self.credentials)
         self.assertEqual(int(self.client.session['_auth_user_id']), user.pk)
-        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, reverse('tellings:index'))
         
     def test_index_POST_invalid_login(self):
         self.client.logout()
