@@ -16,11 +16,16 @@ $(document).ready(function(){
 
 
     /**
-     * Opens the loginModal
+     * Loads the loginModal into the page and shows it.
      */
-    $("#loginBtn").click(function(){
-        $("#loginModal").modal();
-    });
+    $("#loginBtn").on("click", function(e) {   
+        $('#modal_container').empty();
+
+        $('#modal_container').load("/loginmodal/",function(result){
+            $('#loginModal').modal('show');
+        });
+    }); 
+
 
 
     /**
@@ -33,10 +38,14 @@ $(document).ready(function(){
 
 
     /**
-     * Opens the deleteAccountModal
+     * Loads the deleteAccountModal into the page and shows it. 
      */
     $("#deleteAccountBtn").click(function(){
-        $("#deleteAccountModal").modal();
+        $('#modal_container').empty();
+
+        $('#modal_container').load("/deleteaccountmodal/",function(result){
+            $('#deleteAccountModal').modal('show');
+        });
     });
 
 
@@ -112,8 +121,8 @@ $(document).ready(function(){
 
 
     /**
-     * Checks that the user has filled in all fields 
-     * in the addUpdateModal before submission.
+     * Checks that the user has entered their password correctly
+     * before the accopunt can be deleted.
      */
     $.validate_deleteAccount = function () {
         var password = $("#pwd_deleteModal").val()
@@ -167,6 +176,19 @@ $(document).ready(function(){
     })
 
 
+
+    /**
+     * Loads the addUpdateModal into the page and shows it. 
+     */
+    $.load_addUpdateModal = function() {
+        $('#modal_container').empty();
+
+        $('#modal_container').load("/addupdatemodal/",function(result){
+            $('#addUpdateModal').modal('show');
+        });
+    };
+
+
     /**
      * Opens the addUpdateModal if the user has not posted today.
      */
@@ -182,7 +204,7 @@ $(document).ready(function(){
                     alert("Database error: please contact the administrator.");    
                 } else {
                     // Show the add update modal 
-                    $("#addUpdateModal").modal();
+                    $.load_addUpdateModal();
                 }   
             },
             error: function () {
@@ -268,7 +290,7 @@ $(document).ready(function(){
      * for their post on the addUpdateModal when they leave the
      * postTitle field.
      */
-    $("#postTitle").change(function() {
+    $(document).on('change', "#postTitle", function (e) {
         var p_postTitle = $("#postTitle").val();
         var csrftoken = getCookie('csrftoken');
 

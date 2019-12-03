@@ -863,3 +863,82 @@ class EditUserPost(View):
             return username
         except:
             return None
+
+
+
+# ==========================================================================
+class LoginModal(View):
+    """ An AJAX handler used to add the login modal to pages.
+    """
+
+    def get(self, request):
+        """ Handles GET requests.
+
+        :param request: A dictionary-like object containing all HTTP parameters, 
+                        sent by a site user. 
+        :returns: A HTML page.
+        """
+        return render(request, 'tellings/includes/login_modal.html')
+
+    def post(self, request):
+        """ Handles POST requests.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters, 
+                        sent by a site user. 
+        :returns: A HTML page.
+        """
+        return render(request, 'tellings/includes/login_modal.html')
+
+# ==========================================================================
+class DeleteAccountModal(View):
+    """ An AJAX handler used to add the delete account modal to pages.
+    """
+    @method_decorator(login_required)
+    def get(self, request):
+        """ Handles GET requests.
+
+        :param request: A dictionary-like object containing all HTTP parameters, 
+                        sent by a site user. 
+        :returns: A HTML page.
+        """
+        return render(request, 'tellings/includes/deleteAccount_modal.html')
+
+    @method_decorator(login_required)
+    def post(self, request):
+        """ Handles POST requests.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters, 
+                        sent by a site user. 
+        :returns: A HTML page.
+        """
+        return render(request, 'tellings/includes/deleteAccount_modal.html')
+
+# ==========================================================================
+class AddUpdateModal(View):
+    """ An AJAX handler used to add the login modal to pages.
+    """
+
+    @method_decorator(login_required)
+    def get(self, request):
+        """ Handles GET requests.
+
+        :param request: A dictionary-like object containing all HTTP parameters, 
+                        sent by a site user. 
+        :returns: A HTML page.
+        """
+        # Ensure that the user has not posted today
+        current_user_id = request.user.id
+        if DBQ.userHasPostedToday(current_user_id):
+            return False
+
+        return render(request, 'tellings/includes/addUpdate_modal.html')
+
+    @method_decorator(login_required)
+    def post(self, request):
+        """ Handles POST requests.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters, 
+                        sent by a site user. 
+        :returns: A HTML page.
+        """
+        return render(request, 'tellings/includes/addUpdate_modal.html')

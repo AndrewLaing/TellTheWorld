@@ -2,7 +2,7 @@
 # Filename:     test_views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 01/12/2019
+# Last Updated: 03/12/2019
 # Description:  Test cases for tellings views
 """
 
@@ -36,7 +36,6 @@ class LoginpageTests(TestCase):
         self.assertTemplateUsed(response, template)
         self.assertTemplateUsed(response, 'tellings/base.html')
         self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
-        self.assertTemplateUsed(response, 'tellings/includes/modals.html')
         self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
 
     def test_loginpage_GET_loggedout(self):
@@ -76,7 +75,6 @@ class ChangeUserDetailsPageTests(TestCase):
         self.assertTemplateUsed(response, template)
         self.assertTemplateUsed(response, 'tellings/base.html')
         self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
-        self.assertTemplateUsed(response, 'tellings/includes/modals.html')
         self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
 
     def test_changeuserdetails_GET_loggedout(self):
@@ -131,7 +129,6 @@ class ChangePasswordPageTests(TestCase):
         self.assertTemplateUsed(response, template)
         self.assertTemplateUsed(response, 'tellings/base.html')
         self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
-        self.assertTemplateUsed(response, 'tellings/includes/modals.html')
         self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
 
     def test_changepassword_GET_loggedout(self):
@@ -177,7 +174,6 @@ class SignUpPageTests(TestCase):
         self.assertTemplateUsed(response, template)
         self.assertTemplateUsed(response, 'tellings/base.html')
         self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
-        self.assertTemplateUsed(response, 'tellings/includes/modals.html')
         self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
 
     def test_signup_GET_loggedout(self):
@@ -241,7 +237,6 @@ class IndexPageViewTests(TestCase):
         self.assertTemplateUsed(response, template)
         self.assertTemplateUsed(response, 'tellings/base.html')
         self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
-        self.assertTemplateUsed(response, 'tellings/includes/modals.html')
         self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
 
     def test_index_GET_loggedout(self):
@@ -296,7 +291,6 @@ class NewUpdatesViewTests(TestCase):
         self.assertTemplateUsed(response, template)
         self.assertTemplateUsed(response, 'tellings/base.html')
         self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
-        self.assertTemplateUsed(response, 'tellings/includes/modals.html')
         self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
 
     def test_newupdates_GET_loggedout(self):
@@ -341,7 +335,6 @@ class TagsViewTests(TestCase):
         self.assertTemplateUsed(response, template)
         self.assertTemplateUsed(response, 'tellings/base.html')
         self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
-        self.assertTemplateUsed(response, 'tellings/includes/modals.html')
         self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
 
 
@@ -385,7 +378,6 @@ class MyUpdatesViewTests(TestCase):
         self.assertTemplateUsed(response, template)
         self.assertTemplateUsed(response, 'tellings/base.html')
         self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
-        self.assertTemplateUsed(response, 'tellings/includes/modals.html')
         self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
 
     def test_myupdates_GET_loggedout(self):
@@ -431,7 +423,6 @@ class ErrorPageViewTests(TestCase):
         self.assertTemplateUsed(response, template)
         self.assertTemplateUsed(response, 'tellings/base.html')
         self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
-        self.assertTemplateUsed(response, 'tellings/includes/modals.html')
         self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
 
     def test_errorpage_GET(self):

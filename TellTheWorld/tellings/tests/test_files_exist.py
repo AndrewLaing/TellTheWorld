@@ -2,7 +2,7 @@
 # Filename:     test_files_exist.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 29/11/2019
+# Last Updated: 03/12/2019
 # Description:  Tests that include and static files used by the site
 #               are accessible
 """
@@ -71,7 +71,6 @@ class IncludedFilesExistTests(TestCase):
         cls.base_html_files = [ 'tellings/includes/footerContents.html',
                                 'tellings/includes/formErrors.html',
                                 'tellings/includes/JSMessagePopup.html',
-                                'tellings/includes/modals.html',
                                 'tellings/includes/navbar.html',
                                   ]
 
