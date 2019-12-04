@@ -15,12 +15,67 @@ from datetime import datetime, date, timedelta
 from tellings.models import Posts, Tags, Tagmap
 
 
-class LoginpageTests(TestCase):
+class SharedTestMethods(TestCase):
+    """ Shared helper functions used by the classes in this file """
+    def check_templates_are_included(self, response, template):
+        """ Checks that the page and default templates are included
+            on the tested page """
+        self.assertTemplateUsed(response, template)
+        self.assertTemplateUsed(response, 'tellings/base.html')
+        self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
+        self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
+
+    def createPostRecord(self, userID=1, dateOfPost='2019-08-02', 
+                         postTitle='Post Title', postText='Post Text'):
+        """ Creates a new Posts record """
+        return Posts.objects.create(user_id=userID, dateOfPost=dateOfPost, 
+                     postTitle=postTitle, postText=postText)
+
+    def createTagRecord(self, tagName='Tag1'):
+        """ Creates a new Tags record """
+        return Tags.objects.create(tagName=tagName)    
+
+    def createTagmapRecord(self, postID=1, tagID=1):
+        """ Creates a new Tagmap record """
+        return Tagmap.objects.create(postID=postID, tagID=tagID)
+
+    def createNewUpdates(self):
+        """ Creates the records for two test updates """
+        post1 = self.createPostRecord(userID=self.user1.id, dateOfPost='2019-08-02', 
+                              postTitle=self.test_postTitle1, postText=self.test_postText1)
+        post2 = self.createPostRecord(userID=self.user2.id, dateOfPost='2019-08-02', 
+                              postTitle=self.test_postTitle2, postText=self.test_postText2)
+
+        skipCreate = True
+        for tag in self.test_postTags:
+            tg = self.createTagRecord(tag)
+            if skipCreate:
+                self.createTagmapRecord(post2, tg)
+                skipCreate = False
+            else:
+                self.createTagmapRecord(post1, tg)
+                self.createTagmapRecord(post2, tg)
+
+    def get_page_loggedin(self, viewname, templateURL):
+        """ Logs into an account, GETs a page, and tests that the page
+            is returned correctly with its template. """
+        self.client.login(username=self.credentials['username'], 
+                          password=self.credentials['pwd'])
+        response = self.client.get((reverse(viewname)), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.check_templates_are_included(response, templateURL)
+
+
+
+
+class LoginpageTests(SharedTestMethods):
     """Tests for the Loginpage view."""
 
     @classmethod
     def setUpTestData(cls):        
         """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:loginpage'
+        cls.templateURL = 'tellings/loginpage.html'
         cls.user1 = User.objects.create_user('testuser1', 'testUser1@email.com', '@myp455w0rd')
         cls.credentials = {
             'username': 'testuser1',
@@ -32,74 +87,61 @@ class LoginpageTests(TestCase):
             'username': 'fakeuser',
             'password': '@myp455w0rd'}
 
-    def check_templates_are_included(self, response, template):
-        self.assertTemplateUsed(response, template)
-        self.assertTemplateUsed(response, 'tellings/base.html')
-        self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
-        self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
-
     def test_loginpage_GET_loggedout(self):
-        response = self.client.get((reverse('tellings:loginpage')), follow=True)
+        response = self.client.get((reverse(self.viewname)), follow=True)
         self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, 'tellings/loginpage.html')
+        self.check_templates_are_included(response, self.templateURL)
 
     def test_loginpage_GET_loggedin(self):
-        self.client.login(username=self.credentials['username'], 
-                          password=self.credentials['pwd'])
-        response = self.client.get((reverse('tellings:loginpage')), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, 'tellings/loginpage.html')
+        # If logged in opens the home page
+        self.get_page_loggedin(self.viewname, self.templateURL)
 
-    def test_signup_POST_valid(self):
-        response = self.client.post(reverse('tellings:loginpage'), self.login_credentials, follow=True)
+    def test_loginpage_POST_valid(self):
+        response = self.client.post(reverse(self.viewname), self.login_credentials, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, 'tellings/index.html')
+        # redirects to home page after valid login
+        indexpage = IndexPageViewTests()
+        self.check_templates_are_included(response, indexpage.templateURL)
 
-    def test_signup_POST_invalid(self):
-        response = self.client.post(reverse('tellings:loginpage'), self.login_credentials_invalid, follow=True)
+    def test_loginpage_POST_invalid(self):
+        response = self.client.post(reverse(self.viewname), self.login_credentials_invalid, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, 'tellings/loginpage.html')
+        self.check_templates_are_included(response, self.templateURL)
 
-class ChangeUserDetailsPageTests(TestCase):
+class ChangeUserDetailsPageTests(SharedTestMethods):
     """Tests for the ChangeUserDetails view."""
 
     @classmethod
     def setUpTestData(cls):        
         """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:changeuserdetails'
+        cls.templateURL = 'tellings/changeUserDetails.html'
         cls.user1 = User.objects.create_user('testuser1', 'testUser1@email.com', '@myp455w0rd')
         cls.credentials = {
             'username': 'testuser1',
             'pwd': '@myp455w0rd'}
 
-    def check_templates_are_included(self, response, template):
-        self.assertTemplateUsed(response, template)
-        self.assertTemplateUsed(response, 'tellings/base.html')
-        self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
-        self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
-
     def test_changeuserdetails_GET_loggedout(self):
-        response = self.client.get((reverse('tellings:changeuserdetails')), follow=True)
+        response = self.client.get((reverse(self.viewname)), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/loginpage/?next=/changeuserdetails/')
 
     def test_changeuserdetails_GET_loggedin(self):
-        self.client.login(username=self.credentials['username'], 
-                          password=self.credentials['pwd'])
-        response = self.client.get((reverse('tellings:changeuserdetails')), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, 'tellings/changeUserDetails.html')
+        self.get_page_loggedin(self.viewname, self.templateURL)
 
     def test_changeuserdetails_POST_loggedout(self):
-        response = self.client.post(reverse('tellings:changeuserdetails'), follow=True)
+        response = self.client.post(reverse(self.viewname), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/loginpage/?next=/changeuserdetails/')
 
-class ChangePasswordPageTests(TestCase):
+class ChangePasswordPageTests(SharedTestMethods):
     """Tests for the ChangePassword view."""
 
     @classmethod
     def setUpTestData(cls):        
         """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:changepassword'
+        cls.templateURL = 'tellings/changePassword.html'
         cls.user1 = User.objects.create_user('testuser1', 'testUser1@email.com', '@myp455w0rd')
         cls.credentials = {
             'username': 'testuser1',
@@ -125,35 +167,29 @@ class ChangePasswordPageTests(TestCase):
             'new_password1': 'ch@n63d70n3w'
         }
 
-    def check_templates_are_included(self, response, template):
-        self.assertTemplateUsed(response, template)
-        self.assertTemplateUsed(response, 'tellings/base.html')
-        self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
-        self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
 
     def test_changepassword_GET_loggedout(self):
-        response = self.client.get((reverse('tellings:changepassword')), follow=True)
+        response = self.client.get((reverse(self.viewname)), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/loginpage/?next=/changepassword/')
 
     def test_changepassword_GET_loggedin(self):
-        self.client.login(username=self.credentials['username'], 
-                          password=self.credentials['pwd'])
-        response = self.client.get((reverse('tellings:changepassword')), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, 'tellings/changePassword.html')
+        self.get_page_loggedin(self.viewname, self.templateURL)
 
     def test_changepassword_POST_loggedout(self):
-        response = self.client.post(reverse('tellings:changepassword'), follow=True)
+        response = self.client.post(reverse(self.viewname), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/loginpage/?next=/changepassword/')
 
-class SignUpPageTests(TestCase):
+
+class SignUpPageTests(SharedTestMethods):
     """Tests for the SignUpPage view."""
 
     @classmethod
     def setUpTestData(cls):        
         """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:signup'
+        cls.templateURL = 'tellings/signup.html'
         cls.user1 = User.objects.create_user('testuser1', 'testUser1@email.com', '@myp455w0rd')
         cls.credentials = {
             'username': 'testuser1',
@@ -170,57 +206,51 @@ class SignUpPageTests(TestCase):
             'password1': '@myp455w0rd',
             'password2': '@myp455'}
 
-    def check_templates_are_included(self, response, template):
-        self.assertTemplateUsed(response, template)
-        self.assertTemplateUsed(response, 'tellings/base.html')
-        self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
-        self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
 
     def test_signup_GET_loggedout(self):
-        response = self.client.get((reverse('tellings:changepassword')), follow=True)
+        response = self.client.get((reverse(self.viewname)), follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertRedirects(response, '/loginpage/?next=/changepassword/')
+        self.check_templates_are_included(response, self.templateURL)
+
 
     def test_signup_GET_loggedin(self):
-        self.client.login(username=self.credentials['username'], 
-                          password=self.credentials['pwd'])
-        response = self.client.get((reverse('tellings:signup')), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, 'tellings/signup.html')
+        self.get_page_loggedin(self.viewname, self.templateURL)
 
     def test_signup_POST_no_data(self):
-        response = self.client.post(reverse('tellings:signup'), follow=True)
+        response = self.client.post(reverse(self.viewname), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, reverse('tellings:errorpage'))
 
     def test_signup_POST_valid(self):
-        response = self.client.post(reverse('tellings:signup'), self.registration_data)
+        response = self.client.post(reverse(self.viewname), self.registration_data)
         self.assertRedirects(response, reverse('tellings:index'))
 
     def test_signup_POST_invalid(self):
-        response = self.client.post(reverse('tellings:signup'), self.registration_data_invalid)
+        response = self.client.post(reverse(self.viewname), self.registration_data_invalid)
         self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, 'tellings/signup.html')
+        self.check_templates_are_included(response, self.templateURL)
         
     def test_signup_POST_valid_login(self):
         user = User.objects.get(username=self.credentials['username'])
-        response = self.client.post(reverse('tellings:signup'), self.credentials)
+        response = self.client.post(reverse(self.viewname), self.credentials)
         self.assertEqual(int(self.client.session['_auth_user_id']), user.pk)
         self.assertRedirects(response, reverse('tellings:index'))
         
     def test_signup_POST_invalid_login(self):
         self.client.logout()
-        response = self.client.post(reverse('tellings:signup'), 
+        response = self.client.post(reverse(self.viewname), 
                                     self.invalid_credentials, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, reverse('tellings:loginpage'))
 
-class IndexPageViewTests(TestCase):
+class IndexPageViewTests(SharedTestMethods):
     """Tests for the IndexPage view."""
 
     @classmethod
     def setUpTestData(cls):
         """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:index'
+        cls.templateURL = 'tellings/index.html'
         cls.user1 = User.objects.create_user('testuser1', 'testUser1@email.com', '@myp455w0rd')
         cls.credentials = {
             'username': 'testuser1',
@@ -233,183 +263,148 @@ class IndexPageViewTests(TestCase):
     def setUp(self):
         pass
 
-    def check_templates_are_included(self, response, template):
-        self.assertTemplateUsed(response, template)
-        self.assertTemplateUsed(response, 'tellings/base.html')
-        self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
-        self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
-
     def test_index_GET_loggedout(self):
-        response = self.client.get(reverse('tellings:index'))
+        response = self.client.get(reverse(self.viewname))
         self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, 'tellings/index.html')
+        self.check_templates_are_included(response, self.templateURL)
 
     def test_index_GET_loggedin(self):
-        self.client.login(username=self.credentials['username'], 
-                          password=self.credentials['pwd'])
-        response = self.client.get((reverse('tellings:index')))
-        self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, 'tellings/index.html')
+        self.get_page_loggedin(self.viewname, self.templateURL)
  
     def test_index_POST_no_data(self):
-        response = self.client.post(reverse('tellings:index'), follow=True)
+        response = self.client.post(reverse(self.viewname), follow=True)
         self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, 'tellings/index.html')
+        self.check_templates_are_included(response, self.templateURL)
 
     def test_index_POST_missing_data(self):
-        response = self.client.post(reverse('tellings:index'), 
+        response = self.client.post(reverse(self.viewname), 
                                     self.partial_credentials, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, 'tellings/index.html')
+        self.check_templates_are_included(response, self.templateURL)
         
     def test_index_POST_valid_login(self):
         user = User.objects.get(username=self.credentials['username'])
-        response = self.client.post(reverse('tellings:index'), self.credentials)
+        response = self.client.post(reverse(self.viewname), self.credentials)
         self.assertEqual(int(self.client.session['_auth_user_id']), user.pk)
-        self.assertRedirects(response, reverse('tellings:index'))
+        self.assertRedirects(response, reverse(self.viewname))
         
     def test_index_POST_invalid_login(self):
         self.client.logout()
-        response = self.client.post(reverse('tellings:index'), 
+        response = self.client.post(reverse(self.viewname), 
                                     self.invalid_credentials, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, reverse('tellings:loginpage'))
 
-class NewUpdatesViewTests(TestCase):
+class NewUpdatesViewTests(SharedTestMethods):
     """Tests for the NewUpdates view."""
 
     @classmethod
     def setUpTestData(cls):        
         """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:newupdates'
+        cls.templateURL = 'tellings/newupdates.html'
         cls.user1 = User.objects.create_user('testuser1', 'testUser1@email.com', '@myp455w0rd')
         cls.credentials = {
             'username': 'testuser1',
             'pwd': '@myp455w0rd'}
 
 
-    def check_templates_are_included(self, response, template):
-        self.assertTemplateUsed(response, template)
-        self.assertTemplateUsed(response, 'tellings/base.html')
-        self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
-        self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
-
     def test_newupdates_GET_loggedout(self):
-        response = self.client.get((reverse('tellings:newupdates')), follow=True)
+        response = self.client.get((reverse(self.viewname)), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/loginpage/?next=/newupdates/')
 
     def test_newupdates_GET_loggedin(self):
-        self.client.login(username=self.credentials['username'], 
-                          password=self.credentials['pwd'])
-        response = self.client.get((reverse('tellings:newupdates')), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, 'tellings/newupdates.html')
+        self.get_page_loggedin(self.viewname, self.templateURL)
 
     def test_newupdates_POST_loggedout(self):
-        response = self.client.post(reverse('tellings:newupdates'), follow=True)
+        response = self.client.post(reverse(self.viewname), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/loginpage/?next=/newupdates/')
 
     def test_newupdates_POST_loggedin(self):
         self.client.login(username=self.credentials['username'], 
                           password=self.credentials['pwd'])
-        response = self.client.post(reverse('tellings:newupdates'), follow=True)
+        response = self.client.post(reverse(self.viewname), follow=True)
         self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, 'tellings/newupdates.html')
+        self.check_templates_are_included(response, self.templateURL)
         
-class TagsViewTests(TestCase):
+class TagsViewTests(SharedTestMethods):
     """Tests for the Tags view."""
 
     @classmethod
     def setUpTestData(cls):
+        cls.viewname = 'tellings:tags'
+        cls.templateURL = 'tellings/tags.html'
         cls.user1 = User.objects.create_user('testuser1', 'testUser1@email.com', '@myp455w0rd')
         cls.credentials = {
             'username': 'testuser1',
             'pwd': '@myp455w0rd'}
 
-
     def setUp(self):
         pass
 
-    def check_templates_are_included(self, response, template):
-        self.assertTemplateUsed(response, template)
-        self.assertTemplateUsed(response, 'tellings/base.html')
-        self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
-        self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
-
-
     def test_tags_GET_loggedout(self):
-        response = self.client.get((reverse('tellings:tags')), follow=True)
+        response = self.client.get((reverse(self.viewname)), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/loginpage/?next=/tags/')
 
     def test_tags_GET_loggedin(self):
-        self.client.login(username=self.credentials['username'], 
-                          password=self.credentials['pwd'])
-        response = self.client.get((reverse('tellings:tags')), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, 'tellings/tags.html')
+        self.get_page_loggedin(self.viewname, self.templateURL)
 
     def test_tags_POST_loggedout(self):
-        response = self.client.post(reverse('tellings:tags'), follow=True)
+        response = self.client.post(reverse(self.viewname), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/loginpage/?next=/tags/')
 
     def test_tags_POST_loggedin(self):
         self.client.login(username=self.credentials['username'], 
                           password=self.credentials['pwd'])
-        response = self.client.post(reverse('tellings:tags'), follow=True)
+        response = self.client.post(reverse(self.viewname), follow=True)
         self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, 'tellings/tags.html')
+        self.check_templates_are_included(response, self.templateURL)
 
-class MyUpdatesViewTests(TestCase):
+class MyUpdatesViewTests(SharedTestMethods):
     """Tests for the NewUpdates view."""
 
     @classmethod
     def setUpTestData(cls):        
         """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:myupdates'
+        cls.templateURL = 'tellings/myupdates.html'
         cls.user1 = User.objects.create_user('testuser1', 'testUser1@email.com', '@myp455w0rd')
         cls.credentials = {
             'username': 'testuser1',
             'pwd': '@myp455w0rd'}
 
-
-    def check_templates_are_included(self, response, template):
-        self.assertTemplateUsed(response, template)
-        self.assertTemplateUsed(response, 'tellings/base.html')
-        self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
-        self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
-
     def test_myupdates_GET_loggedout(self):
-        response = self.client.get((reverse('tellings:myupdates')), follow=True)
+        response = self.client.get((reverse(self.viewname)), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/loginpage/?next=/myupdates/')
 
     def test_myupdates_GET_loggedin(self):
-        self.client.login(username=self.credentials['username'], 
-                          password=self.credentials['pwd'])
-        response = self.client.get((reverse('tellings:myupdates')), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, 'tellings/myupdates.html')
+        self.get_page_loggedin(self.viewname, self.templateURL)
 
     def test_myupdates_POST_loggedout(self):
-        response = self.client.post(reverse('tellings:myupdates'), follow=True)
+        response = self.client.post(reverse(self.viewname), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/loginpage/?next=/myupdates/')
 
     def test_myupdates_POST_loggedin(self):
         self.client.login(username=self.credentials['username'], 
                           password=self.credentials['pwd'])
-        response = self.client.post(reverse('tellings:myupdates'), follow=True)
+        response = self.client.post(reverse(self.viewname), follow=True)
         self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, 'tellings/myupdates.html')
+        self.check_templates_are_included(response, self.templateURL)
 
-class ErrorPageViewTests(TestCase):
+class ErrorPageViewTests(SharedTestMethods):
     """Tests for the ErrorPage view."""
 
     @classmethod
     def setUpTestData(cls):        
         """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:errorpage'
+        cls.templateURL = 'tellings/errorPage.html'
         cls.user1 = User.objects.create_user('testuser1', 'testUser1@email.com', '@myp455w0rd')
         cls.credentials = {
             'username': 'testuser1',
@@ -419,42 +414,40 @@ class ErrorPageViewTests(TestCase):
             'pwd': '@b4dp455w0rd'}
         cls.partial_credentials = {'username': 'testuser3'}
 
-    def check_templates_are_included(self, response, template):
-        self.assertTemplateUsed(response, template)
-        self.assertTemplateUsed(response, 'tellings/base.html')
-        self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
-        self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
+    def test_errorpage_GET_loggedin(self):
+        self.get_page_loggedin(self.viewname, self.templateURL)
 
-    def test_errorpage_GET(self):
-        response = self.client.get((reverse('tellings:errorpage')), follow=True)
+    def test_errorpage_GET_loggedout(self):
+        response = self.client.get((reverse(self.viewname)), follow=True)
         self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, 'tellings/errorPage.html')
+        self.check_templates_are_included(response, self.templateURL)
 
     def test_errorpage_POST_no_data(self):
-        response = self.client.post(reverse('tellings:errorpage'), follow=True)
+        response = self.client.post(reverse(self.viewname), follow=True)
         self.assertEqual(response.status_code, 200)
 
     def test_errorpage_POST_missing_data(self):
-        response = self.client.post(reverse('tellings:errorpage'), 
+        response = self.client.post(reverse(self.viewname), 
                                     self.partial_credentials, follow=True)
         self.assertEqual(response.status_code, 200)
         
     def test_errorpage_POST_valid_login(self):
         user = User.objects.get(username=self.credentials['username'])
-        response = self.client.post(reverse('tellings:errorpage'), 
+        response = self.client.post(reverse(self.viewname), 
                                     self.credentials, follow=True)
         self.assertEqual(int(self.client.session['_auth_user_id']), user.pk)
         self.assertEqual(response.status_code, 200)
+        # redirects to home page after valid login
         self.assertRedirects(response, reverse('tellings:index'))
         
     def test_errorpage_POST_invalid_login(self):
         self.client.logout()
-        response = self.client.post(reverse('tellings:errorpage'), 
+        response = self.client.post(reverse(self.viewname), 
                                     self.invalid_credentials, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, '/loginpage/')
 
-class HasPostedTodayViewTests(TestCase):
+class HasPostedTodayViewTests(SharedTestMethods):
     """Tests for the HasPostedToday view."""
 
     @classmethod
@@ -469,11 +462,6 @@ class HasPostedTodayViewTests(TestCase):
         cls.test_postDate = today.strftime("%Y-%m-%d")
         cls.test_postTitle = 'PT_title'
         cls.test_postText = 'PT_text'
-
-    def createPostRecord(self, userID=1, dateOfPost='2019-08-02', 
-                   postTitle='Post Title', postText='Post Text'):
-        return Posts.objects.create(user_id=userID, dateOfPost=dateOfPost, 
-                     postTitle=postTitle, postText=postText)
 
     def test_haspostedtoday_GET_loggedout(self):
         response = self.client.get((reverse('tellings:haspostedtoday')), follow=True)
@@ -508,7 +496,7 @@ class HasPostedTodayViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "True")
 
-class TitleExistsViewTests(TestCase):
+class TitleExistsViewTests(SharedTestMethods):
     """Tests for the HasPostedToday view."""
 
     @classmethod
@@ -524,12 +512,6 @@ class TitleExistsViewTests(TestCase):
 
         cls.test_notexists = { 'title': 'Not exists'}
         cls.test_exists = { 'title': cls.test_postTitle }
-
-
-    def createPostRecord(self, userID=1, dateOfPost='2019-08-02', 
-                   postTitle='Post Title', postText='Post Text'):
-        return Posts.objects.create(user_id=userID, dateOfPost=dateOfPost, 
-                     postTitle=postTitle, postText=postText)
 
     def test_titleexists_GET_loggedout(self):
         response = self.client.get(reverse('tellings:titleexists'), follow=True)
@@ -575,7 +557,7 @@ class TitleExistsViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "True")
 
-class AddNewUpdateViewTests(TestCase):
+class AddNewUpdateViewTests(SharedTestMethods):
     """Tests for the AddNewUpdate view."""
 
     @classmethod
@@ -670,7 +652,7 @@ class AddNewUpdateViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, reverse('tellings:errorpage'))
 
-class AddUpdatesForTagViewTests(TestCase):
+class AddUpdatesForTagViewTests(SharedTestMethods):
     """Tests for the AddUpdatesForTag view."""
 
     @classmethod
@@ -702,34 +684,6 @@ class AddUpdatesForTagViewTests(TestCase):
         }
 
         cls.test_no_results_HTML = '<h1>No results found!</h1>'
-
-        
-    def createPostRecord(self, userID=1, dateOfPost='2019-08-02', 
-                   postTitle='Post Title', postText='Post Text'):
-        return Posts.objects.create(user_id=userID, dateOfPost=dateOfPost, 
-                     postTitle=postTitle, postText=postText)
-
-    def createTagRecord(self, tagName='Tag1'):
-        return Tags.objects.create(tagName=tagName)
-
-    def createTagmapRecord(self, postID=1, tagID=1):
-        return Tagmap.objects.create(postID=postID, tagID=tagID)
-
-    def createNewUpdates(self):
-        post1 = self.createPostRecord(userID=self.user1.id, dateOfPost='2019-08-02', 
-                              postTitle=self.test_postTitle1, postText=self.test_postText1)
-        post2 = self.createPostRecord(userID=self.user2.id, dateOfPost='2019-08-02', 
-                              postTitle=self.test_postTitle2, postText=self.test_postText2)
-
-        skipCreate = True
-        for tag in self.test_postTags:
-            tg = self.createTagRecord(tag)
-            if skipCreate:
-                self.createTagmapRecord(post2, tg)
-                skipCreate = False
-            else:
-                self.createTagmapRecord(post1, tg)
-                self.createTagmapRecord(post2, tg)
 
     def test_addupdatesfortag_GET_loggedout(self):
         response = self.client.get(reverse('tellings:addupdatesfortag'), follow=True)
@@ -773,7 +727,7 @@ class AddUpdatesForTagViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.test_no_results_HTML)
        
-class AddUpdatesForTagByLoggedInUserViewTests(TestCase):
+class AddUpdatesForTagByLoggedInUserViewTests(SharedTestMethods):
     """Tests for the AddUpdatesForTagByLoggedInUser view."""
 
     @classmethod
@@ -805,33 +759,6 @@ class AddUpdatesForTagByLoggedInUserViewTests(TestCase):
             'postTag': cls.test_tag2,
         }
         cls.test_no_results_HTML = '<h1>No results found!</h1>'
-
-    def createPostRecord(self, userID=1, dateOfPost='2019-08-02', 
-                   postTitle='Post Title', postText='Post Text'):
-        return Posts.objects.create(user_id=userID, dateOfPost=dateOfPost, 
-                     postTitle=postTitle, postText=postText)
-
-    def createTagRecord(self, tagName='Tag1'):
-        return Tags.objects.create(tagName=tagName)
-
-    def createTagmapRecord(self, postID=1, tagID=1):
-        return Tagmap.objects.create(postID=postID, tagID=tagID)
-
-    def createNewUpdates(self):
-        post1 = self.createPostRecord(userID=self.user1.id, dateOfPost='2019-08-02', 
-                              postTitle=self.test_postTitle1, postText=self.test_postText1)
-        post2 = self.createPostRecord(userID=self.user2.id, dateOfPost='2019-08-02', 
-                              postTitle=self.test_postTitle2, postText=self.test_postText2)
-
-        skipCreate = True
-        for tag in self.test_postTags:
-            tg = self.createTagRecord(tag)
-            if skipCreate:
-                self.createTagmapRecord(post2, tg)
-                skipCreate = False
-            else:
-                self.createTagmapRecord(post1, tg)
-                self.createTagmapRecord(post2, tg)
 
     def test_addupdatesfortagbyloggedinuser_GET_loggedout(self):
         response = self.client.get(reverse('tellings:addupdatesfortagbyloggedinuser'), follow=True)
@@ -877,7 +804,7 @@ class AddUpdatesForTagByLoggedInUserViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.test_no_results_HTML)       
 
-class AddUpdatesForUsernameViewTests(TestCase):
+class AddUpdatesForUsernameViewTests(SharedTestMethods):
     """Tests for the AddUpdatesForUsername view."""
 
     @classmethod
@@ -909,33 +836,6 @@ class AddUpdatesForUsernameViewTests(TestCase):
             'username': 'NotAUsername'
         }
         cls.test_no_results_HTML = '<h1>No results found!</h1>'
-
-    def createPostRecord(self, userID=1, dateOfPost='2019-08-02', 
-                   postTitle='Post Title', postText='Post Text'):
-        return Posts.objects.create(user_id=userID, dateOfPost=dateOfPost, 
-                     postTitle=postTitle, postText=postText)
-
-    def createTagRecord(self, tagName='Tag1'):
-        return Tags.objects.create(tagName=tagName)
-
-    def createTagmapRecord(self, postID=1, tagID=1):
-        return Tagmap.objects.create(postID=postID, tagID=tagID)
-         
-    def createNewUpdates(self):
-        post1 = self.createPostRecord(userID=self.user1.id, dateOfPost='2019-08-02', 
-                              postTitle=self.test_postTitle1, postText=self.test_postText1)
-        post2 = self.createPostRecord(userID=self.user2.id, dateOfPost='2019-08-02', 
-                              postTitle=self.test_postTitle2, postText=self.test_postText2)
-
-        skipCreate = True
-        for tag in self.test_postTags:
-            tg = self.createTagRecord(tag)
-            if skipCreate:
-                self.createTagmapRecord(post2, tg)
-                skipCreate = False
-            else:
-                self.createTagmapRecord(post1, tg)
-                self.createTagmapRecord(post2, tg)
                 
     def test_addupdatesforusername_GET_loggedout(self):
         response = self.client.get(reverse('tellings:addupdatesforusername'), follow=True)

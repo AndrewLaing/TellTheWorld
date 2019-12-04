@@ -2,9 +2,8 @@
 # Filename:     test_files_exist.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 03/12/2019
-# Description:  Tests that include and static files used by the site
-#               are accessible
+# Last Updated: 04/12/2019
+# Description:  Tests that files used by the site are accessible.
 """
 
 import django
@@ -17,7 +16,7 @@ from django.template.loader import get_template
 import os
 
 class tellingsFilesExistTests(TestCase):
-    """Tests tellings folder files are available."""
+    """Tests that tellings folder files are available."""
 
     @classmethod
     def setUpTestData(cls):
@@ -40,11 +39,12 @@ class tellingsFilesExistTests(TestCase):
             self.assertTrue(os.path.isfile(fullpath), "File %s not found " % (fullpath))
 
 class TemplatesExistTests(TestCase):
-    """Tests included template files are available."""
+    """Tests that included template files are available."""
 
     @classmethod
     def setUpTestData(cls):
-        cls.template_files = [ 'tellings/base.html',
+        cls.template_files = [ 'tellings/accountDeleted.html',
+                               'tellings/base.html',
                                'tellings/changePassword.html',
                                'tellings/changeUserDetails.html',
                                'tellings/errorPage.html',
@@ -64,13 +64,16 @@ class TemplatesExistTests(TestCase):
 
 
 class IncludedFilesExistTests(TestCase):
-    """Tests included files are available."""
+    """Tests that included files are available."""
 
     @classmethod
     def setUpTestData(cls):
-        cls.base_html_files = [ 'tellings/includes/footerContents.html',
+        cls.base_html_files = [ 'tellings/includes/addUpdate_modal.html',
+                                'tellings/includes/deleteAccount_modal.html',
+                                'tellings/includes/footerContents.html',
                                 'tellings/includes/formErrors.html',
                                 'tellings/includes/JSMessagePopup.html',
+                                'tellings/includes/login_modal.html',
                                 'tellings/includes/navbar.html',
                                   ]
 
@@ -84,7 +87,7 @@ class IncludedFilesExistTests(TestCase):
         
 
 class StaticFilesExistTests(TestCase):
-    """Tests included static files are available."""
+    """Tests that included static files are available."""
 
     @classmethod
     def setUpTestData(cls):
@@ -93,7 +96,8 @@ class StaticFilesExistTests(TestCase):
                                'tellings/css/bootstrap.min.css.map',
                                'tellings/js/bootstrap.min.js',
                                'tellings/js/bootstrap-tagsinput.js']
-        cls.jquery_files =    ['tellings/js/jquery.min.js']
+        cls.jquery_files =    ['tellings/js/jquery.min.js',
+                               'tellings/js/jquery.redirect.js']
         cls.other_js_files =  ['tellings/js/typeahead.bundle.js',
                                'tellings/js/JQScripts.js']
         cls.other_css_files = ['tellings/css/style.css',
