@@ -24,7 +24,25 @@ class SharedVariables:
                      'email': 'testUser2@email.com',
                      'pwd': '@myp455w0rd'
     }
+    invalid_credentials = { 'username': 'fakeuser',
+                            'pwd': '@b4dp455w0rd'
+    }
+    partial_credentials = {'username': 'testuser1'}
 
+    today = date.today()
+    test_postDate = today.strftime("%Y-%m-%d")
+    test_postTitle = 'PT_title'
+    test_postText = 'PT_text'        
+    test_postTitle1 = 'PT_title_1'
+    test_postTitle2 = 'PT_title_2'
+    test_postText1 = 'PT_text_1'
+    test_postText2 = 'PT_text_2'
+    test_postTags = '["test","testing","this is a test"]'
+    test_postTags1 = ["qwertyuiop","testing","this is a test", "still a test"]
+    test_goodTag = test_postTags[0]
+    test_badTag = "NotATag"
+
+    test_no_results_HTML = '<h1>No results found!</h1>'
 
 class SharedTestMethods(TestCase):
     """ Shared helper functions used by the classes in this file """
@@ -159,10 +177,10 @@ class LoginpageTests(SharedTestMethods):
                                              cls.credentials['pwd'])   
         cls.login_credentials = {
             'username': 'testuser1',
-            'password': '@myp455w0rd'}       
-        cls.login_credentials_invalid = {
-            'username': 'fakeuser',
-            'password': '@myp455w0rd'}
+            'password': '@myp455w0rd'}   
+
+        cls.invalid_credentials = SV.invalid_credentials    
+
 
     def test_GET_loggedout(self):
         self.get_loggedout_tests()
@@ -179,7 +197,7 @@ class LoginpageTests(SharedTestMethods):
         self.check_templates_are_included(response, indexpage.templateURL)
 
     def test_POST_invalid(self):
-        response = self.client.post(reverse(self.viewname), self.login_credentials_invalid, follow=True)
+        response = self.client.post(reverse(self.viewname), self.invalid_credentials, follow=True)
         self.assertEqual(response.status_code, 200)
         self.check_templates_are_included(response, self.templateURL)
 
@@ -276,9 +294,8 @@ class SignUpPageTests(SharedTestMethods):
         cls.user1 = User.objects.create_user(cls.credentials['username'], 
                                              cls.credentials['email'],
                                              cls.credentials['pwd'])
-        cls.invalid_credentials = {
-            'username': 'fakeuser',
-            'pwd': '@b4dp455w0rd'}
+
+        cls.invalid_credentials = SV.invalid_credentials
         cls.registration_data = {
             'username': 'testuser2',
             'password1': '@myp455w0rd',
@@ -335,10 +352,8 @@ class IndexPageViewTests(SharedTestMethods):
         cls.user1 = User.objects.create_user(cls.credentials['username'], 
                                              cls.credentials['email'],
                                              cls.credentials['pwd'])
-        cls.invalid_credentials = {
-            'username': 'fakeuser',
-            'pwd': '@b4dp455w0rd'}
-        cls.partial_credentials = {'username': 'testuser1'}
+        cls.invalid_credentials = SV.invalid_credentials
+        cls.partial_credentials = SV.partial_credentials
 
     def setUp(self):
         pass
@@ -476,10 +491,8 @@ class ErrorPageViewTests(SharedTestMethods):
         cls.user1 = User.objects.create_user(cls.credentials['username'], 
                                              cls.credentials['email'],
                                              cls.credentials['pwd'])
-        cls.invalid_credentials = {
-            'username': 'fakeuser',
-            'pwd': '@b4dp455w0rd'}
-        cls.partial_credentials = {'username': 'testuser3'}
+        cls.invalid_credentials = SV.invalid_credentials
+        cls.partial_credentials = SV.partial_credentials
 
     def test_GET_loggedin(self):
         self.get_loggedin_tests()
@@ -523,10 +536,9 @@ class HasPostedTodayViewTests(SharedTestMethods):
                                              cls.credentials['email'],
                                              cls.credentials['pwd'])
         
-        today = date.today()
-        cls.test_postDate = today.strftime("%Y-%m-%d")
-        cls.test_postTitle = 'PT_title'
-        cls.test_postText = 'PT_text'
+        cls.test_postDate = SV.test_postDate
+        cls.test_postTitle = SV.test_postTitle
+        cls.test_postText = SV.test_postText
 
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
@@ -575,8 +587,8 @@ class TitleExistsViewTests(SharedTestMethods):
                                              cls.credentials['email'],
                                              cls.credentials['pwd'])
         
-        cls.test_postTitle = 'PT_title'
-        cls.test_postText = 'PT_text'
+        cls.test_postTitle = SV.test_postTitle
+        cls.test_postText = SV.test_postText
 
         cls.test_notexists = { 'title': 'Not exists'}
         cls.test_exists = { 'title': cls.test_postTitle }
@@ -637,12 +649,11 @@ class AddNewUpdateViewTests(SharedTestMethods):
                                              cls.credentials2['email'],
                                              cls.credentials2['pwd'])
 
-        today = date.today()
-        cls.test_postDate = today.strftime("%Y-%m-%d")
-        cls.test_postTitle1 = 'PT_title_1'
-        cls.test_postTitle2 = 'PT_title_2'
-        cls.test_postText1 = 'PT_text_1'
-        cls.test_postText2 = 'PT_text_2'
+        cls.test_postDate = SV.test_postDate
+        cls.test_postTitle1 = SV.test_postTitle1
+        cls.test_postTitle2 = SV.test_postTitle2
+        cls.test_postText1 = SV.test_postText1
+        cls.test_postText2 = SV.test_postText2
         cls.test_postTags = '["test","testing","this is a test"]'
 
         cls.test_postData1 = { 'postTitle': cls.test_postTitle1,
@@ -726,13 +737,13 @@ class AddUpdatesForTagViewTests(SharedTestMethods):
                                              cls.credentials2['email'],
                                              cls.credentials2['pwd'])
 
-        cls.test_postTitle1 = 'PT_title_1'
-        cls.test_postTitle2 = 'PT_title_2'
-        cls.test_postText1 = 'PT_text_1'
-        cls.test_postText2 = 'PT_text_2'
+        cls.test_postTitle1 = SV.test_postTitle1
+        cls.test_postTitle2 = SV.test_postTitle2
+        cls.test_postText1 = SV.test_postText1
+        cls.test_postText2 = SV.test_postText2
         cls.test_postTags = ["qwertyuiop","testing","this is a test", "still a test"]
         cls.test_goodTag = cls.test_postTags[0]
-        cls.test_badTag = "NotATag"
+        cls.test_badTag = SV.test_badTag
 
         cls.test_PostData1 = {
             'postTag': cls.test_goodTag,
@@ -740,8 +751,7 @@ class AddUpdatesForTagViewTests(SharedTestMethods):
         cls.test_PostData2 = {
             'postTag': cls.test_badTag,
         }
-
-        cls.test_no_results_HTML = '<h1>No results found!</h1>'
+        cls.test_no_results_HTML = SV.test_no_results_HTML
 
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
@@ -791,14 +801,14 @@ class AddUpdatesForTagByLoggedInUserViewTests(SharedTestMethods):
                                              cls.credentials2['email'],
                                              cls.credentials2['pwd'])
 
-        cls.test_postTitle1 = 'PT_title_1'
-        cls.test_postTitle2 = 'PT_title_2'
-        cls.test_postText1 = 'PT_text_1'
-        cls.test_postText2 = 'PT_text_2'
+        cls.test_postTitle1 = SV.test_postTitle1
+        cls.test_postTitle2 = SV.test_postTitle2
+        cls.test_postText1 = SV.test_postText1
+        cls.test_postText2 = SV.test_postText2
         cls.test_postTags = ["qwertyuiop","zxcvbnm","this is a test", "still a test"]
         cls.test_tag1 = cls.test_postTags[1]
         cls.test_tag2 = cls.test_postTags[0]
-        cls.test_badtag = "NotATag"
+        cls.test_badtag = SV.test_badTag
 
         cls.test_PostData1 = {
             'postTag': cls.test_tag1,
@@ -806,7 +816,7 @@ class AddUpdatesForTagByLoggedInUserViewTests(SharedTestMethods):
         cls.test_PostData2 = {
             'postTag': cls.test_tag2,
         }
-        cls.test_no_results_HTML = '<h1>No results found!</h1>'
+        cls.test_no_results_HTML = SV.test_no_results_HTML
 
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
@@ -844,6 +854,9 @@ class AddUpdatesForUsernameViewTests(SharedTestMethods):
         cls.viewname = 'tellings:addupdatesforusername'
         cls.errorPage_viewname = 'tellings:errorpage'
         cls.loggedout_redirect_URL = '/loginpage/?next=/addupdatesforusername/'
+
+        SV = SharedVariables
+
         cls.credentials = {
             'username': 'testuser1',
             'email': 'testUser1@email.com',
@@ -862,14 +875,15 @@ class AddUpdatesForUsernameViewTests(SharedTestMethods):
                                              cls.credentials2['email'],
                                              cls.credentials2['pwd'])
 
-        cls.test_postTitle1 = 'PT_title_1'
-        cls.test_postTitle2 = 'PT_title_2'
-        cls.test_postText1 = 'PT_text_1'
-        cls.test_postText2 = 'PT_text_2'
+        
+        cls.test_postTitle1 = SV.test_postTitle1
+        cls.test_postTitle2 = SV.test_postTitle2
+        cls.test_postText1 = SV.test_postText1
+        cls.test_postText2 = SV.test_postText2
         cls.test_postTags = ["qwertyuiop","zxcvbnm","this is a test", "still a test"]
         cls.test_tag1 = cls.test_postTags[1]
         cls.test_tag2 = cls.test_postTags[0]
-        cls.test_badTag = "NotATag"
+        cls.test_badTag = SV.test_badTag
 
         cls.test_PostData1 = {
             'username': cls.credentials['username'],
@@ -877,7 +891,7 @@ class AddUpdatesForUsernameViewTests(SharedTestMethods):
         cls.test_PostData2 = {
             'username': 'NotAUsername'
         }
-        cls.test_no_results_HTML = '<h1>No results found!</h1>'
+        cls.test_no_results_HTML = SV.test_no_results_HTML
                 
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
