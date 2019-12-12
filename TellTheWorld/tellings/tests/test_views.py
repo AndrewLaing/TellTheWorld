@@ -968,6 +968,16 @@ class DeleteUserPostViewTests(SharedTestMethods):
                                              cls.credentials['email'],
                                              cls.credentials['pwd'])
 
+        cls.credentials2 = SV.credentials2
+        cls.user2 = User.objects.create_user(cls.credentials2['username'], 
+                                             cls.credentials2['email'],
+                                             cls.credentials2['pwd'])
+        
+        cls.test_postDate = SV.test_postDate
+        cls.test_postTitle1 = SV.test_postTitle1
+        cls.test_postText1 = SV.test_postText1
+                                
+
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
 
@@ -977,8 +987,48 @@ class DeleteUserPostViewTests(SharedTestMethods):
     def test_POST_loggedout(self):
         self.post_loggedout_redirect_tests()
 
-    def test_POST_loggedin(self):
-        pass
+    def test_POST_validDelete(self):
+        self.createPostRecord(userID=self.user1.id, dateOfPost=self.test_postDate, 
+                              postTitle=self.test_postTitle1, postText=self.test_postText1)
+        post = Posts.objects.latest('postID')
+        test_postID = post.postID
+        test_validDelete = {
+            'postID': test_postID,
+        }
+
+        self.client.login(username=self.credentials['username'], 
+                          password=self.credentials['pwd'])
+        response = self.client.post(reverse(self.viewname), 
+                                    test_validDelete, follow=True)
+        content = response.content.decode("utf-8")
+        postStillExists = Posts.objects.filter(pk=test_postID).exists()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("True", content)
+        self.assertFalse(postStillExists)
+
+
+    def test_POST_invalidDelete(self):
+        self.createPostRecord(userID=self.user1.id, dateOfPost=self.test_postDate, 
+                              postTitle=self.test_postTitle1, postText=self.test_postText1)
+        post = Posts.objects.latest('postID')
+        test_postID = post.postID
+        test_invalidDelete = {
+            'postID': test_postID,
+        }
+
+        self.client.login(username=self.credentials2['username'], 
+                          password=self.credentials2['pwd'])
+        response = self.client.post(reverse(self.viewname), 
+                                    test_invalidDelete, follow=True)
+        content = response.content.decode("utf-8")
+        postStillExists = Posts.objects.filter(pk=test_postID).exists()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("YOU CANNOT DELETE", content)
+        self.assertTrue(postStillExists)
+
+
 
 
 class EditUserPostViewTests(SharedTestMethods):
