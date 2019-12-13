@@ -376,15 +376,16 @@ class ErrorPage(View):
 
 class AccountDeletedPage(View):
     """ Creates the Account Deleted page for the website."""
-    
+
+    @method_decorator(login_required)
     def get(self, request):
-        """ Handles GET requests for the Error page.
+        """ Handles GET requests for the Account Deleted page.
 
         :param request: A dictionary-like object containing all HTTP parameters, 
                         sent by a site user. 
         :returns: A HTML page.
         """
-        return HttpResponseRedirect('/')
+        return HttpResponseRedirect('/errorpage/')
 
     @method_decorator(login_required)
     def post(self, request):
@@ -394,7 +395,6 @@ class AccountDeletedPage(View):
                         sent by a site user. 
         :returns: A HTML page.
         """
-        print(request.POST)
         if ('reason' in request.POST):
             return self.deleteAccount(request)
         else:
@@ -409,9 +409,9 @@ class AccountDeletedPage(View):
         """
         try:
             quote = get_random_quote()
-            u = request.user;
-            logout(request);
-            u.delete();
+            u = request.user
+            logout(request)
+            u.delete()
             return render(request, 'tellings/accountDeleted.html', {'quote': quote})
         except:
             return HttpResponseRedirect('/errorpage/')
@@ -832,9 +832,8 @@ class EditUserPost(View):
             currentUser = request.user.username
             username = self.getUsernameForPostID(postID)
 
-            # Check that the post was made by the user deleting it
+            # Check that the post was made by the user editing it
             if(self.postWasMadeByCurrentUser(username, currentUser)):
-                print(postText)
                 try:
                     DBQ.updatePostsRecordPostText(postID, postText)
                     return HttpResponse("True")
@@ -865,8 +864,6 @@ class EditUserPost(View):
             return None
 
 
-
-# ==========================================================================
 class LoginModal(View):
     """ An AJAX handler used to add the login modal to pages.
     """
@@ -941,4 +938,9 @@ class AddUpdateModal(View):
                         sent by a site user. 
         :returns: A HTML page.
         """
+        # Ensure that the user has not posted today
+        current_user_id = request.user.id
+        if DBQ.userHasPostedToday(current_user_id):
+            return False
+
         return render(request, 'tellings/includes/addUpdate_modal.html')
