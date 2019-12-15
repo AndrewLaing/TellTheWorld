@@ -1251,24 +1251,65 @@ class AddUpdateModalTests(SharedTestMethods):
 
         SV = SharedVariables
         cls.credentials = SV.credentials
-
         cls.user1 = User.objects.create_user(cls.credentials['username'], 
                                              cls.credentials['email'],
-                                             cls.credentials['pwd'])
+                                             cls.credentials['pwd'])                                           
+
+        cls.test_postDate = SV.test_postDate
+        cls.test_postTitle1 = SV.test_postTitle1
+        cls.test_postText1 = SV.test_postText1                                             
+        cls.test_newPostText = SV.test_postText2
 
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
 
-    def test_GET_loggedin(self):
+    def test_GET_loggedin_hasNotPostedToday(self):
+        """ Tests the behaviour if the user has NOT already posted
+            an update today. """
         self.client.login(username=self.credentials['username'], 
                           password=self.credentials['pwd'])
         response = self.client.get((reverse(self.viewname)), follow=True)
+
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, self.templateURL)
+
+    def test_GET_loggedin_hasPostedToday(self):
+        """ Tests the behaviour if the user has already posted
+            an update today. """
+        self.createPostRecord(userID=self.user1.id, dateOfPost=self.test_postDate, 
+                              postTitle=self.test_postTitle1, postText=self.test_postText1)
+
+        self.client.login(username=self.credentials['username'], 
+                          password=self.credentials['pwd'])
+        response = self.client.get((reverse(self.viewname)), follow=True)
+        content = response.content.decode("utf-8")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("False", content)
 
     def test_POST_loggedout(self):
         self.post_loggedout_redirect_tests()
 
-    def test_POST_loggedin(self):
-        print("\nAddUpdateModalTests.test_POST_loggedin method not implemented\n")
-        pass   
+    def test_POST_loggedin_hasNotPostedToday(self):
+        """ Tests the behaviour if the user has NOT already posted
+            an update today. """
+        self.client.login(username=self.credentials['username'], 
+                          password=self.credentials['pwd'])
+        response = self.client.post((reverse(self.viewname)), follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, self.templateURL)
+
+    def test_POST_loggedin_hasPostedToday(self):
+        """ Tests the behaviour if the user has already posted
+            an update today. """
+        self.createPostRecord(userID=self.user1.id, dateOfPost=self.test_postDate, 
+                              postTitle=self.test_postTitle1, postText=self.test_postText1)
+
+        self.client.login(username=self.credentials['username'], 
+                          password=self.credentials['pwd'])
+        response = self.client.post((reverse(self.viewname)), follow=True)
+        content = response.content.decode("utf-8")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("False", content)

@@ -27,6 +27,21 @@ $(document).ready(function(){
     }); 
 
 
+    /**
+     * TEST TEST TEST
+     */
+    $(document).on('click', '#addNewUpdatePostBtn', function(){ 
+        // Your Code
+        alert('clicked');
+        if ($.validate_addUpdate_fields()) {
+            $.addNewUserUpdate();
+        } else {
+            alert("bad fields");
+        }
+    });
+
+
+
 
     /**
      * Displays a dropdown's links when the user hovers over it.
@@ -90,8 +105,8 @@ $(document).ready(function(){
 
 
     /**
-     * Checks that the user has filled in all fields 
-     * in the addUpdateModal before submission.
+     * Checks that the user has entered in their password correctly
+     * before performing delete account.
      */
     $.entered_password_is_valid = function (p_password) {
         result = false;
@@ -135,6 +150,7 @@ $(document).ready(function(){
      * addUpdateModal's input fields to try and prevent XSS attacks.
      */
     $("#addUpdateModal input").on("keypress paste", function (e) {
+        alert('pressed')
         var c = this.selectionStart, v = $(this).val();
         if (e.type == "keypress")
             var key = String.fromCharCode(e.charCode ? e.charCode : e.which)
@@ -320,8 +336,10 @@ $(document).ready(function(){
     /**
      * Handles the SUBMIT click for the addUpdateModal.
      */
-    $('#frmAddUpdate').submit(function(e){
-        e.preventDefault();
+    $.addNewUserUpdate = function () {
+    //$('#frmAddUpdate').on("submit", function(e) { 
+        alert("submit clicked");
+        //e.preventDefault();
         var p_postTitle = $("#postTitle").val();
         var p_postText  = $("#postText").val();
         var p_postTags = $("#tagDiv").val();
@@ -353,7 +371,7 @@ $(document).ready(function(){
 
         // Hide the add update modal.
         $("#addUpdateModal").modal('toggle');
-    });
+    };
 
 
     /**

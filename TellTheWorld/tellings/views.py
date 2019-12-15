@@ -926,7 +926,7 @@ class AddUpdateModal(View):
         # Ensure that the user has not posted today
         current_user_id = request.user.id
         if DBQ.userHasPostedToday(current_user_id):
-            return False
+            return HttpResponse('False')
 
         return render(request, 'tellings/includes/addUpdate_modal.html')
 
@@ -941,6 +941,6 @@ class AddUpdateModal(View):
         # Ensure that the user has not posted today
         current_user_id = request.user.id
         if DBQ.userHasPostedToday(current_user_id):
-            return False
+            return HttpResponse('False')
 
         return render(request, 'tellings/includes/addUpdate_modal.html')
