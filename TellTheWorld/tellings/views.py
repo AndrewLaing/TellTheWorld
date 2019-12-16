@@ -18,7 +18,7 @@ from django.views import View
 import tellings.createTagLinksHTML as CTH
 import tellings.createUpdatesHTML as CUH
 import tellings.databaseQueries as DBQ
-from tellings.forms import ChangeUserDetailsForm
+from tellings.forms import ChangeUserDetailsForm, NewUserCreationForm
 from tellings.models import Posts, Tags, Tagmap
 
 from tellings.page_extras import random_quotes
@@ -161,7 +161,7 @@ class SignUpPage(View):
         :returns: A HTML page.
         """
         quote = get_random_quote()
-        form = UserCreationForm()
+        form = NewUserCreationForm()
         return render(request, 'tellings/signup.html', {'form': form, 'quote': quote})
 
     def post(self, request):
@@ -186,12 +186,9 @@ class SignUpPage(View):
                         sent by a site user. 
         :returns: A HTML page.
         """
-        form = UserCreationForm(request.POST)
+        form = NewUserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
-            username = form.cleaned_data.get('username')
-            raw_password = form.cleaned_data.get('password1')
-            user = authenticate(username=username, password=raw_password)
+            user = form.save()
             login(request, user)
             return HttpResponseRedirect('/')
         else:

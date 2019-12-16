@@ -193,7 +193,6 @@ def addNewPostUpdateRecords(request):
         addTagmapRecord(postID, tagID)
 
 
-
 def updatePostsRecordPostText(in_postID, in_postText):
     """ Used to update the postText of a Posts record.
     

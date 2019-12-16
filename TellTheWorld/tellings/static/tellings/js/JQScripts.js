@@ -2,8 +2,8 @@
  * Filename:     JQScripts.js
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 28/11/2019.
- * Description:  JQuery scripts used by the 'Today I Have ...' website.
+ * Last updated: 16/12/2019.
+ * Description:  JQuery scripts used by the 'Tell the World' website.
  */
 
 $(document).ready(function(){
@@ -21,26 +21,28 @@ $(document).ready(function(){
     $("#loginBtn").on("click", function(e) {   
         $('#modal_container').empty();
 
-        $('#modal_container').load("/loginmodal/",function(result){
+        $('#modal_container').load("/loginmodal/", function(result){
+            // Event handler to focus the username field when
+            // the modal is shown
+            $('#loginModal').on('shown.bs.modal', function () {
+                 $('#username').focus();
+            });
+
             $('#loginModal').modal('show');
         });
     }); 
 
 
     /**
-     * TEST TEST TEST
+     * Handles the submit button click for the addUpdateModal.
      */
-    $(document).on('click', '#addNewUpdatePostBtn', function(){ 
-        // Your Code
-        alert('clicked');
+    $(document).on('click', '#addNewUpdatePostBtn', function() { 
         if ($.validate_addUpdate_fields()) {
             $.addNewUserUpdate();
         } else {
-            alert("bad fields");
+            return false;
         }
     });
-
-
 
 
     /**
@@ -192,7 +194,6 @@ $(document).ready(function(){
     })
 
 
-
     /**
      * Loads the addUpdateModal into the page and shows it. 
      */
@@ -200,6 +201,13 @@ $(document).ready(function(){
         $('#modal_container').empty();
 
         $('#modal_container').load("/addupdatemodal/",function(result){
+
+            // Event handler to focus the username field when
+            // the modal is shown
+            $('#addUpdateModal').on('shown.bs.modal', function () {
+                $('#postTitle').focus();
+           });
+
             $('#addUpdateModal').modal('show');
         });
     };
@@ -320,6 +328,7 @@ $(document).ready(function(){
                 if(data==='True') {
                     alert('Sorry. You must choose a unique title.');
                     $("#postTitle").val("");
+                    $('#postTitle').focus();
                 } else if (data!=='False') {
                     alert("Database error: please contact the administrator.");    
                     $("#addUpdateModal").modal('toggle');  // Hide the add update modal.
@@ -334,12 +343,9 @@ $(document).ready(function(){
 
 
     /**
-     * Handles the SUBMIT click for the addUpdateModal.
+     * Adds a new user update to the database.
      */
     $.addNewUserUpdate = function () {
-    //$('#frmAddUpdate').on("submit", function(e) { 
-        alert("submit clicked");
-        //e.preventDefault();
         var p_postTitle = $("#postTitle").val();
         var p_postText  = $("#postText").val();
         var p_postTags = $("#tagDiv").val();

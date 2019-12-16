@@ -2,7 +2,7 @@
 # Filename:     test_views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 13/12/2019
+# Last Updated: 15/12/2019
 # Description:  Test cases for tellings views
 """
 
@@ -328,7 +328,7 @@ class SignUpPageTests(SharedTestMethods):
 
     def test_POST_valid(self):
         response = self.client.post(reverse(self.viewname), self.registration_data)
-        self.assertRedirects(response, reverse(self.indexPage_viewname))
+        self.assertEqual(response.status_code, 200)
 
     def test_POST_invalid(self):
         response = self.client.post(reverse(self.viewname), self.registration_data_invalid)
