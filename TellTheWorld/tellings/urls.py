@@ -1,11 +1,7 @@
 ﻿from django.urls import path
 from django.contrib.auth.views import LoginView
 from . import views
-from tellings.views import IndexPage, TagsPage, MyUpdatesPage, NewUpdatesPage, ErrorPage, AccountDeletedPage
-from tellings.views import SignUpPage, ChangePasswordPage, ChangeUserDetailsPage
-from tellings.views import HasPostedToday, TitleExists, AddNewUpdate, AddUpdatesForTag
-from tellings.views import AddUpdatesForTagByLoggedInUser, AddUpdatesForUsername, CheckUserPassword
-from tellings.views import DeleteUserPost, EditUserPost, LoginModal, DeleteAccountModal, AddUpdateModal
+from tellings.views import *
 
 app_name = 'tellings'
 urlpatterns = [

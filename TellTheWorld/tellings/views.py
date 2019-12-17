@@ -197,7 +197,6 @@ class SignUpPage(View):
             return render(request, 'tellings/signup.html', {'form': form, 'quote': quote})
 
 
-
 class IndexPage(View):
     """ Creates the home page for the website."""
 
@@ -883,7 +882,7 @@ class LoginModal(View):
         """
         return render(request, 'tellings/includes/login_modal.html')
 
-# ==========================================================================
+
 class DeleteAccountModal(View):
     """ An AJAX handler used to add the delete account modal to pages.
     """
@@ -907,7 +906,7 @@ class DeleteAccountModal(View):
         """
         return render(request, 'tellings/includes/deleteAccount_modal.html')
 
-# ==========================================================================
+
 class AddUpdateModal(View):
     """ An AJAX handler used to add the login modal to pages.
     """
@@ -941,3 +940,4 @@ class AddUpdateModal(View):
             return HttpResponse('False')
 
         return render(request, 'tellings/includes/addUpdate_modal.html')
+        

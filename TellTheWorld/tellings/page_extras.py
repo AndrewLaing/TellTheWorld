@@ -34,4 +34,13 @@ random_quotes = [
     "\"Whoever would overthrow the liberty of a nation must begin by subduing the freeness of speech.\" ― Benjamin Franklin",
     "\"It’s not unpatriotic to denounce an injustice committed on our behalf, perhaps it’s the most patriotic thing we can do.\" ― E.A. Bucchianeri, Brushstrokes of a Gadfly.",
     "\"Ignorance is ultimately the worst enemy of a people who want to be free.\" ― Jonathan Hennessey",
+    "\"Cinema, radio, television, magazines are a school of inattention: people look without seeing, listen in without hearing\" ― Robert Bresson",  
+    "\"If it’s true that nothing is more potent than an idea, then those who control the media can direct minds en masse.\" ― Lance Morcan",
+    "\"It’s becoming obvious to most that mainstream media is nothing but a megaphone for the global elite to present biased news that’s designed to align the masses with their agenda.\" ― James Morcan",
+    "\"Protesters should make their own media and not rely on mainstream media to cover them.\" - Naomi Wolf",
+    "\"One believes things because one has been conditioned to believe them.\" ― Aldous Huxley",
+    "\"Since the earliest days of our youth, we have been conditioned to accept that the direction of the herd, and authority anywhere — is always right.\" ― Suzy Kassem",
+    "\"The only thing deterring us from complete free will is our social conditioning which influences our thoughts and decision-making.\" ― Rajesh",
+    "\"One free act is often enough to dispel a lifetime of conditioning.\" ― Marty Rubin",
+
 ]
