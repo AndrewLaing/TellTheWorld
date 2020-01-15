@@ -1,12 +1,12 @@
 from django.contrib import admin
-from .models import Posts, Tags, Tagmap
+from .models import *
 
 
-class PostsAdmin(admin.ModelAdmin):
+class UserPostsAdmin(admin.ModelAdmin):
     fields = ['user', 'dateOfPost','postTitle','postText']
 
 
-class TagsAdmin(admin.ModelAdmin):
+class TagAdmin(admin.ModelAdmin):
     fields = ['tagName']
 
 
@@ -16,6 +16,14 @@ class TagmapAdmin(admin.ModelAdmin):
     list_filter = ['postID', 'tagID']
 
 
-admin.site.register(Posts, PostsAdmin)
-admin.site.register(Tags, TagsAdmin)
+class DeletedAccountAdmin(admin.ModelAdmin):
+    fields = ['deleted_date', 'deleted_reason', 'membership_length' ] 
+    list_display = ('deleted_date', 'deleted_reason', 'membership_length')
+    list_filter = ['deleted_date', 'deleted_reason', 'membership_length' ]
+        
+
+
+admin.site.register(UserPost, UserPostsAdmin)
+admin.site.register(Tag, TagAdmin)
 admin.site.register(Tagmap, TagmapAdmin)
+admin.site.register(DeletedAccount, DeletedAccountAdmin)

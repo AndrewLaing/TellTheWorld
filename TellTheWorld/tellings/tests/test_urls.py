@@ -2,7 +2,7 @@
 # Filename:     test_urls.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 29/11/2019
+# Last Updated: 15/01/2020
 # Description:  Test cases for tellings urls
 """
 
@@ -39,15 +39,15 @@ class URLTests(SimpleTestCase):
 
     def test_newupdates_url_resolves(self):
         url = reverse('tellings:newupdates')
-        self.assertEquals(resolve(url).func.view_class, NewUpdatesPage)
+        self.assertEquals(resolve(url).func.view_class, NewUpdatesListView)
 
     def test_tags_url_resolves(self):
         url = reverse('tellings:tags')
-        self.assertEquals(resolve(url).func.view_class, TagsPage)
+        self.assertEquals(resolve(url).func.view_class, TagListView)
 
     def test_myupdates_url_resolves(self):
         url = reverse('tellings:myupdates')
-        self.assertEquals(resolve(url).func.view_class, MyUpdatesPage)
+        self.assertEquals(resolve(url).func.view_class, MyUpdatesListView)
 
     def test_errorpage_url_resolves(self):
         url = reverse('tellings:errorpage')
@@ -64,18 +64,6 @@ class URLTests(SimpleTestCase):
     def test_addnewupdate_url_resolves(self):
         url = reverse('tellings:addnewupdate')
         self.assertEquals(resolve(url).func.view_class, AddNewUpdate)
-
-    def test_addupdatesfortag_url_resolves(self):
-        url = reverse('tellings:addupdatesfortag')
-        self.assertEquals(resolve(url).func.view_class, AddUpdatesForTag)
-
-    def test_addupdatesfortagbyloggedinuser_url_resolves(self):
-        url = reverse('tellings:addupdatesfortagbyloggedinuser')
-        self.assertEquals(resolve(url).func.view_class, AddUpdatesForTagByLoggedInUser)
-
-    def test_addupdatesforusername_url_resolves(self):
-        url = reverse('tellings:addupdatesforusername')
-        self.assertEquals(resolve(url).func.view_class, AddUpdatesForUsername)
 
     def test_accountdeleted_url_resolves(self):
         url = reverse('tellings:accountdeleted')

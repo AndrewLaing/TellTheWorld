@@ -2,7 +2,7 @@
  * Filename:     base.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 11/11/2019.
+ * Last updated: 30/12/2019.
  * Description:  Main base template for site pages.
 {% endcomment %}
 
@@ -69,11 +69,48 @@
         </div>
     </noscript>
 
+    
     {% block content %}{% endblock %}
+
+
+    {% block pagination %}
+      {% if is_paginated %}
+
+      {% load my_tags %}
+      <div id="paginationDiv">
+        <ul class="pagination pull-right">
+          {% if page_obj.has_previous %}
+            <li><a href="?{% param_replace page=page_obj.previous_page_number %}">Previous</a></li>            
+          {% else %}
+            <li class="disabled"><span>Previous</span></li>
+          {% endif %}
+
+          {% for i in paginator.page_range %}
+            {% if forloop.counter < 5 %}
+              {% if page_obj.number == i %}
+                <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+              {% else %}
+
+                <li><a href="?{% param_replace page=i %}">{{ i }}</a></li>
+
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <li><a href="?{% param_replace page=page_obj.next_page_number %}">Next</a></li>
+          {% else %}
+            <li class="disabled"><span>Next</span></li>
+          {% endif %}
+        </ul>
+      </div>
+      {% endif %}
+    {% endblock %} 
+
 
     <!-- Footer -->
     <footer class="footer footerDivs">
-    {% include "tellings/includes/footerContents.html" %}
+      {% include "tellings/includes/footerContents.html" %}
     </footer> <!-- END OF FOOTER SECTION -->
 </body>
 

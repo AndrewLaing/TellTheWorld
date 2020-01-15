@@ -1,0 +1,89 @@
+{% extends 'tellings/base.html' %}
+{% block title %}Tell the World{% endblock title %} 
+{% block headertitle1 %}My Updates{% endblock headertitle1 %} 
+{% comment %} 
+ * -------------------------------------------------------------------------------
+ * Filename:     myupdates_list.html
+ * Author:       Andrew Laing
+ * Email:        parisianconnections@gmail.com
+ * Last updated: 03/01/2020
+ * Description:  Template used for the MyUpdates page.
+ * -------------------------------------------------------------------------------
+{% endcomment %}
+
+{% block content %}
+
+  <!-- Main content. -->
+  <div class="container-fluid main-content"> 
+    <div class="container currentUserUpdates" id="userUpdates">
+        {% if userpost_list %}
+        {% regroup userpost_list by dateOfPost as ordered_post_list %}
+
+        {% for mypost in ordered_post_list %}
+        <div class="row">
+          <h1>{{ mypost.grouper }}</h1>
+          <div class="panel-group">
+            {% for item in mypost.list %}
+              <!-- Update panel -->   
+              <div class="panel panel-default" id="panel_post_{{ item.postID }}">
+                <div>  <!-- Panel header -->  
+                  <!-- POST TITLE AND USERNAME -->
+                  <div class="col-sm-8 panel-postTitle">
+                    <p><a href="{% url 'tellings:myupdates' %}" name="{{ item.user }}">
+                       {{ item.user }} says</a> ... {{ item.postTitle }}</p>
+                  </div>
+
+                  <!-- SHOW COLLAPSE, EDIT/HIDE/DELETE FUNCTIONALITY -->
+                  <div class="col-sm-4 align-panel-text-right">
+                    <!-- View Update button -->
+                    <button class="btn btn-info collapse_btn" data-toggle="collapse" data-target="#collapse{{ item.postID }}">View Update</button>
+          
+                    <!-- Only allow the user to edit their own posts -->
+                    {% if current_username %}
+                      {% if item.user.username == current_username %}
+                        <!-- Edit post -->
+                        <div class="btn-group">
+                            <button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                              <span class = "caret"></span>
+                            </button>
+
+                            <div class="dropdown-menu">
+                              <a class="dropdown-item" id="hide_post_{{ item.postID }}" onclick="$.hide_post({{ item.postID }});">Hide Post</a><br /><br />
+                              <a class="dropdown-item" id="edit_post_{{ item.postID }}" onclick="$.edit_post({{ item.postID }},{{ item.postID }});">Edit Post</a><br />
+                              <a class="dropdown-item" id="delete_post_{{ item.postID }}" onclick="$.delete_post({{ item.postID }});">Delete Post</a>
+                            </div>
+                        </div>   
+                      {% endif %}
+                    {% endif %}
+                  </div>
+                </div> <!-- END OF Panel header -->
+
+                <!--  PANEL BODY -->
+                <div id="collapse{{ item.postID }}" class="panel-collapse collapse">
+                    <div class="panel-body">
+                      <p id="text_post_{{ item.postID }}">{{ item.postText }}</p>
+                    </div>
+                </div>                
+
+                <div class="panel-footer align-panel-text-right"> 
+                  {% for tag in item.post_tags %}
+                    <a href="{% url 'tellings:myupdates' %}?tagName={{ tag }}" name="{{ tag }}">{{ tag }}</a>
+                    &nbsp;&nbsp;|&nbsp;&nbsp;  
+                  {% endfor %}            
+                </div>
+              </div> <!-- END OF UPDATE PANEL -->
+
+            {% endfor %}
+          </div> <!-- END OF PANEL GROUP  -->
+        </div> <!-- END OF ROW  -->
+        {% endfor %}
+
+        {% else %}
+          <p>No results found.</p>
+        {% endif %}  
+
+    </div>    <!-- END OF CONTAINER -->
+  </div>      <!-- END OF CONTAINER-FLUID -->
+
+
+{% endblock %}

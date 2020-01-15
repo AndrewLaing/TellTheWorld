@@ -1,9 +1,12 @@
 from django.contrib.auth.models import User
+
+
 def addUser(username, email, password):
     user=User.objects.create_user(username, email, password)
     user.is_superuser=False
     user.is_staff=False
     user.save()
+
 
 addUser('jackie', 'user@test.com', '4uniquep@55w0rd')
 addUser('scott', 'user@test.com', '4uniquep@55w0rd')
@@ -30,11 +33,14 @@ addUser('tony', 'user@test.com', '4uniquep@55w0rd')
 addUser('antonio', 'user@test.com', '4uniquep@55w0rd')
 addUser('jeff', 'user@test.com', '4uniquep@55w0rd')
 addUser('monica', 'user@test.com', '4uniquep@55w0rd')
-from tellings.models import Tags
+
+
+from tellings.models import Tag
 
 def addTag(name):
-    tag = Tags(tagName=name)
+    tag = Tag(tagName=name)
     tag.save()
+    
     
 addTag('admin')
 addTag('call me jello')
@@ -82,11 +88,15 @@ addTag('this is a test')
 addTag('toxi')
 addTag('treehouse')
 
-from tellings.models import Posts
+
+from tellings.models import UserPost
+
 
 def addPost(in_userID, in_dateOfPost, in_postTitle, in_postText):
-    post = Posts(user_id=in_userID, dateOfPost=in_dateOfPost, postTitle=in_postTitle, postText=in_postText)
+    post = UserPost(user_id=in_userID, dateOfPost=in_dateOfPost, postTitle=in_postTitle, postText=in_postText)
     post.save()
+
+
 
 addPost(1, '2019-07-18', 'Merry Christmas Jackie 2019', 'I am spending Xmas at the office alone again with my computer. Send cake and coffee quickly :)')
 addPost(1, '2019-07-19', 'Living Snake', 'New the her nor case that lady paid read. Invitation friendship travelling eat everything the out two.')
@@ -118,11 +128,15 @@ addPost(11, '2019-07-30', 'First post', 'This is my first post and ... yes my mo
 addPost(1, '2019-07-30', 'Thanks Admin', 'Thank you for resetting my password. I have been unable to login for two days now and I have so much to tell you guys ... I guess you will have to wait until tomorrow to find out :P')
 addPost(1, '2019-08-02', 'Breakfast', 'Today I had cheese on toast with beans for my breakfast. It was very cheesy.')
 
+
 from tellings.models import Tagmap
+
 
 def addTagmap(in_postID, in_tagID):
     tm = Tagmap( postID_id=in_postID, tagID_id=in_tagID)
     tm.save()
+
+
 
 addTagmap(1, 18)
 addTagmap(1, 14)

@@ -1,37 +1,52 @@
 # Filename:     views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last updated: 01/12/2019
+# Last updated: 14/01/2020
 # Description:  Contains the views for the website.
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm, UserCreationForm
 from django.contrib.auth.hashers import check_password
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required # @login_required
-from django.utils.decorators import method_decorator
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, render_to_response
-from django.views import View
+from django.shortcuts import render, render_to_response, get_object_or_404
+from django.utils.decorators import method_decorator
+from django.utils.translation import gettext as _
+from django.views import View, generic 
 
-import tellings.createTagLinksHTML as CTH
-import tellings.createUpdatesHTML as CUH
-import tellings.databaseQueries as DBQ
-from tellings.forms import ChangeUserDetailsForm, NewUserCreationForm
-from tellings.models import Posts, Tags, Tagmap
-
+from tellings.forms import *
 from tellings.page_extras import random_quotes
+
 import random
+from datetime import datetime, date, timedelta, timezone
 
 # #########################################################################################
 # SHARED FUNCTIONS ------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------
 
 def get_random_quote():
+    """ Used to get a random quote from the random_quotes list.
+       
+    :returns: A random quote from the random_quotes list.
+    """
     secure_random = random.SystemRandom()
-    return secure_random.choice(random_quotes)
+    random_quote = secure_random.choice(random_quotes)
+    return _(random_quote)
 
+def user_has_posted_today(request):
+    """ Used to determine if the user has posted an update today.
+    
+    :param request: A dictionary-like object containing the HTTP POST parameters, 
+                    sent by a site user.     
+    :returns: True if the user has posted an update today,
+              otherwise false.
+    """
+    current_userID = request.user.id
+    yesterday = date.today() - timedelta(1)
+    return UserPost.objects.filter(user=current_userID).filter(dateOfPost__gt=yesterday).exists()
 
 def user_login(request):
     """ Handles user authentication.
@@ -50,28 +65,25 @@ def user_login(request):
         return HttpResponseRedirect('/loginpage/')
 
 
-
 # #########################################################################################
 # PAGE VIEWS ------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------
 
-class ChangeUserDetailsPage(View):
+class ChangeUserDetailsPage(LoginRequiredMixin, View):
     """ Creates the change password page for the website."""
+    http_method_names = ['get', 'post']
 
-    @method_decorator(login_required)
     def get(self, request):
         """ Handles GET requests for the Change User Details page.
 
         :param request: A dictionary-like object containing all HTTP parameters, 
                         sent by a site user. 
         :returns: A HTML page.
-        """
-        
+        """  
         quote = get_random_quote()
         form = ChangeUserDetailsForm(instance=request.user)
         return render(request, 'tellings/changeUserDetails.html', {'form': form, 'quote': quote})
 
-    @method_decorator(login_required)
     def post(self, request):
         """ Handles POST requests for the Change User Details page.
 
@@ -84,7 +96,7 @@ class ChangeUserDetailsPage(View):
             return self.changeDetails(request, form)
         else:
             quote = get_random_quote()
-            messages.error(request, 'Please correct the error below.')
+            messages.error(request, _('Please correct the error below.'))
             return render(request, 'tellings/changeUserDetails.html', {'form': form, 'quote': quote})
 
     def changeDetails(self, request, form):
@@ -101,13 +113,13 @@ class ChangeUserDetailsPage(View):
         u.save()
         quote = get_random_quote()
         return render(request, 'tellings/changeUserDetails.html', 
-                                {'message':'Your details have been updated', 'form': form, 'quote': quote})
+                      {'message': _('Your details have been updated'), 'form': form, 'quote': quote})
 
 
-class ChangePasswordPage(View):
+class ChangePasswordPage(LoginRequiredMixin, View):
     """ Creates the change password page for the website."""
-    
-    @method_decorator(login_required)
+    http_method_names = ['get', 'post']
+
     def get(self, request):
         """ Handles GET requests for the Change Password page.
 
@@ -119,7 +131,6 @@ class ChangePasswordPage(View):
         form = PasswordChangeForm(request.user)
         return render(request, 'tellings/changePassword.html', {'form': form, 'quote': quote})
 
-    @method_decorator(login_required)
     def post(self, request):
         """ Handles POST requests for the Change Password page.
 
@@ -147,11 +158,12 @@ class ChangePasswordPage(View):
         update_session_auth_hash(request, user)  # Important!
         quote = get_random_quote()
         return render(request, 'tellings/changePassword.html', 
-                      {'message':'Your password was successfully updated!', 'form': form, 'quote': quote})
+                      {'message': _('Your password was successfully updated!'), 'form': form, 'quote': quote})
 
 
 class SignUpPage(View):
     """ Creates the sign up page for the website."""
+    http_method_names = ['get', 'post']
 
     def get(self, request):
         """ Handles GET requests for the Sign Up page.
@@ -193,12 +205,13 @@ class SignUpPage(View):
             return HttpResponseRedirect('/')
         else:
             quote = get_random_quote()
-            messages.error(request, 'Please correct the error below.')
+            messages.error(request, _('Please correct the error below.'))
             return render(request, 'tellings/signup.html', {'form': form, 'quote': quote})
 
 
 class IndexPage(View):
     """ Creates the home page for the website."""
+    http_method_names = ['get', 'post']
 
     def get(self, request):
         """ Handles GET requests for the home page.
@@ -224,127 +237,9 @@ class IndexPage(View):
             return render(request, 'tellings/index.html', {'quote': quote})
 
 
-class NewUpdatesPage(View):
-    """ Creates the New Updates page for the website."""
-
-    @method_decorator(login_required)
-    def get(self, request):
-        """ Handles GET requests for the New Updates page.
-            This page's inner contents will only be visible to authenticated users.
-
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        return self.newUpdatesPage(request)
-
-    @method_decorator(login_required)
-    def post(self, request):
-        """ Handles POST requests for the New Updates page.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        return self.newUpdatesPage(request)
-
-    def newUpdatesPage(self, request):
-        """ Creates and returns the New Updates page.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        quote = get_random_quote()
-        postDetails = DBQ.getAllPostDetails()
-        username = request.user.username
-        contents = CUH.createInnerHTML(postDetails, username)
-
-        return render(request, 'tellings/newupdates.html', {'contents': contents, 'quote': quote})
-
-
-class TagsPage(View):
-    """ Creates the Tags page for the website."""
-
-    @method_decorator(login_required)
-    def get(self, request):
-        """ Handles GET requests for the Tags page.
-            This page's inner contents will only be visible to authenticated users.
-
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        return self.tagsPage(request)
-
-    @method_decorator(login_required)
-    def post(self, request):
-        """ Handles POST requests for the Tags page.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        if ('username' in request.POST) and ('pwd' in request.POST):
-            return user_login(request)
-        else:
-            return self.tagsPage(request)
-
-
-    def tagsPage(self, request):
-        """ Creates and returns the Tags page.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        quote = get_random_quote()
-        tagNames = DBQ.getAllTagNames()
-        contents = CTH.createInnerHTML(tagNames)
-        return render(request, 'tellings/tags.html', {'contents': contents, 'quote': quote})
-
-
-class MyUpdatesPage(View):
-    """ Creates the New Updates page for the website."""
-
-    @method_decorator(login_required)
-    def get(self, request):
-        """ Handles GET requests for the My Updates page.
-            This page's inner contents will only be visible to authenticated users.
-
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        return self.myUpdatesPage(request)
-
-    @method_decorator(login_required)
-    def post(self, request):
-        """ Handles POST requests for the My Updates page.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        return self.myUpdatesPage(request)
-
-    def myUpdatesPage(self, request):
-        """ Creates and returns the My Updates page.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        quote = get_random_quote()
-        current_user_id = request.user.id
-        postDetails = DBQ.getAllPostsByUserID(current_user_id)
-        username = request.user.username
-        contents = CUH.createInnerHTML(postDetails, username)
-        return render(request, 'tellings/myupdates.html', {'contents': contents, 'quote': quote})
-
-
 class ErrorPage(View):
     """ Creates the New Updates page for the website."""
+    http_method_names = ['get', 'post']
 
     def get(self, request):
         """ Handles GET requests for the Error page.
@@ -370,20 +265,10 @@ class ErrorPage(View):
             return render(request, 'tellings/errorPage.html', {'quote': quote})
 
 
-class AccountDeletedPage(View):
+class AccountDeletedPage(LoginRequiredMixin, View):
     """ Creates the Account Deleted page for the website."""
+    http_method_names = ['post']
 
-    @method_decorator(login_required)
-    def get(self, request):
-        """ Handles GET requests for the Account Deleted page.
-
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        return HttpResponseRedirect('/errorpage/')
-
-    @method_decorator(login_required)
     def post(self, request):
         """ Handles POST requests for the Error page.
 
@@ -406,6 +291,24 @@ class AccountDeletedPage(View):
         try:
             quote = get_random_quote()
             u = request.user
+
+            # Create a DeletedAccount record
+            deleted_date = datetime.now(timezone.utc)
+            date_joined = u.date_joined
+            membership_length = deleted_date - date_joined
+
+            data = {
+                'deleted_reason': request.POST.get('reason', 'mydefaultvalue'),
+                'deleted_date': deleted_date,
+                'membership_length': membership_length.days,
+            }
+
+            form = DeleteAccountForm(data)
+
+            if form.is_valid():
+                form.save()
+
+            # Logout and delete the user's account
             logout(request)
             u.delete()
             return render(request, 'tellings/accountDeleted.html', {'quote': quote})
@@ -413,15 +316,119 @@ class AccountDeletedPage(View):
             return HttpResponseRedirect('/errorpage/')
 
 
+class TagListView(LoginRequiredMixin, generic.ListView):    # FOR LISTVIEW
+    model = Tag
+    paginate_by = 20
+    http_method_names = ['get', 'post']
+
+    def get_context_data(self, **kwargs):
+        context = super(TagListView, self).get_context_data(**kwargs)  
+        quote = get_random_quote()
+        context['quote'] = quote
+        return context
+
+
+class MyUpdatesListView(LoginRequiredMixin, generic.ListView):
+    model = UserPost
+    template_name = "tellings/myupdates_list.html"
+    paginate_by = 2
+    http_method_names = ['get', 'post']
+
+    def get_queryset(self):
+        user_id = self.request.user.id
+        tagName_val = False
+
+        qs = super().get_queryset()
+        
+        if self.request.method == 'GET' and 'tagName' in self.request.GET:
+            tagName_val = self.request.GET.get('tagName', False)
+                
+        if tagName_val:  # get posts for current user filtered by tagname
+            try:
+                tagID = Tag.objects.get(tagName=tagName_val).tagID
+                tagmaps = Tagmap.objects.filter(tagID=tagID)
+                postList = [tm.postID.postID for tm in tagmaps]
+                qs = qs.filter(postID__in=postList).filter(user=user_id).order_by('-dateOfPost') 
+            except:
+                # If the user tries to search for a non existing tag, return all posts instead
+                qs = qs.filter(user=user_id).order_by('-dateOfPost')
+        else:            # get all posts for current user
+            qs = qs.filter(user=user_id).order_by('-dateOfPost')
+
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super(MyUpdatesListView, self).get_context_data(**kwargs)  
+        current_username = user_id = self.request.user.username
+        quote = get_random_quote()
+
+        if self.request.method == 'GET' and 'tagName' in self.request.GET:
+            context['tagName'] = self.request.GET.get('tagName', '')
+
+        context['current_username'] = current_username
+        context['quote'] = quote
+        return context
+
+
+class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
+    model = UserPost
+    template_name = "tellings/newupdates_list.html"
+    paginate_by = 2
+    http_method_names = ['get', 'post']
+
+    def get_queryset(self):
+        tagName_val = False
+        username_val = False
+
+        if self.request.method == 'GET':
+            if 'tagName' in self.request.GET:
+                tagName_val = self.request.GET.get('tagName', False) 
+            if 'userName' in self.request.GET:
+                username_val = self.request.GET.get('userName', False)
+                user_id = User.objects.get(username=username_val).id
+                
+        if tagName_val:  # get posts for current user filtered by tagname
+            tagID = Tag.objects.get(tagName=tagName_val).tagID
+            tagmaps = Tagmap.objects.filter(tagID=tagID)
+            postList = [tm.postID.postID for tm in tagmaps]        
+        
+            if username_val:
+                new_context = UserPost.objects.filter(postID__in=postList).filter(user=user_id).order_by('-dateOfPost') 
+            else:
+                new_context = UserPost.objects.filter(postID__in=postList).order_by('-dateOfPost') 
+        elif username_val:
+            new_context = UserPost.objects.filter(user=user_id).order_by('-dateOfPost') 
+        else:            # get all posts
+            new_context = UserPost.objects.all().order_by('-dateOfPost')
+        
+        return new_context
+
+    def get_context_data(self, **kwargs):
+        context = super(NewUpdatesListView, self).get_context_data(**kwargs)  
+        current_username = self.request.user.username
+        quote = get_random_quote()
+
+        if self.request.method == 'GET':
+            if 'tagName' in self.request.GET:
+                context['tagName'] = self.request.GET.get('tagName', '')
+            if 'userName' in self.request.GET:
+                context['userName'] = self.request.GET.get('userName', '')
+
+        context['current_username'] = current_username
+        context['quote'] = quote
+        return context
+
+
+
 # #########################################################################################
 # AJAX HANDLERS ---------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------
 
-class HasPostedToday(View):
+class HasPostedToday(LoginRequiredMixin, View):
     """ An AJAX handler used to check whether the currently logged in
         user has posted an update today or not."""
+    http_method_names = ['get', 'post']
 
-    @method_decorator(login_required)
     def get(self, request):
         """ Handles GET requests.
 
@@ -430,9 +437,11 @@ class HasPostedToday(View):
         :returns: A string 'True' if the user has already posted an update today,
                   otherwise 'False'.
         """
-        return self.userHasPostedToday(request)
+        if user_has_posted_today(request):
+            return HttpResponse('True')
+        else:
+            return HttpResponse('False')
 
-    @method_decorator(login_required)
     def post(self, request):
         """ Handles POST requests.
 
@@ -440,44 +449,23 @@ class HasPostedToday(View):
                         sent by a site user. 
         :returns: A HTML page.
         """
-        return self.userHasPostedToday(request)
-
-    def userHasPostedToday(self, request):
-        """ Checks whether the currently logged in user has posted an update today or not.
-
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
-        :returns: A string 'True' if the user has already posted an update today,
-                  otherwise 'False'.
-        """
-        current_user_id = request.user.id
-        if DBQ.userHasPostedToday(current_user_id):
+        if user_has_posted_today(request):
             return HttpResponse('True')
         else:
             return HttpResponse('False')
 
 
-class TitleExists(View):
+class TitleExists(LoginRequiredMixin, View):
     """ An AJAX handler used to check whether an update title already
-        exists within the Posts table or not."""
+        exists within the UserPost table or not."""
+    http_method_names = ['post']
 
-    @method_decorator(login_required)
-    def get(self, request):
-        """ Handles GET requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        return HttpResponseRedirect('/errorpage/')
-
-    @method_decorator(login_required)
     def post(self, request):
         """ Handles POST requests.
 
         :param request: A dictionary-like object containing all HTTP parameters, 
                         sent by a site user. 
-        :returns: A string 'True' if the title already exists in the Posts table,
+        :returns: A string 'True' if the title already exists in the UserPost table,
                   otherwise 'False'.
         """
         if ('title' in request.POST):
@@ -486,225 +474,59 @@ class TitleExists(View):
             return HttpResponseRedirect('/errorpage/')
 
     def titleExists(self, request):
-        """ Checks whether an update title already exists within the Posts table or not.
+        """ Checks whether an update title already exists within the UserPost table or not.
             This function can only be used by authenticated users.
 
         :param request: A dictionary-like object containing all HTTP parameters, 
                         sent by a site user. 
-        :returns: A string 'True' if the title already exists in the Posts table,
+        :returns: A string 'True' if the title already exists in the UserPost table,
                   otherwise 'False'.
         """
-        postTitle = request.POST['title']
+        in_postTitle = request.POST['title']
 
-        if DBQ.postTitleExists(postTitle):
+        if UserPost.objects.filter(postTitle=in_postTitle).exists():
             return HttpResponse('True')
         else:
             return HttpResponse('False')
 
 
-class AddNewUpdate(View):
+class AddNewUpdate(LoginRequiredMixin, View):
     """ An AJAX handler used to add a new user update to the database."""
+    http_method_names = ['post']
 
-    @method_decorator(login_required)
-    def get(self, request):
-        """ Handles GET requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        return HttpResponseRedirect('/errorpage/')
-
-    @method_decorator(login_required)
     def post(self, request):
         """ Handles POST requests.
 
         :param request: A dictionary-like object containing all HTTP POST parameters, 
                         sent by a site user. 
-        :returns: A string 'True' if the title already exists in the Posts table,
-                  otherwise 'False'.
+        :returns: A string 'True' if the title already exists in the UserPost table,
+                  otherwise a redirect to the error page.
         """
-        if ('postTitle' in request.POST) and ('postText' in request.POST) and ('postTags' in request.POST):
-            return self.addNewUpdate(request)
+        if user_has_posted_today(request):
+            return HttpResponseRedirect('/errorpage/')
+
+        if ('postTitle' in request.POST) and ('postText' in request.POST) and ('postTags' in request.POST): 
+            # make a copy of POST to add user to as this is not supplied by the form       
+            request.POST = request.POST.copy()
+            request.POST['user'] = request.user.id
+            request.POST['dateOfPost'] = date.today()
+
+            form = UserPostForm(request.POST)
+            if form.is_valid():
+                userpost = form.save()
+                return HttpResponse('True')
+            else:
+                return HttpResponseRedirect('/errorpage/')
         else:
             return HttpResponseRedirect('/errorpage/')
-
-    def addNewUpdate(self, request):
-        """ Adds a new update to the database.
-            This function can only be used by authenticated users.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A string 'True' if the title already exists in the Posts table,
-                  otherwise 'False'.
-        """
-        current_user_id = request.user.id
-        postTitle = request.POST['postTitle']
-
-        # Validate user input again because data can be modified before posting
-        if DBQ.postTitleExists(postTitle):
-            return HttpResponseRedirect('/errorpage/')
-
-        if DBQ.userHasPostedToday(current_user_id):
-            return HttpResponseRedirect('/errorpage/')
-
-        DBQ.addNewPostUpdateRecords(request)
-
-        return HttpResponse('True')
     
-
-class AddUpdatesForTag(View):
-    """ An AJAX handler used to add all updates filtered by tag to the contents of a page
-        when a tag link is clicked within a user update panel."""
-
-    @method_decorator(login_required)
-    def get(self, request):
-        """ Handles GET requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        return HttpResponseRedirect('/errorpage/')
-
-    @method_decorator(login_required)
-    def post(self, request):
-        """ Handles POST requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A string containing HTML.
-        """
-        if ('postTag' in request.POST):
-            return self.addUpdates(request)
-        else:
-            return HttpResponseRedirect('/errorpage/')
-
-    def addUpdates(self, request):
-        """ Used to create inner HTML of updates filtered by tag.
-            Any other POST requests will result in an error page being shown.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A string containing HTML.
-        """
-        tagName = request.POST['postTag']
-        postDetails = DBQ.getAllPostsByTagname(tagName)
-        username = request.user.username
-        contents = CUH.createInnerHTML(postDetails, username)
-
-        return HttpResponse(contents)
         
-
-class AddUpdatesForTagByLoggedInUser(View):
-    """ An AJAX handler used to add updates filtered by tag to the contents of a page for
-        the currently logged in user when a tag link is clicked within a user update panel."""
-
-    @method_decorator(login_required)
-    def get(self, request):
-        """ Handles GET requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        return HttpResponseRedirect('/errorpage/')
-
-    @method_decorator(login_required)
-    def post(self, request):
-        """ Handles POST requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A string containing HTML.
-        """
-        if ('postTag' in request.POST):
-            return self.addUpdates(request)
-        else:
-            return HttpResponseRedirect('/errorpage/')
-
-    def addUpdates(self, request):
-        """ Used to create inner HTML of updates filtered by tag for the
-            currently logged in user.
-            Any other POST requests will result in an error page being shown.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A string containing HTML.
-        """
-        tagName = request.POST['postTag']
-        current_user_id = request.user.id
-        postDetails = DBQ.getAllPostsByTagnameForUserID(tagName, current_user_id)
-        username = request.user.username
-        contents = CUH.createInnerHTML(postDetails, username)
-
-        return HttpResponse(contents)
-
-
-class AddUpdatesForUsername(View):
-    """ An AJAX handler used to add updates filtered by username to the contents of a page for
-        when a username link is clicked within a user update panel."""
-
-    @method_decorator(login_required)
-    def get(self, request):
-        """ Handles GET requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        return HttpResponseRedirect('/errorpage/')
-
-    @method_decorator(login_required)
-    def post(self, request):
-        """ Handles POST requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A string containing HTML.
-        """
-        if ('username' in request.POST):
-            return self.addUpdates(request)
-        else:
-            return HttpResponseRedirect('/errorpage/')
-
-    def addUpdates(self, request):
-        """ Used to create inner HTML of updates filtered by username.
-            Any other POST requests will result in an error page being shown.
-            This function can only be used by authenticated users.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A string containing HTML.
-        """
-        uname = request.POST['username']
-            
-        try:
-            userID = User.objects.get(username=uname).id
-            postDetails = DBQ.getAllPostsByUserID(userID)
-            username = request.user.username
-            contents = CUH.createInnerHTML(postDetails, username)
-        except User.DoesNotExist:
-            contents = CUH.createNoResultsHTML()
-
-        return HttpResponse(contents)
-
-
-class CheckUserPassword(View):
+class CheckUserPassword(LoginRequiredMixin, View):
     """ An AJAX handler used to check a user's password.
         Used by the Delete Account modal. """
 
-    @method_decorator(login_required)
-    def get(self, request):
-        """ Handles GET requests.
+    http_method_names = ['post']
 
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        return HttpResponseRedirect('/errorpage/')
-
-    @method_decorator(login_required)
     def post(self, request):
         """ Handles POST requests.
 
@@ -735,21 +557,11 @@ class CheckUserPassword(View):
             return HttpResponse('False')
 
 
-class DeleteUserPost(View):
+class DeleteUserPost(LoginRequiredMixin, View):
     """ An AJAX handler used to delete posts for the current user.
     """
+    http_method_names = ['post']
 
-    @method_decorator(login_required)
-    def get(self, request):
-        """ Handles GET requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        return HttpResponseRedirect('/errorpage/')
-
-    @method_decorator(login_required)
     def post(self, request):
         """ Handles POST requests.
 
@@ -766,13 +578,12 @@ class DeleteUserPost(View):
                 if self.deletePost(postID):
                     return HttpResponse("True")
                 else:
-                    return HttpResponse("Something went wrong. We were unable to delete your post.")
+                    return HttpResponse(_("Something went wrong. We were unable to delete your post."))
             else:
-                return HttpResponse("YOU CANNOT DELETE OTHER USERS POSTS!!!")
+                return HttpResponse(_("YOU CANNOT DELETE OTHER USERS POSTS!!!"))
         else:
             return HttpResponseRedirect('/errorpage/')
 
-    
     def postWasMadeByCurrentUser(self, username, currentUser):
         """ Add a description.
         """
@@ -782,8 +593,7 @@ class DeleteUserPost(View):
         """ Returns the name of the user who made the post.
         """
         try:
-            id = int(in_postID)
-            post = Posts.objects.get(postID=id)
+            post = UserPost.objects.get(postID=in_postID)
             username = post.user.username
             return username
         except:
@@ -793,151 +603,137 @@ class DeleteUserPost(View):
         """ Add a description.
         """
         try:
-            post = Posts.objects.get(postID=in_postID)
+            post = UserPost.objects.get(postID=in_postID)
             post.delete()
             return True
         except:
             return False
 
 
-class EditUserPost(View):
-    """ An AJAX handler used to delete posts made by the current user.
+class LoginModal(View):
+    """ An AJAX handler used to add the login modal to pages.
     """
+    http_method_names = ['get', 'post']
 
-    @method_decorator(login_required)
     def get(self, request):
         """ Handles GET requests.
+
+        :param request: A dictionary-like object containing all HTTP parameters, 
+                        sent by a site user. 
+        :returns: A HTML page.
+        """
+        return render(request, 'tellings/includes/login_modal.html')
+
+    def post(self, request):
+        """ Handles POST requests.
 
         :param request: A dictionary-like object containing all HTTP POST parameters, 
                         sent by a site user. 
         :returns: A HTML page.
         """
-        return HttpResponseRedirect('/errorpage/')
+        return render(request, 'tellings/includes/login_modal.html')
 
-    @method_decorator(login_required)
+
+class DeleteAccountModal(LoginRequiredMixin, View):
+    """ An AJAX handler used to add the delete account modal to pages.
+    """
+    http_method_names = ['get', 'post']
+
+    def get(self, request):
+        """ Handles GET requests.
+
+        :param request: A dictionary-like object containing all HTTP parameters, 
+                        sent by a site user. 
+        :returns: A HTML page.
+        """
+        return render(request, 'tellings/includes/deleteAccount_modal.html')
+
     def post(self, request):
         """ Handles POST requests.
 
+        :param request: A dictionary-like object containing all HTTP POST parameters, 
+                        sent by a site user. 
+        :returns: A HTML page.
+        """
+        return render(request, 'tellings/includes/deleteAccount_modal.html')
+
+
+class AddUpdateModal(LoginRequiredMixin, View):
+    """ An AJAX handler used to add the login modal to pages.
+    """
+    http_method_names = ['get', 'post']
+
+    def get(self, request):
+        """ Handles GET requests.
+
+        :param request: A dictionary-like object containing all HTTP parameters, 
+                        sent by a site user. 
+        :returns: A HTML page.
+        """
+        # Ensure that the user has not posted today
+        if user_has_posted_today(request):
+            return HttpResponse('False')
+
+        return render(request, 'tellings/includes/addUpdate_modal.html')
+
+    def post(self, request):
+        """ Handles POST requests.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters, 
+                        sent by a site user. 
+        :returns: A HTML page.
+        """
+        # Ensure that the user has not posted today
+        current_user_id = request.user.id
+        if user_has_posted_today(request):
+            return HttpResponse('False')
+
+        return render(request, 'tellings/includes/addUpdate_modal.html')
+        
+
+class EditUserPost(LoginRequiredMixin, generic.UpdateView):
+    """ An AJAX handler used to add the edit user post HTML to pages,
+        and deal with updating the user post with the new details.
+    """
+    model = UserPost 
+    template_name = "tellings/includes/testEditPost.html"    
+    fields = ['user', 'dateOfPost','postTitle', 'postText']   
+    http_method_names = ['get', 'post']
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['pk']=self.object.postID
+        return context
+
+    def post(self, request):
+        """ Handles POST requests.
+   
         :param request: A dictionary-like object containing all HTTP parameters, 
                         sent by a site user. 
         :returns: A string 'True' if the post could be edited, otherwise an error message.
         """
         if ('postID' in request.POST and 'postText' in request.POST):
-            postID = request.POST.get('postID')
-            postText = request.POST.get('postText')
-            currentUser = request.user.username
-            username = self.getUsernameForPostID(postID)
-
-            # Check that the post was made by the user editing it
-            if(self.postWasMadeByCurrentUser(username, currentUser)):
-                try:
-                    DBQ.updatePostsRecordPostText(postID, postText)
-                    return HttpResponse("True")
-                except:
-                    return HttpResponse("Unable to make changes to the post. Please contact the site administrator.")
-            else:
-                return HttpResponse("YOU CANNOT EDIT OTHER USERS POSTS!!!")
+            return self.updateUserPostRecord(request)
         else:
             return HttpResponseRedirect('/errorpage/')
-
-    def postWasMadeByCurrentUser(self, username, currentUser):
-        """ Add a description.
-        """
-        return username == currentUser
-
-    def getUsernameForPostID(self, in_postID):
-        """ Returns the name of the user who made a specific post.
-
-            :param request: The unique identifier for a Posts record.
-            :returns: The name of the user who made the post.        
-        """
-        try:
-            id = int(in_postID)
-            post = Posts.objects.get(postID=id)
-            username = post.user.username
-            return username
-        except:
-            return None
-
-
-class LoginModal(View):
-    """ An AJAX handler used to add the login modal to pages.
-    """
-
-    def get(self, request):
-        """ Handles GET requests.
-
+                
+    def updateUserPostRecord(self, request):
+        """ Updates a UserPost record.
+           
         :param request: A dictionary-like object containing all HTTP parameters, 
                         sent by a site user. 
-        :returns: A HTML page.
+        :returns: A string 'True' if the post could be edited, otherwise an error message.
         """
-        return render(request, 'tellings/includes/login_modal.html')
+        in_postID = request.POST.get('postID')
+        in_postText = request.POST.get('postText')
+        userPost = get_object_or_404(UserPost, postID=in_postID)
 
-    def post(self, request):
-        """ Handles POST requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        return render(request, 'tellings/includes/login_modal.html')
-
-
-class DeleteAccountModal(View):
-    """ An AJAX handler used to add the delete account modal to pages.
-    """
-    @method_decorator(login_required)
-    def get(self, request):
-        """ Handles GET requests.
-
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        return render(request, 'tellings/includes/deleteAccount_modal.html')
-
-    @method_decorator(login_required)
-    def post(self, request):
-        """ Handles POST requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        return render(request, 'tellings/includes/deleteAccount_modal.html')
-
-
-class AddUpdateModal(View):
-    """ An AJAX handler used to add the login modal to pages.
-    """
-
-    @method_decorator(login_required)
-    def get(self, request):
-        """ Handles GET requests.
-
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        # Ensure that the user has not posted today
-        current_user_id = request.user.id
-        if DBQ.userHasPostedToday(current_user_id):
-            return HttpResponse('False')
-
-        return render(request, 'tellings/includes/addUpdate_modal.html')
-
-    @method_decorator(login_required)
-    def post(self, request):
-        """ Handles POST requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
-        :returns: A HTML page.
-        """
-        # Ensure that the user has not posted today
-        current_user_id = request.user.id
-        if DBQ.userHasPostedToday(current_user_id):
-            return HttpResponse('False')
-
-        return render(request, 'tellings/includes/addUpdate_modal.html')
-        
+        if(userPost.user.username == request.user.username):
+            try:
+                # Update the record (sql injection-safely)
+                UserPost.objects.filter(postID=in_postID).update(postText=in_postText)
+                return HttpResponse("True")
+            except:
+                return HttpResponse(_("Unable to make changes to the post. Please contact the site administrator."))
+        else:
+            return HttpResponse(_("YOU CANNOT EDIT OTHER USERS POSTS!!!"))   

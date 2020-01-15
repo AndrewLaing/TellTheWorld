@@ -120,8 +120,15 @@ STATIC_URL = '/static/'
 
 if platform.system() == 'Windows':
     STATIC_ROOT = posixpath.join(*(BASE_DIR.split(os.path.sep) + ['static']))
+    TELLINGS_ROOT = posixpath.join(*(BASE_DIR.split(os.path.sep) + ['tellings']))
 else:
     STATIC_ROOT = "/" + posixpath.join(*(BASE_DIR.split(os.path.sep) + ['static']))
+    TELLINGS_ROOT = "/" + posixpath.join(*(BASE_DIR.split(os.path.sep) + ['tellings']))
+
+# For translations
+LOCALE_PATHS = (
+    TELLINGS_ROOT + '/website/locale', )
+
 
 # Log in/out redirects
 LOGIN_URL = '/loginpage/'

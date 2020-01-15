@@ -2,7 +2,7 @@
  * Filename:     JQScripts.js
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 16/12/2019.
+ * Last updated: 14/01/2020.
  * Description:  JQuery scripts used by the 'Tell the World' website.
  */
 
@@ -58,6 +58,17 @@ $(document).ready(function(){
      * Loads the deleteAccountModal into the page and shows it. 
      */
     $("#deleteAccountBtn").click(function(){
+        // Do not allow account to be to deleted from certain pages
+        currentPathname = window.location.pathname
+        methodNotAllowedHere = ["changeuserdetails", "changepassword"];
+
+        for (i = 0; i < methodNotAllowedHere.length; i++) {
+             if(currentPathname.includes(methodNotAllowedHere[i])) {
+                 alert("Sorry you are unable to delete your account from this page!");
+                 return false;
+             }     
+        }
+
         $('#modal_container').empty();
 
         $('#modal_container').load("/deleteaccountmodal/",function(result){
@@ -150,6 +161,7 @@ $(document).ready(function(){
     /**
      * Stops the user from entering blocked characters into the
      * addUpdateModal's input fields to try and prevent XSS attacks.
+     * Note: remove when addUpdate modal is remade.
      */
     $("#addUpdateModal input").on("keypress paste", function (e) {
         alert('pressed')
@@ -174,6 +186,7 @@ $(document).ready(function(){
     /**
      * Stops the user from entering blocked characters into the
      * addUpdateModal's text area to try and prevent XSS attacks.
+     * Note: remove when addUpdate modal is remade.
      */
     $("#addUpdateModal textarea").on("keypress paste", function (e) {
         var c = this.selectionStart, v = $(this).val();
@@ -217,6 +230,17 @@ $(document).ready(function(){
      * Opens the addUpdateModal if the user has not posted today.
      */
     $("#addUpdateBtn").click(function () {
+        // Do not allow updates to be added from certain pages
+        currentPathname = window.location.pathname
+        methodNotAllowedHere = ["changeuserdetails", "changepassword"];
+
+        for (i = 0; i < methodNotAllowedHere.length; i++) {
+             if(currentPathname.includes(methodNotAllowedHere[i])) {
+                 alert("Sorry you are unable to add updates from this page!");
+                 return false;
+             }     
+        }
+
         $.ajax({
             url: "/haspostedtoday/",
             type: 'get',
@@ -259,7 +283,6 @@ $(document).ready(function(){
      * Checks that the user has filled in both fields
      * in the LoginModal before submission.
      */
-    // 
     $.validate_login = function() {
         var usernameLen = $("#username").val().length;  
         var passwordLen = $("#pwd").val().length;  
@@ -390,132 +413,6 @@ $(document).ready(function(){
 
 
     /**
-     * Changes the updates shown when a username link is clicked
-     * on the MyUpdates and Tags pages.
-     */
-    function change_updates_by_username(posterName, csrftoken) {
-        $.post("/src/ajaxhandlers/addUpdatesToPage.php",
-        {
-            username: posterName,
-            csrfmiddlewaretoken: csrftoken,
-        },
-        function(data, status) {
-            if(status==='success') {
-                $("#userUpdates").empty().append(data);
-                $("#tagList").empty().append(data);
-            }
-            else {
-                alert("Sorry: Unable to retrieve your data.");
-            }
-        });
-    };
-
-
-    /**
-     * Changes the updates shown when a username link is clicked
-     * on the NewUpdates page.
-     */
-    $(".allUserUpdates").on("click",".panel-postTitle .posterName", function(e) {   
-        e.preventDefault();       
-        var posterName = $(this).attr("name");
-        var csrftoken = getCookie('csrftoken');
-
-        $.post("/addupdatesforusername/",
-            {
-                username: posterName,
-                csrfmiddlewaretoken: csrftoken,
-            },
-            function (data, status) {
-                if (status === 'success') {
-                    $(".allUserUpdates").empty().append(data);
-                }
-                else {
-                    alert("Sorry: Unable to retrieve your data.");
-                }
-            });
-    }); 
-
-
-    /**
-     * Changes the updates shown when a username link is clicked
-     * on the MyUpdates page.
-     */
-    $(".currentUserUpdates").on("click",".panel-postTitle .posterName", function(e) {   
-        e.preventDefault();       
-        var posterName = $(this).attr("name");
-        var csrftoken = getCookie('csrftoken');
-
-        $.post("/addupdatesforusername/",
-            {
-                username: posterName,
-                csrfmiddlewaretoken: csrftoken,
-            },
-            function (data, status) {
-                if (status === 'success') {
-                    $(".currentUserUpdates").empty().append(data);
-                }
-                else {
-                    alert("Sorry: Unable to retrieve your data.");
-                }
-            });
-    }); 
-
-
-    /**
-     * Changes the updates shown when a tag link is clicked
-     * on the myUpdates page.
-     */
-    $(".currentUserUpdates").on("click",".panel-footer .tagName", function(e) {   
-        e.preventDefault();
-        var tagName = $(this).attr("name");
-        var showAllUserUpdates = "false";
-        var csrftoken = getCookie('csrftoken');
-
-        $.post("/addupdatesfortagbyloggedinuser/",
-            {
-                postTag: tagName,
-                csrfmiddlewaretoken: csrftoken,
-                showAll: showAllUserUpdates
-            },
-            function (data, status) {
-                if (status === 'success') {
-                    $(".currentUserUpdates").empty().append(data);
-                }
-                else {
-                    alert("Sorry: Unable to retrieve your data.");
-                }
-            });
-    }); 
-
-
-    /**
-     * Changes the div content to show updates when a tag link 
-     * is clicked on the Tags or New Updates pages
-     */
-    $(".allUserUpdates").on("click",".panel-footer .tagName", function(e) {   
-        e.preventDefault();       
-        var tagName = $(this).attr("name");
-        var showAllUserUpdates = "true";
-        var csrftoken = getCookie('csrftoken');
-
-        $.post("/addupdatesfortag/",
-        {
-            postTag: tagName,
-            csrfmiddlewaretoken: csrftoken,
-            showAll: showAllUserUpdates
-        },
-        function(data, status) {
-            if(status==='success') {
-                $(".allUserUpdates").empty().append(data);
-            }
-            else {
-                alert("Sorry: Unable to retrieve your data.");
-            }
-        });
-    }); 
-
-
-    /**
      * Hide a selected post. (temporarily)
      */
     $.hide_post = function (postID) {
@@ -550,33 +447,18 @@ $(document).ready(function(){
       
       // If the collapse is not showing, show it
       var collapsePostID = "#collapse" + in_collapseID;
-
       $(collapsePostID).collapse("show");
       
-    
-      var editBox = '<style>textarea {width: 100%; margin: 5px 0 5px 0; padding: 5px;}</style>' +
-                    '<textarea rows="4" id="edit_box" value=""></textarea>' +
-                    '<div>' + 
-                    ' <button id="cancel_btn" onclick="$.cancel_edit_post(' + in_postID +  ')">CANCEL</button>' + 
-                    ' <button id="save_btn" onclick="$.save_edit_post(' + in_postID +  ')">SAVE CHANGES</button>' + 
-                    '</div>'
-    
-      $(textPostID).html(editBox);
+
+      // Load the page element and insert it into the panel
+      url = '/edituserpost/' + in_postID;
+      $(textPostID).load(url);
     
       // Focus on the input and position cursor at end of text to edit
       $("#edit_box").focus().val(originalPostText);
       return true;
 
     };
-
-
-    /**
-     * Adds the edited post text to the page, hiding the edit box.
-     */
-    $.show_saved_post = function(textPostID, newText) {
-        $(textPostID).html(newText);
-        editingPost = false;
-    }
 
 
     /**
@@ -599,17 +481,16 @@ $(document).ready(function(){
                     if (status === 'success') {
                         if (data === 'True') {
                             alert('Your post has been updated.');
-                            $.show_saved_post(textPostID, currentText);
-
+                            location.reload();
                         } else {
                             alert(data);
-                            $.show_saved_post(textPostID, originalPostText);
+                            location.reload();
                         }
                     }
                     else {
                         alert("Database error: please contact the administrator.");
                         // redirect to error page instead?
-                        $.show_saved_post(textPostID, originalPostText);
+                        location.reload();
                     }
                 });
         }
@@ -667,7 +548,6 @@ $(document).ready(function(){
                 function (data, status) {
                     if (status === 'success') {
                         if (data === 'True') {
-                            $.hide_post(in_postID)
                             alert('Your post has been deleted.');
                             location.reload();
                         } else {
@@ -682,7 +562,6 @@ $(document).ready(function(){
         else {
             alert("Delete cancelled");
         }
-
     };
 
 });

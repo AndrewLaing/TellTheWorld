@@ -1,5 +1,10 @@
 ﻿
-from tellings.models import Posts, Tags, Tagmap
+python manage.py makemigrations
+python manage.py migrate
+python3 manage.py createsuperuser
+python3 manage.py runserver
+
+from tellings.models import UserPost, Tags, Tagmap
 
 # get a list of all values in a field (without flat=True creates tuples for each value)
 tags = list(Tags.objects.values_list('tagName', flat=True))
@@ -17,28 +22,28 @@ resultKeys = sorted(list(result.keys()))
 
 ---------------------------------------------------------------------------------------
 # get a list of all posts
-posts = Posts.objects.all().order_by('-dateOfPost')
+posts = UserPost.objects.all().order_by('-dateOfPost')
 postList = [[post.postID, post.dateOfPost.strftime("%d %B %Y"), 
              post.user.username, post.postTitle, post.postText] for post in posts]
 ---------------------------------------------------------------------------------------
 # get all posts by userID
 
 def getByUserID(userID):
-    posts = Posts.objects.all().filter(user=userID).order_by('-dateOfPost')
+    posts = UserPost.objects.all().filter(user=userID).order_by('-dateOfPost')
 	postList = [[post.postID, post.dateOfPost.strftime("%d %B %Y"), post.user.username, post.postTitle, post.postText] for post in posts]
 	return postList
 ---------------------------------------------------------------------------------------
 # post title exists
 
 def postTitleExists(in_postTitle):
-    posts = Posts.objects.all().filter(postTitle=in_postTitle)
+    posts = UserPost.objects.all().filter(postTitle=in_postTitle)
     return len(posts) > 0
 ----------------------------------------------------------------------------------------
 #user has posted today
 
 def userHasPostedToday(in_userID):
     yesterday = date.today() - timedelta(1)
-    posts = Posts.objects.all().filter(user=in_userID).filter(dateOfPost__gt=yesterday)
+    posts = UserPost.objects.all().filter(user=in_userID).filter(dateOfPost__gt=yesterday)
     return len(posts) > 0
 
 ----------------------------------------------------------------------------------------

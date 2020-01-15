@@ -2,7 +2,7 @@
 # Filename:     test_files_exist.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 04/12/2019
+# Last Updated: 15/01/2020
 # Description:  Tests that files used by the site are accessible.
 """
 
@@ -24,9 +24,6 @@ class tellingsFilesExistTests(TestCase):
         cls.path = os.path.join(settings.BASE_DIR, 'tellings/')
         cls.tellings_files = [ 'admin.py',
                                'apps.py',
-                               'createTagLinksHTML.py',
-                               'createUpdatesHTML.py',
-                               'databaseQueries.py',
                                'forms.py',
                                'models.py',
                                'page_extras.py',
@@ -50,10 +47,10 @@ class TemplatesExistTests(TestCase):
                                'tellings/errorPage.html',
                                'tellings/index.html',
                                'tellings/loginpage.html',
-                               'tellings/myupdates.html',
-                               'tellings/newupdates.html',
+                               'tellings/myupdates_list.html',
+                               'tellings/newupdates_list.html',
                                'tellings/signup.html',
-                               'tellings/tags.html' ]
+                               'tellings/tag_list.html' ]
 
     def setUp(self):
         pass

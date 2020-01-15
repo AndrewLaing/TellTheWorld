@@ -2,7 +2,7 @@
 # Filename:     test_models.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 19/08/2019
+# Last Updated: 15/01/2020
 # Description:  Test cases for tellings models.
 """
 
@@ -11,10 +11,10 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from django.urls import reverse
 
-from tellings.models import Posts, Tags, Tagmap
+from tellings.models import *
 
-class TagsModelTest(TestCase):
-    """Tests for the Tags model."""
+class TagModelTests(TestCase):
+    """Tests for the Tag model."""
 
     @classmethod
     def setUpTestData(cls):
@@ -24,14 +24,14 @@ class TagsModelTest(TestCase):
         pass
 
     def createTag(self, tagName='MyTag'):
-        return Tags.objects.create(tagName=tagName)
+        return Tag.objects.create(tagName=tagName)
 
     def test_tag_creation(self):
         tag = self.createTag()
-        self.assertTrue(isinstance(tag, Tags))
+        self.assertTrue(isinstance(tag, Tag))
 
     def test_verbose_name_plural(self):
-        self.assertEqual(str(Tags._meta.verbose_name_plural), "Tags")
+        self.assertEqual(str(Tag._meta.verbose_name_plural), "Tags")
 
     def test_string_representation(self):
         tag = self.createTag("Tag1")
@@ -43,8 +43,8 @@ class TagsModelTest(TestCase):
         self.assertEquals(max_length, 15)
 
 
-class PostsModelTest(TestCase):
-    """Tests for the Posts model."""
+class UserPostModelTests(TestCase):
+    """Tests for the UserPost model."""
 
     @classmethod
     def setUpTestData(cls):
@@ -55,15 +55,15 @@ class PostsModelTest(TestCase):
 
     def createPost(self, userID=1, dateOfPost='2019-08-12', 
                    postTitle='Post Title', postText='Post Text'):
-        return Posts.objects.create(user_id=userID, dateOfPost=dateOfPost, 
+        return UserPost.objects.create(user_id=userID, dateOfPost=dateOfPost, 
                      postTitle=postTitle, postText=postText)
 
     def test_verbose_name_plural(self):
-        self.assertEqual(str(Posts._meta.verbose_name_plural), "Posts")
+        self.assertEqual(str(UserPost._meta.verbose_name_plural), "UserPosts")
 
     def test_post_creation(self):
         post = self.createPost()
-        self.assertTrue(isinstance(post, Posts))
+        self.assertTrue(isinstance(post, UserPost))
 
     def test_string_representation(self):
         post = self.createPost(self.user1.id, '2019-08-12', 'postTitle 2', 'postText 2')
@@ -80,14 +80,14 @@ class PostsModelTest(TestCase):
         self.assertEquals(max_length, 255)
 
 
-class TagmapModelTest(TestCase):
+class TagmapModelTests(TestCase):
     """Tests for the Tagmap model."""
 
     @classmethod
     def setUpTestData(cls):
         cls.user2 = User.objects.create_user('testuser2', 'testUser2@email.com', '@myp455w0rd')
-        cls.testtag = Tags(tagName='testtag')
-        cls.testpost = Posts(cls.user2.id, '2019-08-12', 'postTitle 3', 'postText 3')
+        cls.testtag = Tag(tagName='testtag')
+        cls.testpost = UserPost(cls.user2.id, '2019-08-12', 'postTitle 3', 'postText 3')
 
     def setUp(self):
         pass    
@@ -101,3 +101,27 @@ class TagmapModelTest(TestCase):
 
     def test_verbose_name_plural(self):
         self.assertEqual(str(Tagmap._meta.verbose_name_plural), "Tagmaps")
+
+
+class DeletedAccountModelTests(TestCase):
+    """Tests for the DeletedAccount model."""
+
+    def setUp(self):
+        pass
+
+    def createRecord(self, deleted_date='2019-08-12', 
+                     deleted_reason='somethingelse', membership_length=365):
+        return DeletedAccount.objects.create(deleted_date=deleted_date, 
+                     deleted_reason=deleted_reason, membership_length=membership_length)
+
+    def test_verbose_name_plural(self):
+        self.assertEqual(str(DeletedAccount._meta.verbose_name_plural), "DeletedAccounts")
+
+    def test_record_creation(self):
+        record = self.createRecord()
+        self.assertTrue(isinstance(record, DeletedAccount))
+
+    def test_deleted_reason_max_length(self):
+        record = self.createRecord()
+        max_length = record._meta.get_field('deleted_reason').max_length
+        self.assertEquals(max_length, 15)

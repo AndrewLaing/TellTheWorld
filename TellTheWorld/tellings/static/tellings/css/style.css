@@ -157,6 +157,20 @@ body {
   font-size: 30px;
 }
 
+.tagDetails {
+  margin-top: 30px;
+  margin-bottom: 30px;
+  padding: 20px;
+  padding-top: 0px;
+  background-color: #FFF;
+}
+
+
+#paginationDiv {
+  padding-right: 60px;
+  /*background-color: #FFF;*/
+}
+
 .login-modal-header {
   padding:15px 50px;
 }

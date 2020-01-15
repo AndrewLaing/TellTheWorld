@@ -1,0 +1,94 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-01-15 11:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Andrew Laing <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+#: .\tellings\forms.py:21
+msgid "Email Address"
+msgstr "Adresse e-mail"
+
+#: .\tellings\forms.py:22
+msgid "Sorry. An account attached to this email address already exists."
+msgstr "Désolé. Un compte associé à cette adresse e-mail existe déjà."
+
+#: .\tellings\forms.py:23
+msgid "A valid email address"
+msgstr "Une adresse e-mail valide"
+
+#: .\tellings\forms.py:52 .\tellings\forms.py:76
+msgid "Post Title"
+msgstr "Titre du message"
+
+#: .\tellings\forms.py:53
+msgid "A unique title post"
+msgstr "Un titre de message unique"
+
+#: .\tellings\forms.py:56 .\tellings\forms.py:75
+msgid "Post Text"
+msgstr "Texte du message"
+
+#: .\tellings\forms.py:57
+msgid "Your post text."
+msgstr "Texte de votre message."
+
+#: .\tellings\forms.py:79
+msgid "The text for your post"
+msgstr "Le texte de votre message"
+
+#: .\tellings\forms.py:80
+msgid "A unique post title"
+msgstr "Un titre de message unique"
+
+#: .\tellings\forms.py:84
+msgid "The text you have entered is too long."
+msgstr "Le texte que vous avez entré est trop long,"
+
+#: .\tellings\forms.py:85
+msgid "The Post title you have entered has already been used."
+msgstr "Le titre du message que vous avez entré a déjà été utilisé."
+
+#: .\tellings\forms.py:88
+msgid "The title of your post is too long."
+msgstr "Le titre de votre message est trop long."
+
+#: .\tellings\views.py:99 .\tellings\views.py:208
+msgid "Please correct the error below."
+msgstr "Veuillez corriger l'erreur ci-dessous."
+
+#: .\tellings\views.py:116
+msgid "Your details have been updated"
+msgstr "Vos détails ont été mis à jour."
+
+#: .\tellings\views.py:161
+msgid "Your password was successfully updated!"
+msgstr "Votre mot de passe a été mis à jour avec succès!"
+
+#: .\tellings\views.py:581
+msgid "Something went wrong. We were unable to delete your post."
+msgstr "Quelque chose a mal tourné. Nous n'avons pas pu supprimer votre message."
+
+#: .\tellings\views.py:583
+msgid "YOU CANNOT DELETE OTHER USERS POSTS!!!"
+msgstr "VOUS NE POUVEZ PAS SUPPRIMER LES MESSAGES D'AUTRES UTILISATEURS!!!"
+
+#: .\tellings\views.py:737
+msgid ""
+"Unable to make changes to the post. Please contact the site administrator."
+msgstr "Impossible de modifier le message. Veuillez contacter l'administrateur du site."
+
+#: .\tellings\views.py:739
+msgid "YOU CANNOT EDIT OTHER USERS POSTS!!!"
+msgstr "VOUS NE POUVEZ PAS MODIFIER LES MESSAGES D'AUTRES UTILISATEURS!!!"

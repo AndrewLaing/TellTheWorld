@@ -1,0 +1,40 @@
+{% extends 'tellings/base.html' %}
+{% block title %}Tell the World{% endblock title %} 
+{% block headertitle1 %}Tags{% endblock headertitle1 %} 
+{% comment %} 
+ * -------------------------------------------------------------------------------
+ * Filename:     tag_list.html
+ * Author:       Andrew Laing
+ * Email:        parisianconnections@gmail.com
+ * Last updated: 15/01/2020
+ * Description:  Template used for the Tags page.
+ * -------------------------------------------------------------------------------
+{% endcomment %}
+
+{% block content %}
+
+  <!-- Main content. -->
+  <div class="container-fluid main-content"> 
+    <div class="container allUserUpdates" id="userUpdates">
+      <div class="row tagDetails"> 
+        {% if tag_list %}
+          {% regroup tag_list by first_char as first_char_list %}
+        
+          {% for sort_by_first_char in first_char_list %}
+            <h1>{{ sort_by_first_char.grouper }}</h1>
+              {% for item in sort_by_first_char.list %}
+                <p>
+                  <a href="{% url 'tellings:newupdates' %}?tagName={{ item.tagName }}" name="{{ item.tagName }}">{{ item.tagName }}</a>
+                </p>
+              {% endfor %}
+           {% endfor %}
+        {% else %}
+          <p>No results found.</p>
+        {% endif %}  
+
+      </div>
+    </div>    <!-- END OF CONTAINER -->
+  </div>      <!-- END OF CONTAINER-FLUID -->
+
+
+{% endblock %}
