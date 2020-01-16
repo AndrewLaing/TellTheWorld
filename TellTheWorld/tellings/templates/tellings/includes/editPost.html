@@ -1,0 +1,23 @@
+{% comment %} 
+ * -------------------------------------------------------------------------------
+ * Filename:     editPost.html
+ * Author:       Andrew Laing
+ * Email:        parisianconnections@gmail.com
+ * Last updated: 16/01/2020.
+ * Description:  This contains the markup used for editing a userPost.
+ * -------------------------------------------------------------------------------
+{% endcomment %}
+<style>
+    textarea {
+      width: 100%; 
+      margin: 5px 0 5px 0; 
+      padding: 5px;
+    }
+</style>
+
+<textarea rows="4" id="edit_box" value="">{{ form.postText.value }}</textarea>
+
+<div>
+  <button id="cancel_btn" onclick="$.cancel_edit_post({{ pk }})">CANCEL</button>
+  <button id="save_btn" onclick="$.save_edit_post({{ pk }})">SAVE CHANGES</button>
+</div>

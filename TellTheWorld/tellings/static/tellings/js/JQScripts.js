@@ -2,7 +2,7 @@
  * Filename:     JQScripts.js
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 14/01/2020.
+ * Last updated: 16/01/2020.
  * Description:  JQuery scripts used by the 'Tell the World' website.
  */
 
@@ -22,8 +22,7 @@ $(document).ready(function(){
         $('#modal_container').empty();
 
         $('#modal_container').load("/loginmodal/", function(result){
-            // Event handler to focus the username field when
-            // the modal is shown
+            // Focus the username field when the modal is shown
             $('#loginModal').on('shown.bs.modal', function () {
                  $('#username').focus();
             });
@@ -150,61 +149,12 @@ $(document).ready(function(){
 
     /**
      * Checks that the user has entered their password correctly
-     * before the accopunt can be deleted.
+     * before the account can be deleted.
      */
     $.validate_deleteAccount = function () {
         var password = $("#pwd_deleteModal").val()
         $.entered_password_is_valid(password);
     };
-
-
-    /**
-     * Stops the user from entering blocked characters into the
-     * addUpdateModal's input fields to try and prevent XSS attacks.
-     * Note: remove when addUpdate modal is remade.
-     */
-    $("#addUpdateModal input").on("keypress paste", function (e) {
-        alert('pressed')
-        var c = this.selectionStart, v = $(this).val();
-        if (e.type == "keypress")
-            var key = String.fromCharCode(e.charCode ? e.charCode : e.which)
-        else
-            var key = e.originalEvent.clipboardData.getData('Text')
-
-        var val = v.substr(0, c) + key + v.substr(c, v.length)
-
-        var r_pattern = /[\<\>\&]+/
-
-        if (val.match(r_pattern)) {
-            e.preventDefault()
-            alert('Sorry you cannot enter the <, > or & characters into this form!');
-            return false
-        }
-    })
-
-
-    /**
-     * Stops the user from entering blocked characters into the
-     * addUpdateModal's text area to try and prevent XSS attacks.
-     * Note: remove when addUpdate modal is remade.
-     */
-    $("#addUpdateModal textarea").on("keypress paste", function (e) {
-        var c = this.selectionStart, v = $(this).val();
-        if (e.type == "keypress")
-            var key = String.fromCharCode(e.charCode ? e.charCode : e.which)
-        else
-            var key = e.originalEvent.clipboardData.getData('Text')
-
-        var val = v.substr(0, c) + key + v.substr(c, v.length)
-
-        var r_pattern = /[\<\>\&]+/
-
-        if (val.match(r_pattern)) {
-            e.preventDefault()
-            alert('Sorry you cannot enter the <, > or & characters into this form!');
-            return false
-        }
-    })
 
 
     /**
@@ -448,7 +398,6 @@ $(document).ready(function(){
       // If the collapse is not showing, show it
       var collapsePostID = "#collapse" + in_collapseID;
       $(collapsePostID).collapse("show");
-      
 
       // Load the page element and insert it into the panel
       url = '/edituserpost/' + in_postID;
@@ -457,7 +406,6 @@ $(document).ready(function(){
       // Focus on the input and position cursor at end of text to edit
       $("#edit_box").focus().val(originalPostText);
       return true;
-
     };
 
 
@@ -497,7 +445,6 @@ $(document).ready(function(){
         else {
             alert("Cancelled");
         } 
-
       };    
 
 
@@ -515,7 +462,7 @@ $(document).ready(function(){
 
 
     /**
-     * Stops user from opening or closing posts whilst editing.
+     * Stops user from opening or closing post collapses whilst editing.
      */
     $('.collapse_btn').on('click', function(event) {
       if($('#edit_box').length) {

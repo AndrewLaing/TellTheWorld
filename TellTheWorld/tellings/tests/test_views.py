@@ -2,7 +2,7 @@
 # Filename:     test_views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 15/01/2020
+# Last Updated: 16/01/2020
 # Description:  Test cases for tellings views
 """
 
@@ -10,7 +10,7 @@ import django
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.urls import reverse
-from datetime import datetime, date, timedelta 
+from datetime import datetime, date
 
 from tellings.models import *
 import json
@@ -41,9 +41,6 @@ class SharedVariables:
     test_postText1 = 'PT_text_1'
     test_postText2 = 'PT_text_2'
     test_postTags = ["qwertyuiop","zxcvbnm","this is a test", "still a test"]
-    test_goodTag = test_postTags[0]
-    test_badTag = "NotATag"
-    test_no_results_HTML = '<h1>No results found!</h1>'
     test_reasonForDeletingAccount = "somethingelse"
 
 
@@ -71,23 +68,6 @@ class SharedTestMethods(TestCase):
         """ Creates a new Tagmap record """
         return Tagmap.objects.create(postID=postID, tagID=tagID)
 
-    def createNewUpdates(self):
-        """ Creates the records for two test updates """
-        post1 = self.createPostRecord(userID=self.user1.id, dateOfPost='2019-08-02', 
-                              postTitle=self.test_postTitle1, postText=self.test_postText1)
-        post2 = self.createPostRecord(userID=self.user2.id, dateOfPost='2019-08-02', 
-                              postTitle=self.test_postTitle2, postText=self.test_postText2)
-
-        skipCreate = True
-        for tag in self.test_postTags:
-            tg = self.createTagRecord(tag)
-            if skipCreate:
-                self.createTagmapRecord(post2, tg)
-                skipCreate = False
-            else:
-                self.createTagmapRecord(post1, tg)
-                self.createTagmapRecord(post2, tg)
-
     def get_loggedin_tests(self): 
         """ Logs into an account, GETs a page, and tests that the page
             is returned correctly with its template. """
@@ -109,13 +89,11 @@ class SharedTestMethods(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, self.loggedout_redirect_URL)
 
-
     def get_login_HTTPResponseNotAllowed_tests(self):
         self.client.login(username=self.credentials['username'], 
                           password=self.credentials['pwd'])
         response = self.client.get(reverse(self.viewname), follow=True)
         self.assertEqual(response.status_code, 405)
-
 
     def post_invalid_login_redirect_tests(self):
         self.client.logout()
@@ -124,23 +102,11 @@ class SharedTestMethods(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, reverse(self.loginPage_viewname))
 
-    def post_loggedin_tests(self):
-        self.client.login(username=self.credentials['username'], 
-                          password=self.credentials['pwd'])
-        response = self.client.post(reverse(self.viewname), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, self.templateURL)
-
     def post_loggedin_not_allowed_tests(self):
         self.client.login(username=self.credentials['username'], 
                           password=self.credentials['pwd'])
         response = self.client.post(reverse(self.viewname), follow=True)
         self.assertEqual(response.status_code, 405)
-
-    def post_loggedout_tests(self):
-        response = self.client.post(reverse(self.viewname), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, self.templateURL)
 
     def post_loggedout_redirect_tests(self):
         """ Sends a POST request for a page and ensures that it
@@ -163,15 +129,6 @@ class SharedTestMethods(TestCase):
         response = self.client.post(reverse(self.viewname), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertRedirects(response, reverse(self.errorPage_viewname))
-
-    def post_no_results_found_tests(self):
-        self.createNewUpdates()
-        self.client.login(username=self.credentials['username'], 
-                          password=self.credentials['pwd'])
-        response = self.client.post(reverse(self.viewname), 
-                                    self.test_PostData2, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, self.test_no_results_HTML)
 
     def post_valid_login_tests(self):
         user = User.objects.get(username=self.credentials['username'])
@@ -392,8 +349,8 @@ class IndexPageViewTests(SharedTestMethods):
         self.post_invalid_login_redirect_tests()
 
 
-class NewUpdatesViewTests(SharedTestMethods):
-    """Tests for the NewUpdates view."""
+class NewUpdatesListViewTests(SharedTestMethods):
+    """Tests for the NewUpdatesListView view."""
 
     @classmethod
     def setUpTestData(cls):        
@@ -422,8 +379,8 @@ class NewUpdatesViewTests(SharedTestMethods):
         self.post_loggedin_not_allowed_tests()
         
 
-class TagsViewTests(SharedTestMethods):
-    """Tests for the Tags view."""
+class TagListViewTests(SharedTestMethods):
+    """Tests for the TagListView view."""
 
     @classmethod
     def setUpTestData(cls):
@@ -454,8 +411,8 @@ class TagsViewTests(SharedTestMethods):
         self.post_loggedin_not_allowed_tests()
 
 
-class MyUpdatesViewTests(SharedTestMethods):
-    """Tests for the MyUpdates view."""
+class MyUpdatesListViewTests(SharedTestMethods):
+    """Tests for the MyUpdatesList view."""
 
     @classmethod
     def setUpTestData(cls):        

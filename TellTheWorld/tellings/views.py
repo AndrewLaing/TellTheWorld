@@ -1,7 +1,7 @@
 # Filename:     views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last updated: 14/01/2020
+# Last updated: 16/01/2020
 # Description:  Contains the views for the website.
 
 from django.contrib import messages
@@ -10,10 +10,8 @@ from django.contrib.auth.forms import PasswordChangeForm, UserCreationForm
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required # @login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, render_to_response, get_object_or_404
-from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.views import View, generic 
 
@@ -70,7 +68,7 @@ def user_login(request):
 # -----------------------------------------------------------------------------------------
 
 class ChangeUserDetailsPage(LoginRequiredMixin, View):
-    """ Creates the change password page for the website."""
+    """ Creates the change user details page for the website."""
     http_method_names = ['get', 'post']
 
     def get(self, request):
@@ -100,7 +98,7 @@ class ChangeUserDetailsPage(LoginRequiredMixin, View):
             return render(request, 'tellings/changeUserDetails.html', {'form': form, 'quote': quote})
 
     def changeDetails(self, request, form):
-        """ Handles changing the users details.
+        """ Handles changing the user's details.
 
         :param request: A dictionary-like object containing all HTTP POST parameters, 
                         sent by a site user. 
@@ -238,7 +236,7 @@ class IndexPage(View):
 
 
 class ErrorPage(View):
-    """ Creates the New Updates page for the website."""
+    """ Creates the Error page for the website."""
     http_method_names = ['get', 'post']
 
     def get(self, request):
@@ -266,7 +264,7 @@ class ErrorPage(View):
 
 
 class AccountDeletedPage(LoginRequiredMixin, View):
-    """ Creates the Account Deleted page for the website."""
+    """ Creates the Account Deleted page for the website. """
     http_method_names = ['post']
 
     def post(self, request):
@@ -282,7 +280,7 @@ class AccountDeletedPage(LoginRequiredMixin, View):
             return HttpResponseRedirect('/errorpage/')
 
     def deleteAccount(self, request):
-        """ Handles user authentication.
+        """ Handles deleting the user's account.
 
         :param request: A dictionary-like object containing all HTTP POST parameters, 
                         sent by a site user. 
@@ -316,7 +314,8 @@ class AccountDeletedPage(LoginRequiredMixin, View):
             return HttpResponseRedirect('/errorpage/')
 
 
-class TagListView(LoginRequiredMixin, generic.ListView):    # FOR LISTVIEW
+class TagListView(LoginRequiredMixin, generic.ListView):
+    """ Creates the Tags page for the website."""
     model = Tag
     paginate_by = 20
     http_method_names = ['get', 'post']
@@ -329,6 +328,7 @@ class TagListView(LoginRequiredMixin, generic.ListView):    # FOR LISTVIEW
 
 
 class MyUpdatesListView(LoginRequiredMixin, generic.ListView):
+    """ Creates the My Updates page for the website."""
     model = UserPost
     template_name = "tellings/myupdates_list.html"
     paginate_by = 2
@@ -337,7 +337,6 @@ class MyUpdatesListView(LoginRequiredMixin, generic.ListView):
     def get_queryset(self):
         user_id = self.request.user.id
         tagName_val = False
-
         qs = super().get_queryset()
         
         if self.request.method == 'GET' and 'tagName' in self.request.GET:
@@ -371,6 +370,7 @@ class MyUpdatesListView(LoginRequiredMixin, generic.ListView):
 
 
 class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
+    """ Creates the New Updates page for the website."""
     model = UserPost
     template_name = "tellings/newupdates_list.html"
     paginate_by = 2
@@ -456,7 +456,7 @@ class HasPostedToday(LoginRequiredMixin, View):
 
 
 class TitleExists(LoginRequiredMixin, View):
-    """ An AJAX handler used to check whether an update title already
+    """ An AJAX handler used to check if a post title already
         exists within the UserPost table or not."""
     http_method_names = ['post']
 
@@ -571,10 +571,9 @@ class DeleteUserPost(LoginRequiredMixin, View):
         """
         if ('postID' in request.POST):
             postID = request.POST.get('postID')
-            currentUser = request.user.username
             username = self.getUsernameForPostID(postID)
             # Check that the post was made by the user deleting it
-            if(self.postWasMadeByCurrentUser(username, currentUser)):
+            if( username == request.user.username ):
                 if self.deletePost(postID):
                     return HttpResponse("True")
                 else:
@@ -583,11 +582,6 @@ class DeleteUserPost(LoginRequiredMixin, View):
                 return HttpResponse(_("YOU CANNOT DELETE OTHER USERS POSTS!!!"))
         else:
             return HttpResponseRedirect('/errorpage/')
-
-    def postWasMadeByCurrentUser(self, username, currentUser):
-        """ Add a description.
-        """
-        return username == currentUser
 
     def getUsernameForPostID(self, in_postID):
         """ Returns the name of the user who made the post.
@@ -600,7 +594,7 @@ class DeleteUserPost(LoginRequiredMixin, View):
             return None
 
     def deletePost(self, in_postID):
-        """ Add a description.
+        """ Handles deleting a userPost.
         """
         try:
             post = UserPost.objects.get(postID=in_postID)
@@ -696,7 +690,7 @@ class EditUserPost(LoginRequiredMixin, generic.UpdateView):
         and deal with updating the user post with the new details.
     """
     model = UserPost 
-    template_name = "tellings/includes/testEditPost.html"    
+    template_name = "tellings/includes/editPost.html"    
     fields = ['user', 'dateOfPost','postTitle', 'postText']   
     http_method_names = ['get', 'post']
 

@@ -4,15 +4,15 @@ python manage.py migrate
 python3 manage.py createsuperuser
 python3 manage.py runserver
 
-from tellings.models import UserPost, Tags, Tagmap
+from tellings.models import UserPost, Tag, Tagmap
 
 # get a list of all values in a field (without flat=True creates tuples for each value)
-tags = list(Tags.objects.values_list('tagName', flat=True))
+tags = list(Tag.objects.values_list('tagName', flat=True))
 ---------------------------------------------------------------------------------------
 # alphabetical dict of tags
 from collections import defaultdict
 
-tagList = list(Tags.objects.values_list('tagName', flat=True))
+tagList = list(Tag.objects.values_list('tagName', flat=True))
 result = defaultdict(list)
 tagsToAdd = [(name[0].lower(), name) for name in tagList]
 for tag in tagsToAdd:

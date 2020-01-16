@@ -1,12 +1,13 @@
 {% extends 'tellings/base.html' %}
 {% block title %}Tell the World{% endblock title %} 
 {% block headertitle1 %}My Updates{% endblock headertitle1 %} 
+
 {% comment %} 
  * -------------------------------------------------------------------------------
  * Filename:     myupdates_list.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 03/01/2020
+ * Last updated: 16/01/2020
  * Description:  Template used for the MyUpdates page.
  * -------------------------------------------------------------------------------
 {% endcomment %}
@@ -79,7 +80,9 @@
         {% endfor %}
 
         {% else %}
+        <div class="row"></div>
           <p>No results found.</p>
+        </div> <!-- END OF ROW  -->
         {% endif %}  
 
     </div>    <!-- END OF CONTAINER -->

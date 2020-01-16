@@ -2,7 +2,7 @@
 # Filename:     test_files_exist.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 15/01/2020
+# Last Updated: 16/01/2020
 # Description:  Tests that files used by the site are accessible.
 """
 
@@ -10,7 +10,6 @@ import django
 from django.test import SimpleTestCase, TestCase
 from django.conf import settings
 from django.contrib.staticfiles import finders
-from django.contrib.staticfiles.storage import staticfiles_storage
 from django.template.loader import get_template
 
 import os
@@ -67,6 +66,7 @@ class IncludedFilesExistTests(TestCase):
     def setUpTestData(cls):
         cls.base_html_files = [ 'tellings/includes/addUpdate_modal.html',
                                 'tellings/includes/deleteAccount_modal.html',
+                                'tellings/includes/editPost.html',
                                 'tellings/includes/footerContents.html',
                                 'tellings/includes/formErrors.html',
                                 'tellings/includes/JSMessagePopup.html',
