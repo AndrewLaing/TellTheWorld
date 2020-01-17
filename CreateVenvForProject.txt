@@ -10,7 +10,7 @@ Set-ExecutionPolicy Unrestricted -Scope Process
 \path\to\env\Scripts\activate.ps1
 
 # deactivate the environment
-\path\to\env\Scripts\deactivate.bat
+deactivate
 
 # install requirements
 pip install django

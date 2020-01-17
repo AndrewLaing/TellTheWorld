@@ -20,7 +20,7 @@
       <div class="modal-header addUpdate-modal-header">
         <!-- Close button -->
         <button type="button" class="close" data-dismiss="modal">&times;</button>  
-        <h3>Add new update here</h3>
+        <h3>Add new update</h3>
       </div>
 
       <!-- MODAL BODY-->
@@ -40,7 +40,7 @@
                    name="postText" maxlength="254" required></textarea>
             <br />
 
-            <label for="postTags">Tags</label>
+            <label for="postTags">Tags</label>  - (<i>Words used to categorise your post</i>)
             <br />
 
             <div id="tagDiv">
@@ -63,14 +63,21 @@
 
                 tagnames.initialize();
 
-                  $('#tagDiv').tagsinput({
-                    typeaheadjs: {
-                      name: 'tagnames',
-                      displayKey: 'name',
-                      valueKey: 'name',
-                      source: tagnames.ttAdapter()
-                    }
+                $('#tagDiv').tagsinput({
+                  typeaheadjs: {
+                    name: 'tagnames',
+                    displayKey: 'name',
+                    valueKey: 'name',
+                    source: tagnames.ttAdapter()
+                  }
                 });
+                
+                // Add entered tag if user exits without confirming it
+                $('#tagDiv').tagsinput('input').blur(function() {
+                  $('#tagDiv').tagsinput('add', $(this).val());
+                  $(this).val('');
+                });
+
             </script>
           </div>
           <div class="modal-login-btn">
