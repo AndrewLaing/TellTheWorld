@@ -1,0 +1,17 @@
+# Create and activate a virtual environment
+
+pip install virtualenv
+virtualenv name_of_env
+
+# allow execution of activate script on windows
+Set-ExecutionPolicy Unrestricted -Scope Process
+
+# activate the environment
+\path\to\env\Scripts\activate.ps1
+
+# deactivate the environment
+\path\to\env\Scripts\deactivate.bat
+
+# install requirements
+pip install django
+

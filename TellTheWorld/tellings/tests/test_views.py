@@ -808,7 +808,7 @@ class EditUserPostViewTests(SharedTestMethods):
         SV = SharedVariables  
         cls.viewname = 'tellings:edituserpost'
         cls.testGETURL = '/edituserpost/1'
-        cls.templateURL = 'tellings/includes/testEditPost.html'
+        cls.templateURL = 'tellings/includes/editPost.html'
         cls.errorPage_viewname = SV.errorPage_viewname
         cls.loggedout_redirect_URL = '/loginpage/?next=/edituserpost/'
 
