@@ -331,7 +331,7 @@ class MyUpdatesListView(LoginRequiredMixin, generic.ListView):
     """ Creates the My Updates page for the website."""
     model = UserPost
     template_name = "tellings/myupdates_list.html"
-    paginate_by = 2
+    paginate_by = 10
     http_method_names = ['get', 'post']
 
     def get_queryset(self):
@@ -373,7 +373,7 @@ class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
     """ Creates the New Updates page for the website."""
     model = UserPost
     template_name = "tellings/newupdates_list.html"
-    paginate_by = 2
+    paginate_by = 10
     http_method_names = ['get', 'post']
 
     def get_queryset(self):

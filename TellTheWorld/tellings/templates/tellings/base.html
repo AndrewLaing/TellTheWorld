@@ -80,27 +80,42 @@
       <div id="paginationDiv">
         <ul class="pagination pull-right">
           {% if page_obj.has_previous %}
-            <li><a href="?{% param_replace page=page_obj.previous_page_number %}">Previous</a></li>            
+            <li><a href="?{% param_replace page=page_obj.previous_page_number %}"><</a></li>            
           {% else %}
-            <li class="disabled"><span>Previous</span></li>
+            <li class="disabled"><span><</span></li>
           {% endif %}
 
+          {# Show link to first page #}
+          {% if page_obj.number > 4 %}
+             <li><a href="?{% param_replace page=1 %}">{{ 1 }}</a></li>
+             <li><a href="javascript: void(0);">...</a></li>
+          {% elif page_obj.number == 4 %}
+             <li><a href="?{% param_replace page=1 %}">{{ 1 }}</a></li>
+          {% endif %}
+
+          {# Only show the 3 page numbers before and after the current one #}
           {% for i in paginator.page_range %}
-            {% if forloop.counter < 5 %}
+            {% if i <= page_obj.number|add:2 and i >= page_obj.number|add:-2 %}
               {% if page_obj.number == i %}
                 <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
               {% else %}
-
                 <li><a href="?{% param_replace page=i %}">{{ i }}</a></li>
-
               {% endif %}
             {% endif %}
           {% endfor %}
 
+          {# Show link to last page #}
+          {% if page_obj.number < paginator.num_pages|add:-3 %}
+             <li><a href="javascript: void(0);">...</a></li>
+             <li><a href="?{% param_replace page=paginator.num_pages %}">{{ paginator.num_pages }}</a></li>
+          {% elif page_obj.number < paginator.num_pages|add:-2 %}
+             <li><a href="?{% param_replace page=paginator.num_pages %}">{{ paginator.num_pages }}</a></li>
+          {% endif %}
+
           {% if page_obj.has_next %}
-            <li><a href="?{% param_replace page=page_obj.next_page_number %}">Next</a></li>
+            <li><a href="?{% param_replace page=page_obj.next_page_number %}">></a></li>
           {% else %}
-            <li class="disabled"><span>Next</span></li>
+            <li class="disabled"><span>></span></li>
           {% endif %}
         </ul>
       </div>

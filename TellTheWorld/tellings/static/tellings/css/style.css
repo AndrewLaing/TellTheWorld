@@ -165,10 +165,13 @@ body {
   background-color: #FFF;
 }
 
-
 #paginationDiv {
+  padding-left: 30px;
   padding-right: 60px;
-  /*background-color: #FFF;*/
+}
+
+#paginationDiv li{
+  font-size: .74em;
 }
 
 .login-modal-header {
