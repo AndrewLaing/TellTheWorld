@@ -2,7 +2,7 @@
  * Filename:    style.css
  * Author:      Andrew Laing
  * Email:       parisianconnections@gmail.com
- * Date:        11/11/2019.
+ * Date:        20/01/2020.
  * Description: The main CSS file used to style the 'Tell the World' website.
  */
 
@@ -170,9 +170,18 @@ body {
   padding-right: 60px;
 }
 
-#paginationDiv li{
-  font-size: .74em;
+@media only screen and (max-width: 640px) {
+  /* Resize the pagination links on smaller screens */  
+  #paginationDiv {
+    padding-left: 30px;
+    padding-right: 35px;
+  }
+
+  #paginationDiv li{
+    font-size: .74em;
+  }
 }
+
 
 .login-modal-header {
   padding:15px 50px;
@@ -273,8 +282,8 @@ hr {
   line-height: 0;
   clear: both;
   border:none;
-  border-top: 1px solid #000000;
-  border-bottom: 1px solid #000000;
+  border-top: .15px solid #575757;
+  border-bottom: .15px solid #575757;
 }
 
 

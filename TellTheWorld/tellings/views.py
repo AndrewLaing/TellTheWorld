@@ -1,7 +1,7 @@
 # Filename:     views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last updated: 16/01/2020
+# Last updated: 20/01/2020
 # Description:  Contains the views for the website.
 
 from django.contrib import messages
@@ -26,7 +26,7 @@ from datetime import datetime, date, timedelta, timezone
 # -----------------------------------------------------------------------------------------
 
 def get_random_quote():
-    """ Used to get a random quote from the random_quotes list.
+    """ Used to return a random quote.
        
     :returns: A random quote from the random_quotes list.
     """
@@ -35,12 +35,11 @@ def get_random_quote():
     return _(random_quote)
 
 def user_has_posted_today(request):
-    """ Used to determine if the user has posted an update today.
+    """ Used to determine if the user has already posted an update today.
     
     :param request: A dictionary-like object containing the HTTP POST parameters, 
-                    sent by a site user.     
-    :returns: True if the user has posted an update today,
-              otherwise false.
+                    sent by a site visitor.     
+    :returns: True if the user has posted an update today, otherwise false.
     """
     current_userID = request.user.id
     yesterday = date.today() - timedelta(1)
@@ -49,8 +48,8 @@ def user_has_posted_today(request):
 def user_login(request):
     """ Handles user authentication.
 
-    :param request: A dictionary-like object containing all HTTP POST parameters, 
-                    sent by a site user. 
+    :param request: A dictionary-like object containing all HTTP POST parameters 
+                    sent by a site visitor. 
     :returns: A redirect to a HTML page.
     """
     username = request.POST['username']
@@ -74,19 +73,19 @@ class ChangeUserDetailsPage(LoginRequiredMixin, View):
     def get(self, request):
         """ Handles GET requests for the Change User Details page.
 
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """  
-        quote = get_random_quote()
+        quote = get_random_quote() 
         form = ChangeUserDetailsForm(instance=request.user)
         return render(request, 'tellings/changeUserDetails.html', {'form': form, 'quote': quote})
 
     def post(self, request):
         """ Handles POST requests for the Change User Details page.
 
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """
         form = ChangeUserDetailsForm(request.POST)
@@ -100,8 +99,8 @@ class ChangeUserDetailsPage(LoginRequiredMixin, View):
     def changeDetails(self, request, form):
         """ Handles changing the user's details.
 
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor.  
         :returns: A HTML page.
         """
         u = request.user
@@ -121,8 +120,8 @@ class ChangePasswordPage(LoginRequiredMixin, View):
     def get(self, request):
         """ Handles GET requests for the Change Password page.
 
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """
         quote = get_random_quote()
@@ -132,8 +131,8 @@ class ChangePasswordPage(LoginRequiredMixin, View):
     def post(self, request):
         """ Handles POST requests for the Change Password page.
 
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """
         form = PasswordChangeForm(request.user, request.POST)
@@ -146,8 +145,8 @@ class ChangePasswordPage(LoginRequiredMixin, View):
     def changePassword(self, request, form):
         """ Handles changing the user's password.
 
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user.
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor.
         :param form: A Django form object.
         :returns: A HTML page.
         """
@@ -166,8 +165,8 @@ class SignUpPage(View):
     def get(self, request):
         """ Handles GET requests for the Sign Up page.
 
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """
         quote = get_random_quote()
@@ -177,8 +176,8 @@ class SignUpPage(View):
     def post(self, request):
         """ Handles POST requests for the Sign Up page.
 
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """
         if ('username' in request.POST) and ('password1' in request.POST):
@@ -192,8 +191,8 @@ class SignUpPage(View):
     def signUp(self, request):
         """ Handles account creation.
 
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """
         form = NewUserCreationForm(request.POST)
@@ -214,8 +213,8 @@ class IndexPage(View):
     def get(self, request):
         """ Handles GET requests for the home page.
 
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """
         quote = get_random_quote()
@@ -224,8 +223,8 @@ class IndexPage(View):
     def post(self, request):
         """ Handles POST requests for the home page.
 
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """
         if ('username' in request.POST) and ('pwd' in request.POST):
@@ -242,8 +241,8 @@ class ErrorPage(View):
     def get(self, request):
         """ Handles GET requests for the Error page.
 
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """
         quote = get_random_quote()
@@ -252,8 +251,8 @@ class ErrorPage(View):
     def post(self, request):
         """ Handles POST requests for the Error page.
 
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """
         if ('username' in request.POST) and ('pwd' in request.POST):
@@ -264,14 +263,14 @@ class ErrorPage(View):
 
 
 class AccountDeletedPage(LoginRequiredMixin, View):
-    """ Creates the Account Deleted page for the website. """
+    """ Creates the Account Deleted page for the website, and handles user account deletion """
     http_method_names = ['post']
 
     def post(self, request):
         """ Handles POST requests for the Error page.
 
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """
         if ('reason' in request.POST):
@@ -282,8 +281,8 @@ class AccountDeletedPage(LoginRequiredMixin, View):
     def deleteAccount(self, request):
         """ Handles deleting the user's account.
 
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """
         try:
@@ -432,8 +431,8 @@ class HasPostedToday(LoginRequiredMixin, View):
     def get(self, request):
         """ Handles GET requests.
 
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
         :returns: A string 'True' if the user has already posted an update today,
                   otherwise 'False'.
         """
@@ -445,8 +444,8 @@ class HasPostedToday(LoginRequiredMixin, View):
     def post(self, request):
         """ Handles POST requests.
 
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """
         if user_has_posted_today(request):
@@ -463,8 +462,8 @@ class TitleExists(LoginRequiredMixin, View):
     def post(self, request):
         """ Handles POST requests.
 
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
         :returns: A string 'True' if the title already exists in the UserPost table,
                   otherwise 'False'.
         """
@@ -477,8 +476,8 @@ class TitleExists(LoginRequiredMixin, View):
         """ Checks whether an update title already exists within the UserPost table or not.
             This function can only be used by authenticated users.
 
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
         :returns: A string 'True' if the title already exists in the UserPost table,
                   otherwise 'False'.
         """
@@ -497,8 +496,8 @@ class AddNewUpdate(LoginRequiredMixin, View):
     def post(self, request):
         """ Handles POST requests.
 
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
         :returns: A string 'True' if the title already exists in the UserPost table,
                   otherwise a redirect to the error page.
         """
@@ -530,8 +529,8 @@ class CheckUserPassword(LoginRequiredMixin, View):
     def post(self, request):
         """ Handles POST requests.
 
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
         :returns: A string 'True' if the password is valid, otherwise 'False'.
         """
         if ('pwd' in request.POST):
@@ -542,8 +541,8 @@ class CheckUserPassword(LoginRequiredMixin, View):
     def isValidPassword(self, request):
         """ Checks whether the user has entered their password correctly.
 
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
         :returns: A string 'True' if the password is valid, otherwise 'False'.
         """
         current_password = request.user.password #user's password
@@ -565,8 +564,8 @@ class DeleteUserPost(LoginRequiredMixin, View):
     def post(self, request):
         """ Handles POST requests.
 
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
         :returns: A string 'True' if the password is valid, otherwise 'False'.
         """
         if ('postID' in request.POST):
@@ -612,8 +611,8 @@ class LoginModal(View):
     def get(self, request):
         """ Handles GET requests.
 
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """
         return render(request, 'tellings/includes/login_modal.html')
@@ -621,8 +620,8 @@ class LoginModal(View):
     def post(self, request):
         """ Handles POST requests.
 
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """
         return render(request, 'tellings/includes/login_modal.html')
@@ -636,8 +635,8 @@ class DeleteAccountModal(LoginRequiredMixin, View):
     def get(self, request):
         """ Handles GET requests.
 
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """
         return render(request, 'tellings/includes/deleteAccount_modal.html')
@@ -645,8 +644,8 @@ class DeleteAccountModal(LoginRequiredMixin, View):
     def post(self, request):
         """ Handles POST requests.
 
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """
         return render(request, 'tellings/includes/deleteAccount_modal.html')
@@ -660,8 +659,8 @@ class AddUpdateModal(LoginRequiredMixin, View):
     def get(self, request):
         """ Handles GET requests.
 
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """
         # Ensure that the user has not posted today
@@ -673,8 +672,8 @@ class AddUpdateModal(LoginRequiredMixin, View):
     def post(self, request):
         """ Handles POST requests.
 
-        :param request: A dictionary-like object containing all HTTP POST parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """
         # Ensure that the user has not posted today
@@ -687,7 +686,7 @@ class AddUpdateModal(LoginRequiredMixin, View):
 
 class EditUserPost(LoginRequiredMixin, generic.UpdateView):
     """ An AJAX handler used to add the edit user post HTML to pages,
-        and deal with updating the user post with the new details.
+        and update UserPost records.
     """
     model = UserPost 
     template_name = "tellings/includes/editPost.html"    
@@ -702,8 +701,8 @@ class EditUserPost(LoginRequiredMixin, generic.UpdateView):
     def post(self, request):
         """ Handles POST requests.
    
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
         :returns: A string 'True' if the post could be edited, otherwise an error message.
         """
         if ('postID' in request.POST and 'postText' in request.POST):
@@ -714,8 +713,8 @@ class EditUserPost(LoginRequiredMixin, generic.UpdateView):
     def updateUserPostRecord(self, request):
         """ Updates a UserPost record.
            
-        :param request: A dictionary-like object containing all HTTP parameters, 
-                        sent by a site user. 
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
         :returns: A string 'True' if the post could be edited, otherwise an error message.
         """
         in_postID = request.POST.get('postID')
@@ -724,7 +723,7 @@ class EditUserPost(LoginRequiredMixin, generic.UpdateView):
 
         if(userPost.user.username == request.user.username):
             try:
-                # Update the record (sql injection-safely)
+                # Update the record (sql injection-safe)
                 UserPost.objects.filter(postID=in_postID).update(postText=in_postText)
                 return HttpResponse("True")
             except:
