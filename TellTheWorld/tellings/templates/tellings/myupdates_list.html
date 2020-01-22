@@ -18,6 +18,7 @@
   <div class="container-fluid main-content"> 
     <div class="container currentUserUpdates" id="userUpdates">
         {% if userpost_list %}
+        {% load static %}
         {% regroup userpost_list by dateOfPost as ordered_post_list %}
 
         {% for mypost in ordered_post_list %}
@@ -45,6 +46,7 @@
                         <!-- Edit post -->
                         <div class="btn-group">
                             <button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                              <img src="{% static 'tellings/imgs/settings_cog.png' %}" alt="">
                               <span class = "caret"></span>
                             </button>
 
