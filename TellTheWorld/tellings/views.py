@@ -16,7 +16,7 @@ from django.utils.translation import gettext as _
 from django.views import View, generic 
 
 from tellings.forms import *
-from tellings.page_extras import random_quotes
+from tellings.page_extras import random_quotes, banned_words
 
 import random
 from datetime import datetime, date, timedelta, timezone
@@ -709,6 +709,12 @@ class EditUserPost(LoginRequiredMixin, generic.UpdateView):
             return self.updateUserPostRecord(request)
         else:
             return HttpResponseRedirect('/errorpage/')
+
+    def censor_text(self, text):
+        for banned_word in banned_words:
+            censored = text.replace(banned_word, "*" * len(banned_word))
+            text = censored.replace(banned_word, "*" * len(banned_word))
+        return censored
                 
     def updateUserPostRecord(self, request):
         """ Updates a UserPost record.
@@ -719,6 +725,7 @@ class EditUserPost(LoginRequiredMixin, generic.UpdateView):
         """
         in_postID = request.POST.get('postID')
         in_postText = request.POST.get('postText')
+        in_postText = self.censor_text(in_postText)
         userPost = get_object_or_404(UserPost, postID=in_postID)
 
         if(userPost.user.username == request.user.username):
