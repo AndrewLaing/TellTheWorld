@@ -262,6 +262,90 @@ class ErrorPage(View):
             return render(request, 'tellings/errorPage.html', {'quote': quote})
 
 
+class AcceptableUsagePage(View):
+    """ Creates the Acceptable Usage Policy page for the website."""
+    http_method_names = ['get', 'post']
+
+    def get(self, request):
+        """ Handles GET requests for the Acceptable Usage Policy page.
+
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        quote = get_random_quote()
+        return render(request, 'tellings/acceptableusage.html', {'quote': quote})
+
+    def post(self, request):
+        """ Handles POST requests for the Acceptable Usage Policy page.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        if ('username' in request.POST) and ('pwd' in request.POST):
+            return user_login(request)
+        else:
+            quote = get_random_quote()
+            return render(request, 'tellings/acceptableusage.html', {'quote': quote})
+
+
+class PrivacyPolicyPage(View):
+    """ Creates the Privacy Policy page for the website."""
+    http_method_names = ['get', 'post']
+
+    def get(self, request):
+        """ Handles GET requests for the Privacy Policy page.
+
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        quote = get_random_quote()
+        return render(request, 'tellings/privacypolicy.html', {'quote': quote})
+
+    def post(self, request):
+        """ Handles POST requests for the Privacy Policy page.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        if ('username' in request.POST) and ('pwd' in request.POST):
+            return user_login(request)
+        else:
+            quote = get_random_quote()
+            return render(request, 'tellings/privacypolicy.html', {'quote': quote})
+
+
+class TermsAndConditionsPage(View):
+    """ Creates the Terms and Conditions page for the website."""
+    http_method_names = ['get', 'post']
+
+    def get(self, request):
+        """ Handles GET requests for the Terms and Conditions page.
+
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        quote = get_random_quote()
+        return render(request, 'tellings/termsandconditions.html', {'quote': quote})
+
+    def post(self, request):
+        """ Handles POST requests for the Terms and Conditions page.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        if ('username' in request.POST) and ('pwd' in request.POST):
+            return user_login(request)
+        else:
+            quote = get_random_quote()
+            return render(request, 'tellings/termsandconditions.html', {'quote': quote})
+
+
 class AccountDeletedPage(LoginRequiredMixin, View):
     """ Creates the Account Deleted page for the website, and handles user account deletion """
     http_method_names = ['post']

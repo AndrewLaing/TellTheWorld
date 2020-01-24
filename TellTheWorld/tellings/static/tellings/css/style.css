@@ -115,6 +115,19 @@ body {
 }
 
 
+.indented-list-item {
+  list-style-type: none;
+  padding-left: 30px;
+  padding-bottom: 10px;
+}
+
+.double-indented-list-item {
+  list-style-type: none;
+  padding-left: 60px;
+  padding-bottom: 10px;
+}
+
+
 .align-panel-text-right {
   text-align: right;
 }
