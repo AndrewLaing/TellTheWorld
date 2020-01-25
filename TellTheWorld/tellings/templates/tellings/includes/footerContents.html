@@ -12,15 +12,15 @@
   <!-- BUSINESS ADDRESS -->
   <div class="col-sm-3 footerDivs">
     <h1>Business Address</h1>
-    <p>Today I Have Websites<br />1-3 Rumford Street,<br /> Liverpool <br />L2 8SZ</p>
+    <p>TTW Ltd<br />1-3 Rumford Street,<br /> Liverpool <br />L2 8SZ</p>
   </div>
   
   <!-- CONTACT DETAILS -->
   <div class="col-sm-3 footerDivs">
     <h1>Contact Us</h1>
     <p>Telephone: <a href="tel:01512272008">0151 227 2008</a><br />
-       Email: <a href="mailto:info@tellings.com?Subject=Website%20contact" target="_top">info@tellings.com</a><br />
-       Skype: <a href="skype:tellings?call">tellings</a>
+       Email: <a href="mailto:info@telltheworld.com?Subject=Website%20contact" target="_top">info@telltheworld.com</a><br />
+       Skype: <a href="skype:telltheworld?call">telltheworld</a>
 	</p>
   </div>
   
@@ -34,7 +34,12 @@
   <div class="col-sm-3 footerDivs">
     <h1>Follow us</h1>
     <p>
-    <a class="btn btn-icon btn-facebook" href="https://www.facebook.com/westernapproachesHQ/">f</a>
-    <a class="btn btn-icon btn-twitter" href="https://twitter.com/WestApproaches">t</a>
-    </p> 
+      <a class="btn btn-icon btn-facebook" href="https://www.facebook.com/westernapproachesHQ/">f</a>
+      <a class="btn btn-icon btn-twitter" href="https://twitter.com/WestApproaches">t</a>
+    </p>  <br /> 
+    <p>
+      <a href="{% url 'tellings:acceptableusage' %}">Acceptable Usage Policy</a><br />
+      <a href="{% url 'tellings:privacypolicy' %}">Privacy Policy</a><br />
+      <a href="{% url 'tellings:termsandconditions' %}">Terms and Conditions</a>
+    </p>   
   </div>

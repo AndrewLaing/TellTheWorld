@@ -262,6 +262,34 @@ class ErrorPage(View):
             return render(request, 'tellings/errorPage.html', {'quote': quote})
 
 
+class AboutPage(View):
+    """ Creates the About us page for the website."""
+    http_method_names = ['get', 'post']
+
+    def get(self, request):
+        """ Handles GET requests for the About us page.
+
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        quote = get_random_quote()
+        return render(request, 'tellings/about.html', {'quote': quote})
+
+    def post(self, request):
+        """ Handles POST requests for the About us page.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        if ('username' in request.POST) and ('pwd' in request.POST):
+            return user_login(request)
+        else:
+            quote = get_random_quote()
+            return render(request, 'tellings/about.html', {'quote': quote})
+
+
 class AcceptableUsagePage(View):
     """ Creates the Acceptable Usage Policy page for the website."""
     http_method_names = ['get', 'post']
@@ -288,6 +316,34 @@ class AcceptableUsagePage(View):
         else:
             quote = get_random_quote()
             return render(request, 'tellings/acceptableusage.html', {'quote': quote})
+
+
+class MissionStatementPage(View):
+    """ Creates the Mission Statement page for the website."""
+    http_method_names = ['get', 'post']
+
+    def get(self, request):
+        """ Handles GET requests for the About us page.
+
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        quote = get_random_quote()
+        return render(request, 'tellings/missionstatement.html', {'quote': quote})
+
+    def post(self, request):
+        """ Handles POST requests for the Mission Statement page.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        if ('username' in request.POST) and ('pwd' in request.POST):
+            return user_login(request)
+        else:
+            quote = get_random_quote()
+            return render(request, 'tellings/missionstatement.html', {'quote': quote})
 
 
 class PrivacyPolicyPage(View):

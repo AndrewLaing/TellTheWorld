@@ -47,8 +47,8 @@
             {% endfor %}
             <br />
 
-            <p><input type="checkbox" required name="terms"> I have read and accept the <a href="{% url 'tellings:termsandconditions' %}" target="_blank">Terms and Conditions</a></p>
-            <p><input type="checkbox" required name="terms"> I have read and agree to abide by the <a href="{% url 'tellings:acceptableusage' %}" target="_blank">Acceptable Usage Policy</a></p>
+            <p><input type="checkbox" required name="terms"> I have read and accept the <a href="{% url 'tellings:termsandconditions' %}" target="_blank">Terms and Conditions</a>.</p>
+            <p><input type="checkbox" required name="terms"> I have read and agree to abide by the <a href="{% url 'tellings:acceptableusage' %}" target="_blank">Acceptable Usage Policy</a>.</p>
             </div>
 
             {% include "tellings/includes/formErrors.html" %}
