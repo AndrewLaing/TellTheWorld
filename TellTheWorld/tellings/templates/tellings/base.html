@@ -2,7 +2,7 @@
  * Filename:     base.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 30/12/2019.
+ * Last updated: 27/01/2020
  * Description:  Main base template for site pages.
 {% endcomment %}
 
@@ -14,7 +14,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
 {% load static %}  
-  <!-- Stylesheets and JS for Bootstrap -->
+  {# Stylesheets and JS for Bootstrap #} 
   <link rel="stylesheet" href="{% static 'tellings/css/bootstrap.min.css' %}">
   <link rel="stylesheet" href="{% static 'tellings/css/bootstrap-tagsinput.css' %}">
   <script type="text/javascript" src="{% static 'tellings/js/jquery.min.js' %}"></script>
@@ -23,17 +23,17 @@
   <script type="text/javascript" src="{% static 'tellings/js/bootstrap-tagsinput.js' %}"></script>
   <script type="text/javascript" src="{% static 'tellings/js/typeahead.bundle.js' %}"></script>
 
-  <!-- My JQuery scripts -->
+  {# My JQuery scripts #} 
   <script type="text/javascript" src="{% static 'tellings/js/JQScripts.js' %}"></script>
 
-  <!-- My stylesheet -->
+  {# My stylesheet #} 
   <link rel="stylesheet" href="{% static 'tellings/css/style.css' %}">
 
-</head> <!-- END OF HEAD SECTION -->
+</head> 
 
 <body>
     <header class="header">
-      <!-- Page title -->
+      {# Page title #} 
       <div id="title" class="jumbotron jumbotron-fluid">
         <h1>{% block headertitle1 %}Default title 1{% endblock headertitle1 %}</h1>
         {% if quote %}
@@ -43,15 +43,15 @@
         {% endif %}
       </div>
   
-      <!-- Navigation bar -->
+      {# Navigation bar #} 
       <nav class="navbar navbar-inverse">
         <div class="container-fluid">
             {% include "tellings/includes/navbar.html" %}
         </div>
       </nav> 
-    </header> <!-- END OF HEADER SECTION -->
+    </header>
 
-    <!-- Div for adding modals to. (if necessary) -->
+    {# Div for adding modals to. (if necessary) #} 
     <div id="modal_container">
     </div>
 
@@ -123,10 +123,10 @@
     {% endblock %} 
 
 
-    <!-- Footer -->
+    {# FOOTER SECTION #} 
     <footer class="footer footerDivs">
       {% include "tellings/includes/footerContents.html" %}
-    </footer> <!-- END OF FOOTER SECTION -->
+    </footer>
 </body>
 
 </html>

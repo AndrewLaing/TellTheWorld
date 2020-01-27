@@ -7,21 +7,20 @@
  * Filename:     loginpage.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 13/09/2019
+ * Last updated: 27/01/2020
  * Description:  Template for the login page.
  * -------------------------------------------------------------------------------
 {% endcomment %}
 
 {% block content %}
 
-<!-- Hide the right navbar -->
+{# Hide the right navbar #} 
 <style type="text/css">
     .navbar-right {
         display: none;
     }
 </style>
 
-<!-- Main content. -->
 <div class="container-fluid main-content"> 
     <div class="container">
         <h2>Login to your account</h2>
@@ -56,6 +55,6 @@
         {% include "tellings/includes/JSMessagePopup.html" %}
         <br /><br />
 
-    </div>    <!-- END OF CONTAINER -->
-</div>      <!-- END OF CONTAINER-FLUID -->
+    </div>      {# END OF CONTAINER #} 
+</div>          {# END OF CONTAINER-FLUID #} 
 {% endblock %}

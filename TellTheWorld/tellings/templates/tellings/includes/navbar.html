@@ -3,7 +3,7 @@
  * Filename:     navbar.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 05/09/2019.
+ * Last updated: 27/01/2020
  * Description:  This is used to create the navbar according to the user's 
  *               logged in status.
 
@@ -12,71 +12,70 @@
 {% endcomment %} 
 
 <ul class="nav navbar-nav">
-    <!-- Link to index page -->
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'tellings:index' %}">Home</a>
+  </li>
+  {% if user.is_authenticated %}
     <li class="nav-item">
-        <a class="nav-link" href="{% url 'tellings:index' %}">Home</a>
-    </li>
-    {% if user.is_authenticated %}
-    <li class="nav-item">
-        <a class="nav-link" href="{% url 'tellings:newupdates' %}">New Updates</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="{% url 'tellings:tags' %}">Tags</a>
+      <a class="nav-link" href="{% url 'tellings:newupdates' %}">New Updates</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="{% url 'tellings:myupdates' %}">My Updates</a>
+      <a class="nav-link" href="{% url 'tellings:tags' %}">Tags</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" id="addUpdateBtn" href="javascript:void(0);">Add New Update</a>
+      <a class="nav-link" href="{% url 'tellings:myupdates' %}">My Updates</a>
     </li>
-    {% endif %}
+    <li class="nav-item">
+      <a class="nav-link" id="addUpdateBtn" href="javascript:void(0);">Add New Update</a>
+    </li>
+  {% endif %}
 </ul>
 
 <ul class="nav navbar-nav navbar-right">
+  <li class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#">About</a>
+    <ul class="dropdown-menu">
+      <li class="nav-item dropdown-menu-item">
+        <a class="nav-link" href="{% url 'tellings:about' %}">About us</a>
+      </li>
+      <li class="nav-item dropdown-menu-item">
+        <a class="nav-link" href="{% url 'tellings:missionstatement' %}">Mission Statement</a>
+      </li>
+      <li class="nav-item dropdown-menu-item">
+        <a class="nav-link" href="{% url 'tellings:acceptableusage' %}">Acceptable Usage Policy</a>
+      </li>
+          <li class="nav-item dropdown-menu-item">
+        <a class="nav-link" href="{% url 'tellings:privacypolicy' %}">Privacy Policy</a>
+      </li>
+      <li class="nav-item dropdown-menu-item">
+        <a class="nav-link" href="{% url 'tellings:termsandconditions' %}">Terms and Conditions</a>
+      </li>
+    </ul>
+
+  {% if user.is_authenticated %}
     <li class="dropdown">
-        <a class="dropdown-toggle" data-toggle="dropdown" href="#">About</a>
-        <ul class="dropdown-menu">
-            <li class="nav-item dropdown-menu-item">
-                <a class="nav-link" href="{% url 'tellings:about' %}">About us</a>
-            </li>
-            <li class="nav-item dropdown-menu-item">
-                <a class="nav-link" href="{% url 'tellings:missionstatement' %}">Mission Statement</a>
-            </li>
-            <li class="nav-item dropdown-menu-item">
-                <a class="nav-link" href="{% url 'tellings:acceptableusage' %}">Acceptable Usage Policy</a>
-            </li>
-            <li class="nav-item dropdown-menu-item">
-                <a class="nav-link" href="{% url 'tellings:privacypolicy' %}">Privacy Policy</a>
-            </li>
-            <li class="nav-item dropdown-menu-item">
-                <a class="nav-link" href="{% url 'tellings:termsandconditions' %}">Terms and Conditions</a>
-            </li>
-        </ul>
-      </li>
-{% if user.is_authenticated %}
-      <li class="dropdown">
-        <a class="dropdown-toggle" data-toggle="dropdown" href="#">My Account</a>
-        <ul class="dropdown-menu">
-            <li class="nav-item dropdown-menu-item">
-                <a class="nav-link" href="{% url 'tellings:changeuserdetails' %}">Change Account Details</a>
-            </li>
-            <li class="nav-item dropdown-menu-item">
-                <a class="nav-link" href="{% url 'tellings:changepassword' %}">Change Password</a>
-            </li>
-            <li class="nav-item dropdown-menu-item">
-                <a class="nav-link" id="deleteAccountBtn" href="javascript:void(0);">Delete My Account</a>
-            </li>
-        </ul>
-      </li>
+      <a class="dropdown-toggle" data-toggle="dropdown" href="#">My Account</a>
+      <ul class="dropdown-menu">
+        <li class="nav-item dropdown-menu-item">
+          <a class="nav-link" href="{% url 'tellings:changeuserdetails' %}">Change Account Details</a>
+        </li>
+        <li class="nav-item dropdown-menu-item">
+          <a class="nav-link" href="{% url 'tellings:changepassword' %}">Change Password</a>
+        </li>
+        <li class="nav-item dropdown-menu-item">
+          <a class="nav-link" id="deleteAccountBtn" href="javascript:void(0);">Delete My Account</a>
+        </li>
+      </ul>
+    </li>
     <li class="nav-item">
         <a href="{% url 'logout' %}" onclick="return $.confirm_logout();">Log out</a>
     </li>
-{% else %}
+  {% else %}
     <li class="nav-item">
         <a class="nav-link" href="{% url 'tellings:signup' %}">Sign Up</a>
     </li>
     <li class="nav-item">
         <a href="javascript:void(0);" id="loginBtn">Login</a>
     </li>
-{% endif %}
+  {% endif %}
 </ul>
