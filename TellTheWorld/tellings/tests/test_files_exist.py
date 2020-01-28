@@ -39,17 +39,22 @@ class TemplatesExistTests(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.template_files = [ 'tellings/accountDeleted.html',
+        cls.template_files = [ 'tellings/about.html',
+                               'tellings/acceptableusage.html',
+                               'tellings/accountDeleted.html',
                                'tellings/base.html',
                                'tellings/changePassword.html',
                                'tellings/changeUserDetails.html',
                                'tellings/errorPage.html',
                                'tellings/index.html',
                                'tellings/loginpage.html',
+                               'tellings/missionstatement.html',
                                'tellings/myupdates_list.html',
                                'tellings/newupdates_list.html',
+                               'tellings/privacypolicy.html',
                                'tellings/signup.html',
-                               'tellings/tag_list.html' ]
+                               'tellings/tag_list.html',
+                               'tellings/termsandconditions.html' ]
 
     def setUp(self):
         pass

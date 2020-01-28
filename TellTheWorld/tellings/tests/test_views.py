@@ -2,7 +2,7 @@
 # Filename:     test_views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 16/01/2020
+# Last Updated: 28/01/2020
 # Description:  Test cases for tellings views
 """
 
@@ -137,321 +137,17 @@ class SharedTestMethods(TestCase):
         self.assertRedirects(response, reverse(self.indexPage_viewname))
 
 
-class LoginPageTests(SharedTestMethods):
-    """Tests for the Loginpage view."""
-
-    @classmethod
-    def setUpTestData(cls):        
-        """ Creates the test data used by the methods within this class. """
-        cls.viewname = 'tellings:loginpage'
-        cls.templateURL = 'tellings/loginpage.html'
-
-        SV = SharedVariables
-        cls.credentials = SV.credentials
-        
-        cls.user1 = User.objects.create_user(cls.credentials['username'], 
-                                             cls.credentials['email'],
-                                             cls.credentials['pwd'])   
-        cls.login_credentials = {
-            'username': 'testuser1',
-            'password': '@myp455w0rd'}   
-
-        cls.invalid_credentials = SV.invalid_credentials    
-
-    def test_GET_loggedout(self):
-        self.get_loggedout_tests()
-
-    def test_GET_loggedin(self):
-        # If logged in opens the home page
-        self.get_loggedin_tests()
-
-    def test_POST_valid(self):
-        response = self.client.post(reverse(self.viewname), self.login_credentials, follow=True)
-        self.assertEqual(response.status_code, 200)
-        # redirects to home page after valid login
-        indexpage = IndexPageViewTests()
-        self.check_templates_are_included(response, indexpage.templateURL)
-
-    def test_POST_invalid(self):
-        response = self.client.post(reverse(self.viewname), self.invalid_credentials, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, self.templateURL)
-
-
-class ChangeUserDetailsPageTests(SharedTestMethods):
-    """Tests for the ChangeUserDetails view."""
-
-    @classmethod
-    def setUpTestData(cls):        
-        """ Creates the test data used by the methods within this class. """
-        cls.viewname = 'tellings:changeuserdetails'
-        cls.loggedout_redirect_URL = '/loginpage/?next=/changeuserdetails/' 
-        cls.templateURL = 'tellings/changeUserDetails.html'
-
-        SV = SharedVariables
-        cls.credentials = SV.credentials
-
-        cls.user1 = User.objects.create_user(cls.credentials['username'], 
-                                             cls.credentials['email'],
-                                             cls.credentials['pwd'])
-
-    def test_GET_loggedout(self):
-        self.get_loggedout_redirect_tests()
-
-    def test_GET_loggedin(self):
-        self.get_loggedin_tests()
-
-    def test_POST_loggedout(self):
-        self.post_loggedout_redirect_tests()
-
-
-class ChangePasswordPageTests(SharedTestMethods):
-    """Tests for the ChangePassword view."""
-
-    @classmethod
-    def setUpTestData(cls):        
-        """ Creates the test data used by the methods within this class. """
-        cls.viewname = 'tellings:changepassword'
-        cls.loggedout_redirect_URL = '/loginpage/?next=/changepassword/'
-        cls.templateURL = 'tellings/changePassword.html'
-
-        SV = SharedVariables
-        cls.credentials = SV.credentials
-
-        cls.user1 = User.objects.create_user(cls.credentials['username'], 
-                                             cls.credentials['email'],
-                                             cls.credentials['pwd'])
-        cls.change_data = {
-            'old_password': '@myp455w0rd',
-            'new_password1': 'ch@n63d70n3w',
-            'new_password1': 'ch@n63d70n3w'
-        }
-        cls.new_credentials = {
-            'username': 'testuser1',
-            'pwd': 'ch@n63d70n3w'
-        }
-        cls.change_data_invalid1 = {
-            'old_password': '@myp455w0rd',
-            'new_password1': 'ch@n63d70n3w',
-            'new_password1': 'ch@n63wr0n6'
-        }
-        cls.change_data_invalid2 = {
-            'old_password': '@mywr0n6p455w0rd',
-            'new_password1': 'ch@n63d70n3w',
-            'new_password1': 'ch@n63d70n3w'
-        }
-
-    def test_GET_loggedout(self):
-        self.get_loggedout_redirect_tests()
-
-    def test_GET_loggedin(self):
-        self.get_loggedin_tests()
-
-    def test_POST_loggedout(self):
-        self.post_loggedout_redirect_tests()
-
-
-class SignUpPageTests(SharedTestMethods):
-    """Tests for the SignUpPage view."""
-
+class AboutPageViewTests(SharedTestMethods):
+    """Tests for the AboutPage view."""
+   
     @classmethod
     def setUpTestData(cls):        
         """ Creates the test data used by the methods within this class. """
         SV = SharedVariables
-        cls.viewname = 'tellings:signup'
-        cls.errorPage_viewname = SV.errorPage_viewname
+        cls.viewname = 'tellings:about'
         cls.indexPage_viewname = SV.indexPage_viewname
         cls.loginPage_viewname = SV.loginPage_viewname
-        cls.templateURL = 'tellings/signup.html'
-
-        cls.credentials = SV.credentials
-        cls.user1 = User.objects.create_user(cls.credentials['username'], 
-                                             cls.credentials['email'],
-                                             cls.credentials['pwd'])
-
-        cls.invalid_credentials = SV.invalid_credentials
-        cls.registration_data = {
-            'username': 'testuser2',
-            'password1': '@myp455w0rd',
-            'password2': '@myp455w0rd'}
-        cls.registration_data_invalid = {
-            'username': 'testuser2',
-            'password1': '@myp455w0rd',
-            'password2': '@myp455'}
-
-    def test_GET_loggedout(self):
-        self.get_loggedout_tests()
-
-    def test_GET_loggedin(self):
-        self.get_loggedin_tests()
-
-    def test_POST_no_data(self):
-        response = self.client.post(reverse(self.viewname), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertRedirects(response, reverse(self.errorPage_viewname))
-
-    def test_POST_valid(self):
-        response = self.client.post(reverse(self.viewname), self.registration_data)
-        self.assertEqual(response.status_code, 200)
-
-    def test_POST_invalid(self):
-        response = self.client.post(reverse(self.viewname), self.registration_data_invalid)
-        self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, self.templateURL)
-        
-    def test_POST_valid_login(self):
-        self.post_valid_login_tests()
-        
-    def test_POST_invalid_login(self):
-        self.post_invalid_login_redirect_tests()
-
-
-class IndexPageViewTests(SharedTestMethods):
-    """Tests for the IndexPage view."""
-
-    @classmethod
-    def setUpTestData(cls):
-        """ Creates the test data used by the methods within this class. """
-        SV = SharedVariables
-        cls.viewname = 'tellings:index'
-        cls.indexPage_viewname = SV.indexPage_viewname
-        cls.loginPage_viewname = SV.loginPage_viewname
-        cls.templateURL = 'tellings/index.html'
-
-        cls.credentials = SV.credentials
-        cls.user1 = User.objects.create_user(cls.credentials['username'], 
-                                             cls.credentials['email'],
-                                             cls.credentials['pwd'])
-        cls.invalid_credentials = SV.invalid_credentials
-        cls.partial_credentials = SV.partial_credentials
-
-    def setUp(self):
-        pass
-
-    def test_GET_loggedout(self):
-        self.get_loggedout_tests()
-
-    def test_GET_loggedin(self):
-        self.get_loggedin_tests()
- 
-    def test_POST_no_data(self):
-        response = self.client.post(reverse(self.viewname), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.check_templates_are_included(response, self.templateURL)
-
-    def test_POST_missing_data(self):
-        self.post_missing_data_tests()
-        
-    def test_POST_valid_login(self):
-        self.post_valid_login_tests()
-        
-    def test_POST_invalid_login(self):
-        self.post_invalid_login_redirect_tests()
-
-
-class NewUpdatesListViewTests(SharedTestMethods):
-    """Tests for the NewUpdatesListView view."""
-
-    @classmethod
-    def setUpTestData(cls):        
-        """ Creates the test data used by the methods within this class. """
-        cls.viewname = 'tellings:newupdates'
-        cls.loggedout_redirect_URL = '/loginpage/?next=/newupdates/'
-        cls.templateURL = 'tellings/newupdates_list.html'
-
-        SV = SharedVariables
-        cls.credentials = SV.credentials
-
-        cls.user1 = User.objects.create_user(cls.credentials['username'], 
-                                             cls.credentials['email'],
-                                             cls.credentials['pwd'])
-
-    def test_GET_loggedout(self):
-        self.get_loggedout_redirect_tests()
-
-    def test_GET_loggedin(self):
-        self.get_loggedin_tests()
-
-    def test_POST_loggedout(self):
-        self.post_loggedout_redirect_tests()
-
-    def test_POST_loggedin(self):
-        self.post_loggedin_not_allowed_tests()
-        
-
-class TagListViewTests(SharedTestMethods):
-    """Tests for the TagListView view."""
-
-    @classmethod
-    def setUpTestData(cls):
-        cls.viewname = 'tellings:tags'
-        cls.loggedout_redirect_URL = '/loginpage/?next=/tags/'
-        cls.templateURL = 'tellings/tag_list.html'
-
-        SV = SharedVariables
-        cls.credentials = SV.credentials
-
-        cls.user1 = User.objects.create_user(cls.credentials['username'], 
-                                             cls.credentials['email'],
-                                             cls.credentials['pwd'])
-
-    def setUp(self):
-        pass
-
-    def test_GET_loggedout(self):
-        self.get_loggedout_redirect_tests()
-
-    def test_GET_loggedin(self):
-        self.get_loggedin_tests()
-
-    def test_POST_loggedout(self):
-        self.post_loggedout_redirect_tests()
-
-    def test_POST_loggedin(self):
-        self.post_loggedin_not_allowed_tests()
-
-
-class MyUpdatesListViewTests(SharedTestMethods):
-    """Tests for the MyUpdatesList view."""
-
-    @classmethod
-    def setUpTestData(cls):        
-        """ Creates the test data used by the methods within this class. """
-        cls.viewname = 'tellings:myupdates'
-        cls.loggedout_redirect_URL = '/loginpage/?next=/myupdates/'
-        cls.templateURL = 'tellings/myupdates_list.html'
-
-        SV = SharedVariables
-        cls.credentials = SV.credentials
-
-        cls.user1 = User.objects.create_user(cls.credentials['username'], 
-                                             cls.credentials['email'],
-                                             cls.credentials['pwd'])
-
-    def test_GET_loggedout(self):
-        self.get_loggedout_redirect_tests()
-
-    def test_GET_loggedin(self):
-        self.get_loggedin_tests()
-
-    def test_POST_loggedout(self):
-        self.post_loggedout_redirect_tests()
-
-    def test_POST_loggedin(self):
-        self.post_loggedin_not_allowed_tests()
-
-
-class ErrorPageViewTests(SharedTestMethods):
-    """Tests for the ErrorPage view."""
-
-    @classmethod
-    def setUpTestData(cls):        
-        """ Creates the test data used by the methods within this class. """
-        SV = SharedVariables
-        cls.viewname = 'tellings:errorpage'
-        cls.indexPage_viewname = SV.indexPage_viewname
-        cls.loginPage_viewname = SV.loginPage_viewname
-        cls.templateURL = 'tellings/errorPage.html'
+        cls.templateURL = 'tellings/about.html'
 
         SV = SharedVariables
         cls.credentials = SV.credentials
@@ -481,77 +177,62 @@ class ErrorPageViewTests(SharedTestMethods):
         self.post_invalid_login_redirect_tests()
 
 
-class HasPostedTodayViewTests(SharedTestMethods):
-    """Tests for the HasPostedToday view."""
+class AcceptableUsagePageViewTests(SharedTestMethods):
+    """Tests for the AcceptableUsagePage view."""
 
     @classmethod
     def setUpTestData(cls):        
         """ Creates the test data used by the methods within this class. """
-        cls.viewname = 'tellings:haspostedtoday'
-        cls.loggedout_redirect_URL = '/loginpage/?next=/haspostedtoday/'
+        SV = SharedVariables
+        cls.viewname = 'tellings:acceptableusage'
+        cls.indexPage_viewname = SV.indexPage_viewname
+        cls.loginPage_viewname = SV.loginPage_viewname
+        cls.templateURL = 'tellings/acceptableusage.html'
 
         SV = SharedVariables
         cls.credentials = SV.credentials
-
         cls.user1 = User.objects.create_user(cls.credentials['username'], 
                                              cls.credentials['email'],
                                              cls.credentials['pwd'])
-        
-        cls.test_postDate = SV.test_postDate
-        cls.test_postTitle = SV.test_postTitle
-        cls.test_postText = SV.test_postText
+        cls.invalid_credentials = SV.invalid_credentials
+        cls.partial_credentials = SV.partial_credentials
+
+    def test_GET_loggedin(self):
+        self.get_loggedin_tests()
 
     def test_GET_loggedout(self):
-        self.get_loggedout_redirect_tests()
+        self.get_loggedout_tests()
 
-    def test_GET_has_not_posted(self):
-        self.client.login(username=self.credentials['username'], 
-                          password=self.credentials['pwd'])
-        response = self.client.get((reverse(self.viewname)), follow=True)
+    def test_POST_no_data(self):
+        response = self.client.post(reverse(self.viewname), follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "False")
 
-    def test_GET_has_posted(self):
-        self.client.login(username=self.credentials['username'], 
-                          password=self.credentials['pwd'])
-        self.createPostRecord(self.user1.id, dateOfPost=self.test_postDate)
-        response = self.client.get((reverse(self.viewname)), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "True")
+    def test_POST_missing_data(self):
+        self.post_missing_data_tests()
+        
+    def test_POST_valid_login(self):
+        self.post_valid_login_tests()
 
-    def test_POST_loggedout(self):
-        self.post_loggedout_redirect_tests()
-
-    def test_POST_loggedin(self):
-        self.client.login(username=self.credentials['username'], 
-                          password=self.credentials['pwd'])
-        self.createPostRecord(self.user1.id, dateOfPost=self.test_postDate)
-        response = self.client.post((reverse(self.viewname)), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "True")
+    def test_POST_invalid_login(self):
+        self.post_invalid_login_redirect_tests()
 
 
-class TitleExistsViewTests(SharedTestMethods):
-    """Tests for the TitleExists view."""
+class AccountDeletedPageTests(SharedTestMethods):
+    """Tests for the AccountDeletedPage view."""
 
     @classmethod
-    def setUpTestData(cls):        
+    def setUpTestData(cls):      
         """ Creates the test data used by the methods within this class. """
-        SV = SharedVariables
-        cls.viewname = 'tellings:titleexists'
+        SV = SharedVariables  
+        cls.viewname = 'tellings:accountdeleted'
         cls.errorPage_viewname = SV.errorPage_viewname
-        cls.loggedout_redirect_URL = '/loginpage/?next=/titleexists/'
+        cls.loggedout_redirect_URL = '/loginpage/?next=/accountdeleted/'
 
         cls.credentials = SV.credentials
         cls.user1 = User.objects.create_user(cls.credentials['username'], 
                                              cls.credentials['email'],
                                              cls.credentials['pwd'])
-        
-        cls.test_postTitle = SV.test_postTitle
-        cls.test_postText = SV.test_postText
-
-        cls.test_notexists = { 'title': 'Not exists'}
-        cls.test_exists = { 'title': cls.test_postTitle }
+        cls.test_reasonForDeletingAccount = SV.test_reasonForDeletingAccount
 
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
@@ -563,27 +244,21 @@ class TitleExistsViewTests(SharedTestMethods):
         self.post_loggedout_redirect_tests()
 
     def test_POST_no_data(self):
-        self.post_no_data_redirect_to_errorpage_tests()
+        self.post_no_data_redirect_to_errorpage_tests()    
 
-    def test_POST_title_not_exists(self):
+    def test_POST_validDeleteAccount(self):
+        test_deleteAccount = {
+            'reason': self.test_reasonForDeletingAccount
+        }
+
         self.client.login(username=self.credentials['username'], 
                           password=self.credentials['pwd'])
-        self.createPostRecord(userID=self.user1.id, dateOfPost='2019-08-02', 
-                        postTitle=self.test_postTitle, postText=self.test_postText)
         response = self.client.post(reverse(self.viewname), 
-                                    self.test_notexists, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "False")
+                                    test_deleteAccount, follow=True)
+        userStillExists = User.objects.filter(username=self.credentials['username']).exists()    
 
-    def test_POST_title_exists(self):
-        self.client.login(username=self.credentials['username'], 
-                          password=self.credentials['pwd'])
-        self.createPostRecord(userID=self.user1.id, dateOfPost='2019-08-02', 
-                        postTitle=self.test_postTitle, postText=self.test_postText)
-        response = self.client.post(reverse(self.viewname), 
-                                    self.test_exists, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "True")
+        self.assertFalse(userStillExists)
 
 
 class AddNewUpdateViewTests(SharedTestMethods):
@@ -672,6 +347,155 @@ class AddNewUpdateViewTests(SharedTestMethods):
         self.assertRedirects(response, reverse(self.errorPage_viewname))
 
 
+class AddUpdateModalTests(SharedTestMethods):
+    """ Tests for the AddUpdateModal view. """
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:addupdatemodal'
+        cls.loggedout_redirect_URL = '/loginpage/?next=/addupdatemodal/'
+        cls.templateURL = 'tellings/includes/addUpdate_modal.html'
+
+        SV = SharedVariables
+        cls.credentials = SV.credentials
+        cls.user1 = User.objects.create_user(cls.credentials['username'], 
+                                             cls.credentials['email'],
+                                             cls.credentials['pwd'])                                           
+
+        cls.test_postDate = SV.test_postDate
+        cls.test_postTitle1 = SV.test_postTitle1
+        cls.test_postText1 = SV.test_postText1                                             
+        cls.test_newPostText = SV.test_postText2
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_redirect_tests()
+
+    def test_GET_loggedin_hasNotPostedToday(self):
+        """ Tests the behaviour if the user has NOT already posted
+            an update today. """
+        self.client.login(username=self.credentials['username'], 
+                          password=self.credentials['pwd'])
+        response = self.client.get((reverse(self.viewname)), follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, self.templateURL)
+
+    def test_GET_loggedin_hasPostedToday(self):
+        """ Tests the behaviour if the user has already posted
+            an update today. """
+        self.createPostRecord(userID=self.user1.id, dateOfPost=self.test_postDate, 
+                              postTitle=self.test_postTitle1, postText=self.test_postText1)
+
+        self.client.login(username=self.credentials['username'], 
+                          password=self.credentials['pwd'])
+        response = self.client.get((reverse(self.viewname)), follow=True)
+        content = response.content.decode("utf-8")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("False", content)
+
+    def test_POST_loggedout(self):
+        self.post_loggedout_redirect_tests()
+
+    def test_POST_loggedin_hasNotPostedToday(self):
+        """ Tests the behaviour if the user has NOT already posted
+            an update today. """
+        self.client.login(username=self.credentials['username'], 
+                          password=self.credentials['pwd'])
+        response = self.client.post((reverse(self.viewname)), follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, self.templateURL)
+
+    def test_POST_loggedin_hasPostedToday(self):
+        """ Tests the behaviour if the user has already posted
+            an update today. """
+        self.createPostRecord(userID=self.user1.id, dateOfPost=self.test_postDate, 
+                              postTitle=self.test_postTitle1, postText=self.test_postText1)
+
+        self.client.login(username=self.credentials['username'], 
+                          password=self.credentials['pwd'])
+        response = self.client.post((reverse(self.viewname)), follow=True)
+        content = response.content.decode("utf-8")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("False", content)
+
+
+class ChangePasswordPageTests(SharedTestMethods):
+    """Tests for the ChangePassword view."""
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:changepassword'
+        cls.loggedout_redirect_URL = '/loginpage/?next=/changepassword/'
+        cls.templateURL = 'tellings/changePassword.html'
+
+        SV = SharedVariables
+        cls.credentials = SV.credentials
+
+        cls.user1 = User.objects.create_user(cls.credentials['username'], 
+                                             cls.credentials['email'],
+                                             cls.credentials['pwd'])
+        cls.change_data = {
+            'old_password': '@myp455w0rd',
+            'new_password1': 'ch@n63d70n3w',
+            'new_password1': 'ch@n63d70n3w'
+        }
+        cls.new_credentials = {
+            'username': 'testuser1',
+            'pwd': 'ch@n63d70n3w'
+        }
+        cls.change_data_invalid1 = {
+            'old_password': '@myp455w0rd',
+            'new_password1': 'ch@n63d70n3w',
+            'new_password1': 'ch@n63wr0n6'
+        }
+        cls.change_data_invalid2 = {
+            'old_password': '@mywr0n6p455w0rd',
+            'new_password1': 'ch@n63d70n3w',
+            'new_password1': 'ch@n63d70n3w'
+        }
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_redirect_tests()
+
+    def test_GET_loggedin(self):
+        self.get_loggedin_tests()
+
+    def test_POST_loggedout(self):
+        self.post_loggedout_redirect_tests()
+
+
+class ChangeUserDetailsPageTests(SharedTestMethods):
+    """Tests for the ChangeUserDetails view."""
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:changeuserdetails'
+        cls.loggedout_redirect_URL = '/loginpage/?next=/changeuserdetails/' 
+        cls.templateURL = 'tellings/changeUserDetails.html'
+
+        SV = SharedVariables
+        cls.credentials = SV.credentials
+
+        cls.user1 = User.objects.create_user(cls.credentials['username'], 
+                                             cls.credentials['email'],
+                                             cls.credentials['pwd'])
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_redirect_tests()
+
+    def test_GET_loggedin(self):
+        self.get_loggedin_tests()
+
+    def test_POST_loggedout(self):
+        self.post_loggedout_redirect_tests()
+
+
 class CheckUserPasswordViewTests(SharedTestMethods):
     """Tests for the CheckUserPassword view."""
 
@@ -719,6 +543,44 @@ class CheckUserPasswordViewTests(SharedTestMethods):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "False")
+
+
+class DeleteAccountModalTests(SharedTestMethods):
+    """ Tests for the DeleteAccountModal view. """
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:deleteaccountmodal'
+        cls.loggedout_redirect_URL = '/loginpage/?next=/deleteaccountmodal/'
+        cls.templateURL = 'tellings/includes/deleteAccount_modal.html'
+
+        SV = SharedVariables
+        cls.credentials = SV.credentials
+
+        cls.user1 = User.objects.create_user(cls.credentials['username'], 
+                                             cls.credentials['email'],
+                                             cls.credentials['pwd'])
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_redirect_tests()
+
+    def test_GET_loggedin(self):
+        self.client.login(username=self.credentials['username'], 
+                          password=self.credentials['pwd'])
+        response = self.client.get((reverse(self.viewname)), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, self.templateURL)
+
+    def test_POST_loggedout(self):
+        self.post_loggedout_redirect_tests()
+
+    def test_POST_loggedin(self):
+        self.client.login(username=self.credentials['username'], 
+                          password=self.credentials['pwd'])
+        response = self.client.post(reverse(self.viewname), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, self.templateURL)
 
 
 class DeleteUserPostViewTests(SharedTestMethods):
@@ -891,48 +753,137 @@ class EditUserPostViewTests(SharedTestMethods):
         self.assertNotEqual(self.test_newPostText, editedField)
 
 
-class AccountDeletedPageTests(SharedTestMethods):
-    """Tests for the AccountDeletedPage view."""
+class ErrorPageViewTests(SharedTestMethods):
+    """Tests for the ErrorPage view."""
 
     @classmethod
-    def setUpTestData(cls):      
+    def setUpTestData(cls):        
         """ Creates the test data used by the methods within this class. """
-        SV = SharedVariables  
-        cls.viewname = 'tellings:accountdeleted'
-        cls.errorPage_viewname = SV.errorPage_viewname
-        cls.loggedout_redirect_URL = '/loginpage/?next=/accountdeleted/'
+        SV = SharedVariables
+        cls.viewname = 'tellings:errorpage'
+        cls.indexPage_viewname = SV.indexPage_viewname
+        cls.loginPage_viewname = SV.loginPage_viewname
+        cls.templateURL = 'tellings/errorPage.html'
+
+        SV = SharedVariables
+        cls.credentials = SV.credentials
+        cls.user1 = User.objects.create_user(cls.credentials['username'], 
+                                             cls.credentials['email'],
+                                             cls.credentials['pwd'])
+        cls.invalid_credentials = SV.invalid_credentials
+        cls.partial_credentials = SV.partial_credentials
+
+    def test_GET_loggedin(self):
+        self.get_loggedin_tests()
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_tests()
+
+    def test_POST_no_data(self):
+        response = self.client.post(reverse(self.viewname), follow=True)
+        self.assertEqual(response.status_code, 200)
+
+    def test_POST_missing_data(self):
+        self.post_missing_data_tests()
+        
+    def test_POST_valid_login(self):
+        self.post_valid_login_tests()
+
+    def test_POST_invalid_login(self):
+        self.post_invalid_login_redirect_tests()
+
+
+class HasPostedTodayViewTests(SharedTestMethods):
+    """Tests for the HasPostedToday view."""
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:haspostedtoday'
+        cls.loggedout_redirect_URL = '/loginpage/?next=/haspostedtoday/'
+
+        SV = SharedVariables
+        cls.credentials = SV.credentials
+
+        cls.user1 = User.objects.create_user(cls.credentials['username'], 
+                                             cls.credentials['email'],
+                                             cls.credentials['pwd'])
+        
+        cls.test_postDate = SV.test_postDate
+        cls.test_postTitle = SV.test_postTitle
+        cls.test_postText = SV.test_postText
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_redirect_tests()
+
+    def test_GET_has_not_posted(self):
+        self.client.login(username=self.credentials['username'], 
+                          password=self.credentials['pwd'])
+        response = self.client.get((reverse(self.viewname)), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "False")
+
+    def test_GET_has_posted(self):
+        self.client.login(username=self.credentials['username'], 
+                          password=self.credentials['pwd'])
+        self.createPostRecord(self.user1.id, dateOfPost=self.test_postDate)
+        response = self.client.get((reverse(self.viewname)), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "True")
+
+    def test_POST_loggedout(self):
+        self.post_loggedout_redirect_tests()
+
+    def test_POST_loggedin(self):
+        self.client.login(username=self.credentials['username'], 
+                          password=self.credentials['pwd'])
+        self.createPostRecord(self.user1.id, dateOfPost=self.test_postDate)
+        response = self.client.post((reverse(self.viewname)), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "True")
+
+
+class IndexPageViewTests(SharedTestMethods):
+    """Tests for the IndexPage view."""
+
+    @classmethod
+    def setUpTestData(cls):
+        """ Creates the test data used by the methods within this class. """
+        SV = SharedVariables
+        cls.viewname = 'tellings:index'
+        cls.indexPage_viewname = SV.indexPage_viewname
+        cls.loginPage_viewname = SV.loginPage_viewname
+        cls.templateURL = 'tellings/index.html'
 
         cls.credentials = SV.credentials
         cls.user1 = User.objects.create_user(cls.credentials['username'], 
                                              cls.credentials['email'],
                                              cls.credentials['pwd'])
-        cls.test_reasonForDeletingAccount = SV.test_reasonForDeletingAccount
+        cls.invalid_credentials = SV.invalid_credentials
+        cls.partial_credentials = SV.partial_credentials
+
+    def setUp(self):
+        pass
 
     def test_GET_loggedout(self):
-        self.get_loggedout_redirect_tests()
+        self.get_loggedout_tests()
 
     def test_GET_loggedin(self):
-        self.get_login_HTTPResponseNotAllowed_tests()
-
-    def test_POST_loggedout(self):
-        self.post_loggedout_redirect_tests()
-
+        self.get_loggedin_tests()
+ 
     def test_POST_no_data(self):
-        self.post_no_data_redirect_to_errorpage_tests()    
-
-    def test_POST_validDeleteAccount(self):
-        test_deleteAccount = {
-            'reason': self.test_reasonForDeletingAccount
-        }
-
-        self.client.login(username=self.credentials['username'], 
-                          password=self.credentials['pwd'])
-        response = self.client.post(reverse(self.viewname), 
-                                    test_deleteAccount, follow=True)
-        userStillExists = User.objects.filter(username=self.credentials['username']).exists()    
-
+        response = self.client.post(reverse(self.viewname), follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(userStillExists)
+        self.check_templates_are_included(response, self.templateURL)
+
+    def test_POST_missing_data(self):
+        self.post_missing_data_tests()
+        
+    def test_POST_valid_login(self):
+        self.post_valid_login_tests()
+        
+    def test_POST_invalid_login(self):
+        self.post_invalid_login_redirect_tests()
 
 
 class LoginModalTests(SharedTestMethods):
@@ -976,15 +927,96 @@ class LoginModalTests(SharedTestMethods):
         self.assertTemplateUsed(response, self.templateURL)
 
 
-class DeleteAccountModalTests(SharedTestMethods):
-    """ Tests for the DeleteAccountModal view. """
+class LoginPageTests(SharedTestMethods):
+    """Tests for the Loginpage view."""
 
     @classmethod
     def setUpTestData(cls):        
         """ Creates the test data used by the methods within this class. """
-        cls.viewname = 'tellings:deleteaccountmodal'
-        cls.loggedout_redirect_URL = '/loginpage/?next=/deleteaccountmodal/'
-        cls.templateURL = 'tellings/includes/deleteAccount_modal.html'
+        cls.viewname = 'tellings:loginpage'
+        cls.templateURL = 'tellings/loginpage.html'
+
+        SV = SharedVariables
+        cls.credentials = SV.credentials
+        
+        cls.user1 = User.objects.create_user(cls.credentials['username'], 
+                                             cls.credentials['email'],
+                                             cls.credentials['pwd'])   
+        cls.login_credentials = {
+            'username': 'testuser1',
+            'password': '@myp455w0rd'}   
+
+        cls.invalid_credentials = SV.invalid_credentials    
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_tests()
+
+    def test_GET_loggedin(self):
+        # If logged in opens the home page
+        self.get_loggedin_tests()
+
+    def test_POST_valid(self):
+        response = self.client.post(reverse(self.viewname), self.login_credentials, follow=True)
+        self.assertEqual(response.status_code, 200)
+        # redirects to home page after valid login
+        indexpage = IndexPageViewTests()
+        self.check_templates_are_included(response, indexpage.templateURL)
+
+    def test_POST_invalid(self):
+        response = self.client.post(reverse(self.viewname), self.invalid_credentials, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.check_templates_are_included(response, self.templateURL)
+
+
+class MissionStatementPageViewTests(SharedTestMethods):
+    """Tests for the MissionStatementPage view."""
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        SV = SharedVariables
+        cls.viewname = 'tellings:missionstatement'
+        cls.indexPage_viewname = SV.indexPage_viewname
+        cls.loginPage_viewname = SV.loginPage_viewname
+        cls.templateURL = 'tellings/missionstatement.html'
+
+        SV = SharedVariables
+        cls.credentials = SV.credentials
+        cls.user1 = User.objects.create_user(cls.credentials['username'], 
+                                             cls.credentials['email'],
+                                             cls.credentials['pwd'])
+        cls.invalid_credentials = SV.invalid_credentials
+        cls.partial_credentials = SV.partial_credentials
+
+    def test_GET_loggedin(self):
+        self.get_loggedin_tests()
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_tests()
+
+    def test_POST_no_data(self):
+        response = self.client.post(reverse(self.viewname), follow=True)
+        self.assertEqual(response.status_code, 200)
+
+    def test_POST_missing_data(self):
+        self.post_missing_data_tests()
+        
+    def test_POST_valid_login(self):
+        self.post_valid_login_tests()
+
+    def test_POST_invalid_login(self):
+        self.post_invalid_login_redirect_tests()
+
+
+class MyUpdatesListViewTests(SharedTestMethods):
+    """Tests for the MyUpdatesList view."""
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:myupdates'
+        cls.loggedout_redirect_URL = '/loginpage/?next=/myupdates/'
+        cls.templateURL = 'tellings/myupdates_list.html'
 
         SV = SharedVariables
         cls.credentials = SV.credentials
@@ -997,94 +1029,262 @@ class DeleteAccountModalTests(SharedTestMethods):
         self.get_loggedout_redirect_tests()
 
     def test_GET_loggedin(self):
-        self.client.login(username=self.credentials['username'], 
-                          password=self.credentials['pwd'])
-        response = self.client.get((reverse(self.viewname)), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, self.templateURL)
+        self.get_loggedin_tests()
 
     def test_POST_loggedout(self):
         self.post_loggedout_redirect_tests()
 
     def test_POST_loggedin(self):
-        self.client.login(username=self.credentials['username'], 
-                          password=self.credentials['pwd'])
-        response = self.client.post(reverse(self.viewname), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, self.templateURL)
+        self.post_loggedin_not_allowed_tests()
 
 
-class AddUpdateModalTests(SharedTestMethods):
-    """ Tests for the AddUpdateModal view. """
+class NewUpdatesListViewTests(SharedTestMethods):
+    """Tests for the NewUpdatesListView view."""
 
     @classmethod
     def setUpTestData(cls):        
         """ Creates the test data used by the methods within this class. """
-        cls.viewname = 'tellings:addupdatemodal'
-        cls.loggedout_redirect_URL = '/loginpage/?next=/addupdatemodal/'
-        cls.templateURL = 'tellings/includes/addUpdate_modal.html'
+        cls.viewname = 'tellings:newupdates'
+        cls.loggedout_redirect_URL = '/loginpage/?next=/newupdates/'
+        cls.templateURL = 'tellings/newupdates_list.html'
+
+        SV = SharedVariables
+        cls.credentials = SV.credentials
+
+        cls.user1 = User.objects.create_user(cls.credentials['username'], 
+                                             cls.credentials['email'],
+                                             cls.credentials['pwd'])
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_redirect_tests()
+
+    def test_GET_loggedin(self):
+        self.get_loggedin_tests()
+
+    def test_POST_loggedout(self):
+        self.post_loggedout_redirect_tests()
+
+    def test_POST_loggedin(self):
+        self.post_loggedin_not_allowed_tests()
+
+
+class PrivacyPolicyPageViewTests(SharedTestMethods):
+    """Tests for the PrivacyPolicyPage view."""
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        SV = SharedVariables
+        cls.viewname = 'tellings:privacypolicy'
+        cls.indexPage_viewname = SV.indexPage_viewname
+        cls.loginPage_viewname = SV.loginPage_viewname
+        cls.templateURL = 'tellings/privacypolicy.html'
 
         SV = SharedVariables
         cls.credentials = SV.credentials
         cls.user1 = User.objects.create_user(cls.credentials['username'], 
                                              cls.credentials['email'],
-                                             cls.credentials['pwd'])                                           
+                                             cls.credentials['pwd'])
+        cls.invalid_credentials = SV.invalid_credentials
+        cls.partial_credentials = SV.partial_credentials
 
-        cls.test_postDate = SV.test_postDate
-        cls.test_postTitle1 = SV.test_postTitle1
-        cls.test_postText1 = SV.test_postText1                                             
-        cls.test_newPostText = SV.test_postText2
+    def test_GET_loggedin(self):
+        self.get_loggedin_tests()
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_tests()
+
+    def test_POST_no_data(self):
+        response = self.client.post(reverse(self.viewname), follow=True)
+        self.assertEqual(response.status_code, 200)
+
+    def test_POST_missing_data(self):
+        self.post_missing_data_tests()
+        
+    def test_POST_valid_login(self):
+        self.post_valid_login_tests()
+
+    def test_POST_invalid_login(self):
+        self.post_invalid_login_redirect_tests()
+
+
+class SignUpPageTests(SharedTestMethods):
+    """Tests for the SignUpPage view."""
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        SV = SharedVariables
+        cls.viewname = 'tellings:signup'
+        cls.errorPage_viewname = SV.errorPage_viewname
+        cls.indexPage_viewname = SV.indexPage_viewname
+        cls.loginPage_viewname = SV.loginPage_viewname
+        cls.templateURL = 'tellings/signup.html'
+
+        cls.credentials = SV.credentials
+        cls.user1 = User.objects.create_user(cls.credentials['username'], 
+                                             cls.credentials['email'],
+                                             cls.credentials['pwd'])
+
+        cls.invalid_credentials = SV.invalid_credentials
+        cls.registration_data = {
+            'username': 'testuser2',
+            'password1': '@myp455w0rd',
+            'password2': '@myp455w0rd'}
+        cls.registration_data_invalid = {
+            'username': 'testuser2',
+            'password1': '@myp455w0rd',
+            'password2': '@myp455'}
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_tests()
+
+    def test_GET_loggedin(self):
+        self.get_loggedin_tests()
+
+    def test_POST_no_data(self):
+        response = self.client.post(reverse(self.viewname), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, reverse(self.errorPage_viewname))
+
+    def test_POST_valid(self):
+        response = self.client.post(reverse(self.viewname), self.registration_data)
+        self.assertEqual(response.status_code, 200)
+
+    def test_POST_invalid(self):
+        response = self.client.post(reverse(self.viewname), self.registration_data_invalid)
+        self.assertEqual(response.status_code, 200)
+        self.check_templates_are_included(response, self.templateURL)
+        
+    def test_POST_valid_login(self):
+        self.post_valid_login_tests()
+        
+    def test_POST_invalid_login(self):
+        self.post_invalid_login_redirect_tests()
+        
+
+class TagListViewTests(SharedTestMethods):
+    """Tests for the TagListView view."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.viewname = 'tellings:tags'
+        cls.loggedout_redirect_URL = '/loginpage/?next=/tags/'
+        cls.templateURL = 'tellings/tag_list.html'
+
+        SV = SharedVariables
+        cls.credentials = SV.credentials
+
+        cls.user1 = User.objects.create_user(cls.credentials['username'], 
+                                             cls.credentials['email'],
+                                             cls.credentials['pwd'])
+
+    def setUp(self):
+        pass
 
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
 
-    def test_GET_loggedin_hasNotPostedToday(self):
-        """ Tests the behaviour if the user has NOT already posted
-            an update today. """
-        self.client.login(username=self.credentials['username'], 
-                          password=self.credentials['pwd'])
-        response = self.client.get((reverse(self.viewname)), follow=True)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, self.templateURL)
-
-    def test_GET_loggedin_hasPostedToday(self):
-        """ Tests the behaviour if the user has already posted
-            an update today. """
-        self.createPostRecord(userID=self.user1.id, dateOfPost=self.test_postDate, 
-                              postTitle=self.test_postTitle1, postText=self.test_postText1)
-
-        self.client.login(username=self.credentials['username'], 
-                          password=self.credentials['pwd'])
-        response = self.client.get((reverse(self.viewname)), follow=True)
-        content = response.content.decode("utf-8")
-
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("False", content)
+    def test_GET_loggedin(self):
+        self.get_loggedin_tests()
 
     def test_POST_loggedout(self):
         self.post_loggedout_redirect_tests()
 
-    def test_POST_loggedin_hasNotPostedToday(self):
-        """ Tests the behaviour if the user has NOT already posted
-            an update today. """
+    def test_POST_loggedin(self):
+        self.post_loggedin_not_allowed_tests()
+
+
+class TermsAndConditionsPage(SharedTestMethods):
+    """Tests for the TermsAndConditionsPage view."""
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        SV = SharedVariables
+        cls.viewname = 'tellings:termsandconditions'
+        cls.indexPage_viewname = SV.indexPage_viewname
+        cls.loginPage_viewname = SV.loginPage_viewname
+        cls.templateURL = 'tellings/termsandconditions.html'
+
+        SV = SharedVariables
+        cls.credentials = SV.credentials
+        cls.user1 = User.objects.create_user(cls.credentials['username'], 
+                                             cls.credentials['email'],
+                                             cls.credentials['pwd'])
+        cls.invalid_credentials = SV.invalid_credentials
+        cls.partial_credentials = SV.partial_credentials
+
+    def test_GET_loggedin(self):
+        self.get_loggedin_tests()
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_tests()
+
+    def test_POST_no_data(self):
+        response = self.client.post(reverse(self.viewname), follow=True)
+        self.assertEqual(response.status_code, 200)
+
+    def test_POST_missing_data(self):
+        self.post_missing_data_tests()
+        
+    def test_POST_valid_login(self):
+        self.post_valid_login_tests()
+
+    def test_POST_invalid_login(self):
+        self.post_invalid_login_redirect_tests()
+
+
+class TitleExistsViewTests(SharedTestMethods):
+    """Tests for the TitleExists view."""
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        SV = SharedVariables
+        cls.viewname = 'tellings:titleexists'
+        cls.errorPage_viewname = SV.errorPage_viewname
+        cls.loggedout_redirect_URL = '/loginpage/?next=/titleexists/'
+
+        cls.credentials = SV.credentials
+        cls.user1 = User.objects.create_user(cls.credentials['username'], 
+                                             cls.credentials['email'],
+                                             cls.credentials['pwd'])
+        
+        cls.test_postTitle = SV.test_postTitle
+        cls.test_postText = SV.test_postText
+
+        cls.test_notexists = { 'title': 'Not exists'}
+        cls.test_exists = { 'title': cls.test_postTitle }
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_redirect_tests()
+
+    def test_GET_loggedin(self):
+        self.get_login_HTTPResponseNotAllowed_tests()
+
+    def test_POST_loggedout(self):
+        self.post_loggedout_redirect_tests()
+
+    def test_POST_no_data(self):
+        self.post_no_data_redirect_to_errorpage_tests()
+
+    def test_POST_title_not_exists(self):
         self.client.login(username=self.credentials['username'], 
                           password=self.credentials['pwd'])
-        response = self.client.post((reverse(self.viewname)), follow=True)
-
+        self.createPostRecord(userID=self.user1.id, dateOfPost='2019-08-02', 
+                        postTitle=self.test_postTitle, postText=self.test_postText)
+        response = self.client.post(reverse(self.viewname), 
+                                    self.test_notexists, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, self.templateURL)
+        self.assertContains(response, "False")
 
-    def test_POST_loggedin_hasPostedToday(self):
-        """ Tests the behaviour if the user has already posted
-            an update today. """
-        self.createPostRecord(userID=self.user1.id, dateOfPost=self.test_postDate, 
-                              postTitle=self.test_postTitle1, postText=self.test_postText1)
-
+    def test_POST_title_exists(self):
         self.client.login(username=self.credentials['username'], 
                           password=self.credentials['pwd'])
-        response = self.client.post((reverse(self.viewname)), follow=True)
-        content = response.content.decode("utf-8")
-
+        self.createPostRecord(userID=self.user1.id, dateOfPost='2019-08-02', 
+                        postTitle=self.test_postTitle, postText=self.test_postText)
+        response = self.client.post(reverse(self.viewname), 
+                                    self.test_exists, follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertIn("False", content)
+        self.assertContains(response, "True")

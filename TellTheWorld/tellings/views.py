@@ -1,7 +1,7 @@
 # Filename:     views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last updated: 20/01/2020
+# Last updated: 28/01/2020
 # Description:  Contains the views for the website.
 
 from django.contrib import messages
@@ -66,51 +66,111 @@ def user_login(request):
 # PAGE VIEWS ------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------
 
-class ChangeUserDetailsPage(LoginRequiredMixin, View):
-    """ Creates the change user details page for the website."""
+class AboutPage(View):
+    """ Creates the About us page for the website."""
     http_method_names = ['get', 'post']
 
     def get(self, request):
-        """ Handles GET requests for the Change User Details page.
+        """ Handles GET requests for the About us page.
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
         :returns: A HTML page.
-        """  
-        quote = get_random_quote() 
-        form = ChangeUserDetailsForm(instance=request.user)
-        return render(request, 'tellings/changeUserDetails.html', {'form': form, 'quote': quote})
+        """
+        quote = get_random_quote()
+        return render(request, 'tellings/about.html', {'quote': quote})
 
     def post(self, request):
-        """ Handles POST requests for the Change User Details page.
+        """ Handles POST requests for the About us page.
 
         :param request: A dictionary-like object containing all HTTP POST parameters 
                         sent by a site visitor. 
         :returns: A HTML page.
         """
-        form = ChangeUserDetailsForm(request.POST)
-        if form.is_valid():
-            return self.changeDetails(request, form)
+        if ('username' in request.POST) and ('pwd' in request.POST):
+            return user_login(request)
         else:
             quote = get_random_quote()
-            messages.error(request, _('Please correct the error below.'))
-            return render(request, 'tellings/changeUserDetails.html', {'form': form, 'quote': quote})
+            return render(request, 'tellings/about.html', {'quote': quote})
 
-    def changeDetails(self, request, form):
-        """ Handles changing the user's details.
 
-        :param request: A dictionary-like object containing all HTTP POST parameters 
-                        sent by a site visitor.  
+class AcceptableUsagePage(View):
+    """ Creates the Acceptable Usage Policy page for the website."""
+    http_method_names = ['get', 'post']
+
+    def get(self, request):
+        """ Handles GET requests for the Acceptable Usage Policy page.
+
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
         :returns: A HTML page.
         """
-        u = request.user
-        u.first_name = request.POST['first_name']
-        u.last_name = request.POST['last_name']
-        u.email = request.POST['email']
-        u.save()
         quote = get_random_quote()
-        return render(request, 'tellings/changeUserDetails.html', 
-                      {'message': _('Your details have been updated'), 'form': form, 'quote': quote})
+        return render(request, 'tellings/acceptableusage.html', {'quote': quote})
+
+    def post(self, request):
+        """ Handles POST requests for the Acceptable Usage Policy page.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        if ('username' in request.POST) and ('pwd' in request.POST):
+            return user_login(request)
+        else:
+            quote = get_random_quote()
+            return render(request, 'tellings/acceptableusage.html', {'quote': quote})
+
+
+class AccountDeletedPage(LoginRequiredMixin, View):
+    """ Creates the Account Deleted page for the website, and handles user account deletion """
+    http_method_names = ['post']
+
+    def post(self, request):
+        """ Handles POST requests for the Error page.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        if ('reason' in request.POST):
+            return self.deleteAccount(request)
+        else:
+            return HttpResponseRedirect('/errorpage/')
+
+    def deleteAccount(self, request):
+        """ Handles deleting the user's account.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        try:
+            quote = get_random_quote()
+            u = request.user
+
+            # Create a DeletedAccount record
+            deleted_date = datetime.now(timezone.utc)
+            date_joined = u.date_joined
+            membership_length = deleted_date - date_joined
+
+            data = {
+                'deleted_reason': request.POST.get('reason', 'mydefaultvalue'),
+                'deleted_date': deleted_date,
+                'membership_length': membership_length.days,
+            }
+
+            form = DeleteAccountForm(data)
+
+            if form.is_valid():
+                form.save()
+
+            # Logout and delete the user's account
+            logout(request)
+            u.delete()
+            return render(request, 'tellings/accountDeleted.html', {'quote': quote})
+        except:
+            return HttpResponseRedirect('/errorpage/')
 
 
 class ChangePasswordPage(LoginRequiredMixin, View):
@@ -158,52 +218,51 @@ class ChangePasswordPage(LoginRequiredMixin, View):
                       {'message': _('Your password was successfully updated!'), 'form': form, 'quote': quote})
 
 
-class SignUpPage(View):
-    """ Creates the sign up page for the website."""
+class ChangeUserDetailsPage(LoginRequiredMixin, View):
+    """ Creates the change user details page for the website."""
     http_method_names = ['get', 'post']
 
     def get(self, request):
-        """ Handles GET requests for the Sign Up page.
+        """ Handles GET requests for the Change User Details page.
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
         :returns: A HTML page.
-        """
-        quote = get_random_quote()
-        form = NewUserCreationForm()
-        return render(request, 'tellings/signup.html', {'form': form, 'quote': quote})
+        """  
+        quote = get_random_quote() 
+        form = ChangeUserDetailsForm(instance=request.user)
+        return render(request, 'tellings/changeUserDetails.html', {'form': form, 'quote': quote})
 
     def post(self, request):
-        """ Handles POST requests for the Sign Up page.
+        """ Handles POST requests for the Change User Details page.
 
         :param request: A dictionary-like object containing all HTTP POST parameters 
                         sent by a site visitor. 
         :returns: A HTML page.
         """
-        if ('username' in request.POST) and ('password1' in request.POST):
-            return self.signUp(request)
-
-        elif ('username' in request.POST) and ('pwd' in request.POST):
-            return user_login(request)
-        else:
-            return HttpResponseRedirect('/errorpage/')
-
-    def signUp(self, request):
-        """ Handles account creation.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        form = NewUserCreationForm(request.POST)
+        form = ChangeUserDetailsForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return HttpResponseRedirect('/')
+            return self.changeDetails(request, form)
         else:
             quote = get_random_quote()
             messages.error(request, _('Please correct the error below.'))
-            return render(request, 'tellings/signup.html', {'form': form, 'quote': quote})
+            return render(request, 'tellings/changeUserDetails.html', {'form': form, 'quote': quote})
+
+    def changeDetails(self, request, form):
+        """ Handles changing the user's details.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor.  
+        :returns: A HTML page.
+        """
+        u = request.user
+        u.first_name = request.POST['first_name']
+        u.last_name = request.POST['last_name']
+        u.email = request.POST['email']
+        u.save()
+        quote = get_random_quote()
+        return render(request, 'tellings/changeUserDetails.html', 
+                      {'message': _('Your details have been updated'), 'form': form, 'quote': quote})
 
 
 class IndexPage(View):
@@ -262,62 +321,6 @@ class ErrorPage(View):
             return render(request, 'tellings/errorPage.html', {'quote': quote})
 
 
-class AboutPage(View):
-    """ Creates the About us page for the website."""
-    http_method_names = ['get', 'post']
-
-    def get(self, request):
-        """ Handles GET requests for the About us page.
-
-        :param request: A dictionary-like object containing all the HTTP parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        quote = get_random_quote()
-        return render(request, 'tellings/about.html', {'quote': quote})
-
-    def post(self, request):
-        """ Handles POST requests for the About us page.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        if ('username' in request.POST) and ('pwd' in request.POST):
-            return user_login(request)
-        else:
-            quote = get_random_quote()
-            return render(request, 'tellings/about.html', {'quote': quote})
-
-
-class AcceptableUsagePage(View):
-    """ Creates the Acceptable Usage Policy page for the website."""
-    http_method_names = ['get', 'post']
-
-    def get(self, request):
-        """ Handles GET requests for the Acceptable Usage Policy page.
-
-        :param request: A dictionary-like object containing all the HTTP parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        quote = get_random_quote()
-        return render(request, 'tellings/acceptableusage.html', {'quote': quote})
-
-    def post(self, request):
-        """ Handles POST requests for the Acceptable Usage Policy page.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        if ('username' in request.POST) and ('pwd' in request.POST):
-            return user_login(request)
-        else:
-            quote = get_random_quote()
-            return render(request, 'tellings/acceptableusage.html', {'quote': quote})
-
-
 class MissionStatementPage(View):
     """ Creates the Mission Statement page for the website."""
     http_method_names = ['get', 'post']
@@ -344,126 +347,6 @@ class MissionStatementPage(View):
         else:
             quote = get_random_quote()
             return render(request, 'tellings/missionstatement.html', {'quote': quote})
-
-
-class PrivacyPolicyPage(View):
-    """ Creates the Privacy Policy page for the website."""
-    http_method_names = ['get', 'post']
-
-    def get(self, request):
-        """ Handles GET requests for the Privacy Policy page.
-
-        :param request: A dictionary-like object containing all the HTTP parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        quote = get_random_quote()
-        return render(request, 'tellings/privacypolicy.html', {'quote': quote})
-
-    def post(self, request):
-        """ Handles POST requests for the Privacy Policy page.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        if ('username' in request.POST) and ('pwd' in request.POST):
-            return user_login(request)
-        else:
-            quote = get_random_quote()
-            return render(request, 'tellings/privacypolicy.html', {'quote': quote})
-
-
-class TermsAndConditionsPage(View):
-    """ Creates the Terms and Conditions page for the website."""
-    http_method_names = ['get', 'post']
-
-    def get(self, request):
-        """ Handles GET requests for the Terms and Conditions page.
-
-        :param request: A dictionary-like object containing all the HTTP parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        quote = get_random_quote()
-        return render(request, 'tellings/termsandconditions.html', {'quote': quote})
-
-    def post(self, request):
-        """ Handles POST requests for the Terms and Conditions page.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        if ('username' in request.POST) and ('pwd' in request.POST):
-            return user_login(request)
-        else:
-            quote = get_random_quote()
-            return render(request, 'tellings/termsandconditions.html', {'quote': quote})
-
-
-class AccountDeletedPage(LoginRequiredMixin, View):
-    """ Creates the Account Deleted page for the website, and handles user account deletion """
-    http_method_names = ['post']
-
-    def post(self, request):
-        """ Handles POST requests for the Error page.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        if ('reason' in request.POST):
-            return self.deleteAccount(request)
-        else:
-            return HttpResponseRedirect('/errorpage/')
-
-    def deleteAccount(self, request):
-        """ Handles deleting the user's account.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        try:
-            quote = get_random_quote()
-            u = request.user
-
-            # Create a DeletedAccount record
-            deleted_date = datetime.now(timezone.utc)
-            date_joined = u.date_joined
-            membership_length = deleted_date - date_joined
-
-            data = {
-                'deleted_reason': request.POST.get('reason', 'mydefaultvalue'),
-                'deleted_date': deleted_date,
-                'membership_length': membership_length.days,
-            }
-
-            form = DeleteAccountForm(data)
-
-            if form.is_valid():
-                form.save()
-
-            # Logout and delete the user's account
-            logout(request)
-            u.delete()
-            return render(request, 'tellings/accountDeleted.html', {'quote': quote})
-        except:
-            return HttpResponseRedirect('/errorpage/')
-
-
-class TagListView(LoginRequiredMixin, generic.ListView):
-    """ Creates the Tags page for the website."""
-    model = Tag
-    paginate_by = 20
-    http_method_names = ['get', 'post']
-
-    def get_context_data(self, **kwargs):
-        context = super(TagListView, self).get_context_data(**kwargs)  
-        quote = get_random_quote()
-        context['quote'] = quote
-        return context
 
 
 class MyUpdatesListView(LoginRequiredMixin, generic.ListView):
@@ -558,76 +441,126 @@ class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
         return context
 
 
-
-# #########################################################################################
-# AJAX HANDLERS ---------------------------------------------------------------------------
-# -----------------------------------------------------------------------------------------
-
-class HasPostedToday(LoginRequiredMixin, View):
-    """ An AJAX handler used to check whether the currently logged in
-        user has posted an update today or not."""
+class PrivacyPolicyPage(View):
+    """ Creates the Privacy Policy page for the website."""
     http_method_names = ['get', 'post']
 
     def get(self, request):
-        """ Handles GET requests.
+        """ Handles GET requests for the Privacy Policy page.
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A string 'True' if the user has already posted an update today,
-                  otherwise 'False'.
+        :returns: A HTML page.
         """
-        if user_has_posted_today(request):
-            return HttpResponse('True')
-        else:
-            return HttpResponse('False')
+        quote = get_random_quote()
+        return render(request, 'tellings/privacypolicy.html', {'quote': quote})
 
     def post(self, request):
-        """ Handles POST requests.
+        """ Handles POST requests for the Privacy Policy page.
 
         :param request: A dictionary-like object containing all HTTP POST parameters 
                         sent by a site visitor. 
         :returns: A HTML page.
         """
-        if user_has_posted_today(request):
-            return HttpResponse('True')
+        if ('username' in request.POST) and ('pwd' in request.POST):
+            return user_login(request)
         else:
-            return HttpResponse('False')
+            quote = get_random_quote()
+            return render(request, 'tellings/privacypolicy.html', {'quote': quote})
 
 
-class TitleExists(LoginRequiredMixin, View):
-    """ An AJAX handler used to check if a post title already
-        exists within the UserPost table or not."""
-    http_method_names = ['post']
+class SignUpPage(View):
+    """ Creates the sign up page for the website."""
+    http_method_names = ['get', 'post']
 
-    def post(self, request):
-        """ Handles POST requests.
+    def get(self, request):
+        """ Handles GET requests for the Sign Up page.
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A string 'True' if the title already exists in the UserPost table,
-                  otherwise 'False'.
+        :returns: A HTML page.
         """
-        if ('title' in request.POST):
-            return self.titleExists(request)
+        quote = get_random_quote()
+        form = NewUserCreationForm()
+        return render(request, 'tellings/signup.html', {'form': form, 'quote': quote})
+
+    def post(self, request):
+        """ Handles POST requests for the Sign Up page.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        if ('username' in request.POST) and ('password1' in request.POST):
+            return self.signUp(request)
+
+        elif ('username' in request.POST) and ('pwd' in request.POST):
+            return user_login(request)
         else:
             return HttpResponseRedirect('/errorpage/')
 
-    def titleExists(self, request):
-        """ Checks whether an update title already exists within the UserPost table or not.
-            This function can only be used by authenticated users.
+    def signUp(self, request):
+        """ Handles account creation.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        form = NewUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return HttpResponseRedirect('/')
+        else:
+            quote = get_random_quote()
+            messages.error(request, _('Please correct the error below.'))
+            return render(request, 'tellings/signup.html', {'form': form, 'quote': quote})
+
+
+class TagListView(LoginRequiredMixin, generic.ListView):
+    """ Creates the Tags page for the website."""
+    model = Tag
+    paginate_by = 20
+    http_method_names = ['get', 'post']
+
+    def get_context_data(self, **kwargs):
+        context = super(TagListView, self).get_context_data(**kwargs)  
+        quote = get_random_quote()
+        context['quote'] = quote
+        return context
+
+
+class TermsAndConditionsPage(View):
+    """ Creates the Terms and Conditions page for the website."""
+    http_method_names = ['get', 'post']
+
+    def get(self, request):
+        """ Handles GET requests for the Terms and Conditions page.
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A string 'True' if the title already exists in the UserPost table,
-                  otherwise 'False'.
+        :returns: A HTML page.
         """
-        in_postTitle = request.POST['title']
+        quote = get_random_quote()
+        return render(request, 'tellings/termsandconditions.html', {'quote': quote})
 
-        if UserPost.objects.filter(postTitle=in_postTitle).exists():
-            return HttpResponse('True')
+    def post(self, request):
+        """ Handles POST requests for the Terms and Conditions page.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        if ('username' in request.POST) and ('pwd' in request.POST):
+            return user_login(request)
         else:
-            return HttpResponse('False')
+            quote = get_random_quote()
+            return render(request, 'tellings/termsandconditions.html', {'quote': quote})
 
+
+# #########################################################################################
+# AJAX HANDLERS ---------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------
 
 class AddNewUpdate(LoginRequiredMixin, View):
     """ An AJAX handler used to add a new user update to the database."""
@@ -658,6 +591,39 @@ class AddNewUpdate(LoginRequiredMixin, View):
                 return HttpResponseRedirect('/errorpage/')
         else:
             return HttpResponseRedirect('/errorpage/')
+
+
+class AddUpdateModal(LoginRequiredMixin, View):
+    """ An AJAX handler used to add the login modal to pages.
+    """
+    http_method_names = ['get', 'post']
+
+    def get(self, request):
+        """ Handles GET requests.
+
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        # Ensure that the user has not posted today
+        if user_has_posted_today(request):
+            return HttpResponse('False')
+
+        return render(request, 'tellings/includes/addUpdate_modal.html')
+
+    def post(self, request):
+        """ Handles POST requests.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        # Ensure that the user has not posted today
+        current_user_id = request.user.id
+        if user_has_posted_today(request):
+            return HttpResponse('False')
+
+        return render(request, 'tellings/includes/addUpdate_modal.html')
     
         
 class CheckUserPassword(LoginRequiredMixin, View):
@@ -694,6 +660,30 @@ class CheckUserPassword(LoginRequiredMixin, View):
             return HttpResponse('True')
         else:
             return HttpResponse('False')
+
+
+class DeleteAccountModal(LoginRequiredMixin, View):
+    """ An AJAX handler used to add the delete account modal to pages.
+    """
+    http_method_names = ['get', 'post']
+
+    def get(self, request):
+        """ Handles GET requests.
+
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        return render(request, 'tellings/includes/deleteAccount_modal.html')
+
+    def post(self, request):
+        """ Handles POST requests.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        return render(request, 'tellings/includes/deleteAccount_modal.html')
 
 
 class DeleteUserPost(LoginRequiredMixin, View):
@@ -741,87 +731,6 @@ class DeleteUserPost(LoginRequiredMixin, View):
             return True
         except:
             return False
-
-
-class LoginModal(View):
-    """ An AJAX handler used to add the login modal to pages.
-    """
-    http_method_names = ['get', 'post']
-
-    def get(self, request):
-        """ Handles GET requests.
-
-        :param request: A dictionary-like object containing all the HTTP parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        return render(request, 'tellings/includes/login_modal.html')
-
-    def post(self, request):
-        """ Handles POST requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        return render(request, 'tellings/includes/login_modal.html')
-
-
-class DeleteAccountModal(LoginRequiredMixin, View):
-    """ An AJAX handler used to add the delete account modal to pages.
-    """
-    http_method_names = ['get', 'post']
-
-    def get(self, request):
-        """ Handles GET requests.
-
-        :param request: A dictionary-like object containing all the HTTP parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        return render(request, 'tellings/includes/deleteAccount_modal.html')
-
-    def post(self, request):
-        """ Handles POST requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        return render(request, 'tellings/includes/deleteAccount_modal.html')
-
-
-class AddUpdateModal(LoginRequiredMixin, View):
-    """ An AJAX handler used to add the login modal to pages.
-    """
-    http_method_names = ['get', 'post']
-
-    def get(self, request):
-        """ Handles GET requests.
-
-        :param request: A dictionary-like object containing all the HTTP parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        # Ensure that the user has not posted today
-        if user_has_posted_today(request):
-            return HttpResponse('False')
-
-        return render(request, 'tellings/includes/addUpdate_modal.html')
-
-    def post(self, request):
-        """ Handles POST requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        # Ensure that the user has not posted today
-        current_user_id = request.user.id
-        if user_has_posted_today(request):
-            return HttpResponse('False')
-
-        return render(request, 'tellings/includes/addUpdate_modal.html')
         
 
 class EditUserPost(LoginRequiredMixin, generic.UpdateView):
@@ -871,9 +780,100 @@ class EditUserPost(LoginRequiredMixin, generic.UpdateView):
         if(userPost.user.username == request.user.username):
             try:
                 # Update the record (sql injection-safe)
-                UserPost.objects.filter(postID=in_postID).update(postText=in_postText)
+                today = date.today()
+                UserPost.objects.filter(postID=in_postID).update(postText=in_postText, dateOfEdit=today)
                 return HttpResponse("True")
             except:
                 return HttpResponse(_("Unable to make changes to the post. Please contact the site administrator."))
         else:
             return HttpResponse(_("YOU CANNOT EDIT OTHER USERS POSTS!!!"))   
+
+
+class HasPostedToday(LoginRequiredMixin, View):
+    """ An AJAX handler used to check whether the currently logged in
+        user has posted an update today or not."""
+    http_method_names = ['get', 'post']
+
+    def get(self, request):
+        """ Handles GET requests.
+
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
+        :returns: A string 'True' if the user has already posted an update today,
+                  otherwise 'False'.
+        """
+        if user_has_posted_today(request):
+            return HttpResponse('True')
+        else:
+            return HttpResponse('False')
+
+    def post(self, request):
+        """ Handles POST requests.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        if user_has_posted_today(request):
+            return HttpResponse('True')
+        else:
+            return HttpResponse('False')
+
+
+class LoginModal(View):
+    """ An AJAX handler used to add the login modal to pages.
+    """
+    http_method_names = ['get', 'post']
+
+    def get(self, request):
+        """ Handles GET requests.
+
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        return render(request, 'tellings/includes/login_modal.html')
+
+    def post(self, request):
+        """ Handles POST requests.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A HTML page.
+        """
+        return render(request, 'tellings/includes/login_modal.html')
+
+
+class TitleExists(LoginRequiredMixin, View):
+    """ An AJAX handler used to check if a post title already
+        exists within the UserPost table or not."""
+    http_method_names = ['post']
+
+    def post(self, request):
+        """ Handles POST requests.
+
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
+        :returns: A string 'True' if the title already exists in the UserPost table,
+                  otherwise 'False'.
+        """
+        if ('title' in request.POST):
+            return self.titleExists(request)
+        else:
+            return HttpResponseRedirect('/errorpage/')
+
+    def titleExists(self, request):
+        """ Checks whether an update title already exists within the UserPost table or not.
+            This function can only be used by authenticated users.
+
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
+        :returns: A string 'True' if the title already exists in the UserPost table,
+                  otherwise 'False'.
+        """
+        in_postTitle = request.POST['title']
+
+        if UserPost.objects.filter(postTitle=in_postTitle).exists():
+            return HttpResponse('True')
+        else:
+            return HttpResponse('False')

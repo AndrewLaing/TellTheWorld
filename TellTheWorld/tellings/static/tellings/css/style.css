@@ -130,7 +130,22 @@ body {
 
 .align-panel-text-right {
   text-align: right;
+  padding-right: 0px;
 }
+
+.align_between {
+  display: flex;
+  justify-content: space-between;
+}
+
+.align-panel-footer-text-left {
+  text-align: left;
+}
+
+.align-panel-footer-text-right {
+  text-align: right;
+}
+
 
 .footer {
     margin: 0px;

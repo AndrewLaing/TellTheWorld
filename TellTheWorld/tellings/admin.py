@@ -3,7 +3,7 @@ from .models import *
 
 
 class UserPostsAdmin(admin.ModelAdmin):
-    fields = ['user', 'dateOfPost','postTitle','postText']
+    fields = ['user', 'dateOfPost','postTitle','postText','isEdited', 'dateOfEdit']
 
 
 class TagAdmin(admin.ModelAdmin):

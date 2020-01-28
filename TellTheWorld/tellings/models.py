@@ -9,6 +9,7 @@ class UserPost(models.Model):
     dateOfPost = models.DateField()
     postTitle = models.CharField(max_length=35, unique=True)
     postText = models.CharField(max_length=255)
+    dateOfEdit = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return self.postTitle
