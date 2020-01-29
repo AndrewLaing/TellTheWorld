@@ -2,7 +2,7 @@
  * Filename:    style.css
  * Author:      Andrew Laing
  * Email:       parisianconnections@gmail.com
- * Date:        20/01/2020.
+ * Date:        29/01/2020.
  * Description: The main CSS file used to style the 'Tell the World' website.
  */
 
@@ -18,38 +18,38 @@ body {
 }
 
 .header {
-    position: relative;
-	color:#000;
-    /* Used to make text more visible against background image when it is resized */             
-    text-shadow: -2px 0 rgba(255, 255, 255, 0.4), 
-                  0 2px rgba(255, 255, 255, 0.4), 
-                  2px 0 rgba(255, 255, 255, 0.4), 
-                  0 -2px rgba(255, 255, 255, 0.4);             
-	background-color:#222222; 
+  position: relative;
+	color: #000;
+  /* Used to make text more visible against background image when it is resized */             
+  text-shadow: -2px 0 rgba(255, 255, 255, 0.4), 
+                0 2px rgba(255, 255, 255, 0.4), 
+                2px 0 rgba(255, 255, 255, 0.4), 
+                0 -2px rgba(255, 255, 255, 0.4);             
+	background-color: #222222; 
 	padding: 20px;
-    text-align: center;
+  text-align: center;
 }
 
 
 .jumbotron {
-    background-image: url('../imgs/todayIHave.png');
-    width: 100%;
-    height: 100%;
-    background-size: cover;
+  background-image: url('../imgs/ttw.png');
+  width: 100%;
+  height: 100%;
+  background-size: cover;
 }
 
 .jumbotron h1 {
-    padding: 10% 0% 3% 0%;
+  padding: 10% 0% 3% 0%;
 }
 
 .jumbotron span {
-    font-size: 1.5em;
-    padding: 5px;
-    background-color: rgba(255,255,255,0.7);
+  font-size: 1.5em;
+  padding: 5px;
+  background-color: rgba(255,255,255,0.7);
 }
 
 .img-wrapper img {
-    width: 100%;
+  width: 100%;
 }
 
 
@@ -74,21 +74,22 @@ body {
   text-shadow: 0px 0px 11px rgba(232,0,0,0.5);
 }
 
+
 .dropdown-menu {
-    padding: 5px;
+  padding: 5px;
 }
 
 
 .dropdown-menu-item {
-    padding: 5px;
-    text-align: center;
+  padding: 5px;
+  text-align: center;
 }
 
 
 .container-fluid {
-    margin: 0px;
-    padding-left: 20px;
-    padding-right: 20px;
+  margin: 0px;
+  padding-left: 20px;
+  padding-right: 20px;
 }
 
 
@@ -127,15 +128,14 @@ body {
   padding-bottom: 10px;
 }
 
+.align_between {
+  display: flex;
+  justify-content: space-between;
+}
 
 .align-panel-text-right {
   text-align: right;
   padding-right: 0px;
-}
-
-.align_between {
-  display: flex;
-  justify-content: space-between;
 }
 
 .align-panel-footer-text-left {
@@ -146,36 +146,35 @@ body {
   text-align: right;
 }
 
-
 .footer {
-    margin: 0px;
-    overflow-y: auto;
-    position: relative;
-    clear: both;
-    margin: 0px;
+  margin: 0px;
+  overflow-y: auto;
+  position: relative;
+  clear: both;
+  margin: 0px;
 } 
 
 .footer h1 {
-    padding-top: 10px;
+  padding-top: 10px;
 	padding-left: 20px;
 }
 
 .footer p {
-    color: #32CD32;
+  color: #32CD32;
 	padding-left:20px;
 } 
 
 
 .footerDivs {
-    color:#32CD32; 
-    padding-bottom: 20px;
+  color:#32CD32; 
+  padding-bottom: 20px;
 	background-color:#222222; 
 	margin:0;
 }
 
 
 .form-group {
-    text-align: left;
+  text-align: left;
 }
 
 .modal-header, h4, .close {
@@ -185,7 +184,7 @@ body {
   font-size: 30px;
 }
 
-.tagDetails {
+.white-inner-container {
   margin-top: 30px;
   margin-bottom: 30px;
   padding: 20px;
@@ -340,46 +339,46 @@ hr {
 /* -------------------------------------------------------- */
 .tt-input, 
 .tt-hint {
-    width: 396px;
-    height: 30px;
-    padding: 8px 12px;
-    font-size: 1.3em;
-    line-height: 30px;
-    border: 2px solid #ccc;
-    border-radius: 8px;
-    outline: none;
+  width: 396px;
+  height: 30px;
+  padding: 8px 12px;
+  font-size: 1.3em;
+  line-height: 30px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  outline: none;
 }
 
 .tt-input { 
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
 }
 
 .tt-hint {
-    color: #999;
+  color: #999;
 }
 
 .tt-menu { 
-    width: 422px;
-    margin-top: 12px;
-    padding: 8px 0;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
-    box-shadow: 0 5px 10px rgba(0,0,0,.2);
+  width: 422px;
+  margin-top: 12px;
+  padding: 8px 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 5px 10px rgba(0,0,0,.2);
 }
 
 .tt-suggestion {
-    padding: 3px 20px;
-    font-size: 18px;
-    line-height: 24px;
+  padding: 3px 20px;
+  font-size: 18px;
+  line-height: 24px;
 }
 
 .tt-suggestion.tt-cursor { 
-    color: #fff;
-    background-color: #0097cf;
+  color: #fff;
+  background-color: #0097cf;
 }
 
 .tt-suggestion p {
-    margin: 0;
+  margin: 0;
 }

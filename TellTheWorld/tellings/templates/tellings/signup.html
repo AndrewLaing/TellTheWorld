@@ -7,7 +7,7 @@
  * Filename:     signup.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 27/01/2020
+ * Last updated: 29/01/2020
  * Description:  Template for the SignUp page.
  * -------------------------------------------------------------------------------
 {% endcomment %}
@@ -47,8 +47,8 @@
             {% endfor %}
             <br />
 
-            <p><input type="checkbox" required name="terms"> I have read and accept the <a href="{% url 'tellings:termsandconditions' %}" target="_blank">Terms and Conditions</a>.</p>
-            <p><input type="checkbox" required name="terms"> I have read and agree to abide by the <a href="{% url 'tellings:acceptableusage' %}" target="_blank">Acceptable Usage Policy</a>.</p>
+            <p><input type="checkbox" name="terms" required> I have read and accept the <a href="{% url 'tellings:termsandconditions' %}" target="_blank">Terms and Conditions</a>.</p>
+            <p><input type="checkbox" name="usage" required> I have read and agree to abide by the <a href="{% url 'tellings:acceptableusage' %}" target="_blank">Acceptable Usage Policy</a>.</p>
             </div>
 
             {% include "tellings/includes/formErrors.html" %}

@@ -2,7 +2,7 @@
  * Filename:     JQScripts.js
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 16/01/2020.
+ * Last updated: 29/01/2020.
  * Description:  JQuery scripts used by the 'Tell the World' website.
  */
 
@@ -13,6 +13,19 @@ $(document).ready(function(){
      */
     var originalPostText;
     var editingPost = false;
+
+    /**
+     * Adds the active class to the current page link in the navbar
+     * so that it can be styled with css.
+     */
+    $(function( ){
+        $('a').each(function() {
+            if($(this).prop('href') == window.location.href) {
+               $(this).addClass('active'); 
+               $(this).parents('li').addClass('active');
+            }
+        });
+    });
 
 
     /**
@@ -300,6 +313,10 @@ $(document).ready(function(){
             if(status==='success') {
                 if(data==='True') {
                     alert('Sorry. You must choose a unique title.');
+                    $("#postTitle").val("");
+                    $('#postTitle').focus();
+                } else if(data==='Censored') {
+                    alert('Sorry. The title you have chosen contains one or more banned words. Please refer to our acceptable usage policy.');
                     $("#postTitle").val("");
                     $('#postTitle').focus();
                 } else if (data!=='False') {

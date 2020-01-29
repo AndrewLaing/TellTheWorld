@@ -869,11 +869,22 @@ class TitleExists(LoginRequiredMixin, View):
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
         :returns: A string 'True' if the title already exists in the UserPost table,
+                  'Censored' if the title contains a banned word,
                   otherwise 'False'.
         """
         in_postTitle = request.POST['title']
+
+        if self.contains_banned_word(in_postTitle):
+            return HttpResponse('Censored')
 
         if UserPost.objects.filter(postTitle=in_postTitle).exists():
             return HttpResponse('True')
         else:
             return HttpResponse('False')
+
+    def contains_banned_word(self, text):
+        text = text.lower()
+        for banned_word in banned_words:
+            if banned_word in text:
+                return True
+        return False
