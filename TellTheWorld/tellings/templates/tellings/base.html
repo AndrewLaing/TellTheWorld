@@ -82,7 +82,7 @@
           {% if page_obj.has_previous %}
             <li><a href="?{% param_replace page=page_obj.previous_page_number %}"><</a></li>            
           {% else %}
-            <li class="disabled"><span><</span></li>
+            <li class="disabled"><span>&lt;</span></li>
           {% endif %}
 
           {# Show link to first page #}
@@ -115,7 +115,7 @@
           {% if page_obj.has_next %}
             <li><a href="?{% param_replace page=page_obj.next_page_number %}">></a></li>
           {% else %}
-            <li class="disabled"><span>></span></li>
+            <li class="disabled"><span>&gt;</span></li>
           {% endif %}
         </ul>
       </div>

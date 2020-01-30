@@ -19,12 +19,27 @@ $(document).ready(function(){
      * so that it can be styled with css.
      */
     $(function( ){
-        $('a').each(function() {
-            if($(this).prop('href') == window.location.href) {
-               $(this).addClass('active'); 
-               $(this).parents('li').addClass('active');
+        var current = location.pathname;
+        // Use count to only allow one page to be marked as active
+        count = 0;
+
+        $('.navbar-nav li a').each(function(){
+            // Add active to dropdown menu toggle if child page active
+            if($(this).parent().hasClass('dropdown-menu-item')) {
+                if(count == 0) {
+                    if($(this).attr('href').indexOf(current) !== -1){
+                        $(this).parent().parent().parent().addClass('active');
+                        count = count + 1;
+                    }                        
+                }
             }
-        });
+            else if(count == 0) {
+                if($(this).attr('href').indexOf(current) !== -1){
+                    $(this).parent().addClass('active');
+                    count = count + 1;
+                }
+            }  
+        })
     });
 
 
