@@ -13,39 +13,47 @@
   color: #333;
 }
 
+
 body {
   background-image: url('../imgs/bgimage.jpg'); 
 }
 
 .header {
   position: relative;
-	color: #000;
-  /* Used to make text more visible against background image when it is resized */             
-  text-shadow: -2px 0 rgba(255, 255, 255, 0.4), 
-                0 2px rgba(255, 255, 255, 0.4), 
-                2px 0 rgba(255, 255, 255, 0.4), 
-                0 -2px rgba(255, 255, 255, 0.4);             
+	color: #000;          
 	background-color: #222222; 
 	padding: 20px;
-  text-align: center;
 }
 
 
 .jumbotron {
-  background-image: url('../imgs/ttw.png');
+  padding-top: 25px;
+  text-align: center;
   width: 100%;
-  height: 100%;
-  background-size: cover;
+  height: 200px;
+  background-color: #03062F;
+}
+
+@media only screen and (max-width: 767px) {
+  .jumbotron {
+    height: 150px;
+  }
 }
 
 .jumbotron h1 {
-  padding: 10% 0% 3% 0%;
+  letter-spacing: .2em;
+  color: white;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+
 }
 
-.jumbotron span {
-  font-size: 1.5em;
-  padding: 5px;
-  background-color: rgba(255,255,255,0.7);
+.jumbotron p {
+  letter-spacing: .6em;
+  font-size: calc(14px + (26 - 14) * ((100vw - 300px) / (1600 - 300)));
+  line-height: calc(1.3em + (1.5 - 1.2) * ((100vw - 300px)/(1600 - 300)));
+  color: white;
+  font-weight: bold;
+  padding: 0px;
 }
 
 .img-wrapper img {
@@ -300,7 +308,7 @@ hr {
   position: relative;
   padding: 0%;
   margin: auto;
-  margin-top: 16px; /* added */
+
   margin-bottom: 16px; /* added */
   height: 0;
   width: 100%;
@@ -309,7 +317,7 @@ hr {
   line-height: 0;
   clear: both;
   border:none;
-  border-top: .15px solid #575757;
+  border-top: .15em solid #575757;
   border-bottom: .15px solid #575757;
 }
 
@@ -331,6 +339,42 @@ hr {
 .inputHeaders {
   min-width: 100px;
   margin-left: 30px;
+}
+
+
+.comment-panel {
+  display: none;
+}
+
+.user-reply-section {
+  margin: 20px; 
+  display: none;
+}
+
+.user-reply-section textarea {
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+.user-comment-section {
+  margin: 20px; 
+  background-color: white; 
+  display: none;
+}
+
+.user-comment-details {
+  margin-left: 20px; 
+  padding-top: 20px;
+}
+
+.user-comment-details a {
+  font-weight: bold; 
+  padding-right: 20px;
+}
+
+.user-comment-text {
+  margin-left: 20px; 
+  padding-bottom:20px;
 }
 
 

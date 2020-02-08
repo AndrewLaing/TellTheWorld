@@ -144,9 +144,35 @@ class UserPostForm(forms.ModelForm):
         postTitle = self.cleaned_data['postTitle']
         if UserPost.objects.filter(postTitle=postTitle).exists():
             raise forms.ValidationError("already_exists")
-        return postTitle
+        return self.censor_text(postTitle)
 
     def clean_postText(self):
         postText = self.cleaned_data['postText']
         return self.censor_text(postText)
 
+
+class UserCommentForm(forms.ModelForm):
+    class Meta:
+        model = UserComment
+        fields = ('postID', 'user', 'dateOfComment', 'dateOfEdit', 'commentText') 
+   
+
+    def save(self, commit=True):
+        """ Used to save the UserPost record and create its Tagmap records.
+        """
+        comment = super(UserCommentForm, self).save(commit=False)
+
+        if commit:
+            comment.save()
+
+        return comment
+
+    def censor_text(self, text):
+        for banned_word in banned_words:
+            censored = text.replace(banned_word, "*" * len(banned_word))
+            text = censored.replace(banned_word, "*" * len(banned_word))
+        return censored
+
+    def clean_commentText(self):
+        postText = self.cleaned_data['commentText']
+        return self.censor_text(postText)

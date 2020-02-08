@@ -16,6 +16,12 @@ class TagmapAdmin(admin.ModelAdmin):
     list_filter = ['postID', 'tagID']
 
 
+class UserCommentAdmin(admin.ModelAdmin):
+    fields = ['postID', 'user', 'dateOfComment', 'dateOfEdit', 'commentText'] 
+    list_display = ('postID', 'user', 'dateOfComment', 'dateOfEdit', 'commentText')
+    list_filter = ['postID', 'user', 'dateOfComment', 'dateOfEdit']
+
+
 class DeletedAccountAdmin(admin.ModelAdmin):
     fields = ['deleted_date', 'deleted_reason', 'membership_length' ] 
     list_display = ('deleted_date', 'deleted_reason', 'membership_length')
@@ -26,4 +32,5 @@ class DeletedAccountAdmin(admin.ModelAdmin):
 admin.site.register(UserPost, UserPostsAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Tagmap, TagmapAdmin)
+admin.site.register(UserComment, UserCommentAdmin)
 admin.site.register(DeletedAccount, DeletedAccountAdmin)

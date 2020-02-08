@@ -8,6 +8,7 @@ urlpatterns = [
     path('about/', AboutPage.as_view(), name='about'),
     path('acceptableusage/', AcceptableUsagePage.as_view(), name='acceptableusage'),
     path('accountdeleted/', AccountDeletedPage.as_view(), name='accountdeleted'),
+    path('addcomment/', AddComment.as_view(), name='addcomment'),    
     path('addnewupdate/', AddNewUpdate.as_view(), name='addnewupdate'),
     path('addupdatemodal/', AddUpdateModal.as_view(), name='addupdatemodal'),
     path('changepassword/', ChangePasswordPage.as_view(), name='changepassword'),
@@ -29,4 +30,5 @@ urlpatterns = [
     path('tags/', TagListView.as_view(), name='tags'), 
     path('termsandconditions/', TermsAndConditionsPage.as_view(), name='termsandconditions'),
     path('titleexists/', TitleExists.as_view(), name='titleexists'),
+    path('usercomments/', UserCommentListView.as_view(), name='usercomments'),    
 ]

@@ -1,0 +1,20 @@
+{% comment %} 
+ * -------------------------------------------------------------------------------
+ * Filename:     usercomment_list.html
+ * Author:       Andrew Laing
+ * Email:        parisianconnections@gmail.com
+ * Last updated: 07/02/2020
+ * Description:  Template used for creating the User Comments html.
+ * -------------------------------------------------------------------------------
+{% endcomment %}
+
+{% block content %}
+  {% if usercomment_list %}
+    {% for item in usercomment_list %}
+      <p class="user-comment-details"><a href="#">{{ item.user }}</a>{{ item.dateOfComment }}</p> 
+      <p class="user-comment-text">{{ item.commentText }}</p>
+    {% endfor %}
+  {% else %}
+    <p class="user-comment-text">Be the first person to make a comment on this post.</p>
+  {% endif %} 
+{% endblock %}

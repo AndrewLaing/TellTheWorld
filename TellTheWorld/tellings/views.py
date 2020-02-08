@@ -558,9 +558,72 @@ class TermsAndConditionsPage(View):
             return render(request, 'tellings/termsandconditions.html', {'quote': quote})
 
 
+class UserCommentListView(LoginRequiredMixin, generic.ListView):
+    """ Creates the User Comments html for the updates pages."""
+    model = UserComment
+    template_name = "tellings/usercomment_list.html"
+    http_method_names = ['get']
+
+    def get_queryset(self):
+        postID_val = False
+        new_context = False
+
+        if self.request.method == 'GET':
+            if 'postID' in self.request.GET:
+                postID_val = self.request.GET.get('postID', False) 
+       
+        if postID_val:
+            new_context = UserComment.objects.filter(postID=postID_val).order_by('-dateOfComment') 
+        
+        return new_context
+
+        
 # #########################################################################################
 # AJAX HANDLERS ---------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------
+
+class AddComment(LoginRequiredMixin, View):
+    """ An AJAX handler used to add a new comment on a user update to the database."""
+    http_method_names = ['post']
+
+    def post(self, request):
+        """ Handles POST requests.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A string 'true' if the comment was successfully added to UserComment table,
+                  'censored' if the comment contains banned words, 'false' if the comment
+                  couldn't be added, otherwise a redirect to the error page if POST data is missing.
+        """
+        if ('postID' in request.POST) and ('commentText' in request.POST): 
+            commentText = request.POST['commentText']   #posted password
+
+            if self.contains_banned_word(commentText):
+                return HttpResponse('censored')           
+
+            # make a copy of POST to add fields not supplied by the client                   
+            request.POST = request.POST.copy()
+            request.POST['user'] = request.user.id
+            request.POST['dateOfComment'] = date.today()
+
+            form = UserCommentForm(request.POST)
+            
+            if form.is_valid():
+                form.save()
+                return HttpResponse('true')
+            else:
+                return HttpResponse('false')
+        else:
+            return HttpResponseRedirect('/errorpage/')
+               
+    def contains_banned_word(self, text):
+        text = text.lower()
+        for banned_word in banned_words:
+            if banned_word in text:
+                return True
+        return False
+
+
 
 class AddNewUpdate(LoginRequiredMixin, View):
     """ An AJAX handler used to add a new user update to the database."""
@@ -585,7 +648,7 @@ class AddNewUpdate(LoginRequiredMixin, View):
 
             form = UserPostForm(request.POST)
             if form.is_valid():
-                userpost = form.save()
+                form.save()
                 return HttpResponse('True')
             else:
                 return HttpResponseRedirect('/errorpage/')

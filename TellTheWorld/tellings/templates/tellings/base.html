@@ -35,12 +35,8 @@
     <header class="header">
       {# Page title #} 
       <div id="title" class="jumbotron jumbotron-fluid">
-        <h1>{% block headertitle1 %}Default title 1{% endblock headertitle1 %}</h1>
-        {% if quote %}
-            <span>{{quote}}</span>
-        {% else %}
-            <p>Just say it. It needs to be said sometime.</p>
-        {% endif %}
+        <h1>Tell the World</h1>
+        <p>LET THE PEOPLE KNOW</p>
       </div>
   
       {# Navigation bar #} 
@@ -71,7 +67,6 @@
 
     
     {% block content %}{% endblock %}
-
 
     {% block pagination %}
       {% if is_paginated %}
@@ -118,9 +113,19 @@
             <li class="disabled"><span>&gt;</span></li>
           {% endif %}
         </ul>
+        <br />
+        <div>
+        {% if quote %}
+            <span style="text-align: center; padding-bottom: 10px;;">{{quote}}</span>
+        {% else %}
+            <p>Just say it. It needs to be said sometime.</p>
+        {% endif %}
+        </div>
       </div>
       {% endif %}
     {% endblock %} 
+    
+
 
 
     {# FOOTER SECTION #} 

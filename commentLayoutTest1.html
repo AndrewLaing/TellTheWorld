@@ -1,0 +1,368 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Tell the World</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+   
+  <link rel="stylesheet" href="TellTheWorld/tellings/static/tellings/css/bootstrap.min.css">
+  <link rel="stylesheet" href="TellTheWorld/tellings/static/tellings/css/bootstrap-tagsinput.css">
+  <script type="text/javascript" src="TellTheWorld/tellings/static/tellings/js/jquery.min.js"></script>
+  <script type="text/javascript" src="TellTheWorld/tellings/static/tellings/js/jquery.redirect.js"></script>
+  <script type="text/javascript" src="TellTheWorld/tellings/static/tellings/js/bootstrap.min.js"></script> 
+  <script type="text/javascript" src="TellTheWorld/tellings/static/tellings/js/bootstrap-tagsinput.js"></script>
+  <script type="text/javascript" src="TellTheWorld/tellings/static/tellings/js/typeahead.bundle.js"></script>
+
+   
+  <script type="text/javascript" src="TellTheWorld/tellings/static/tellings/js/JQScripts.js"></script>
+  <script type="text/javascript" src="TESTJQScripts.js"></script>
+
+   
+  <link rel="stylesheet" href="TellTheWorld/tellings/static/tellings/css/style.css">
+  <link rel="stylesheet" href="TESTstyle.css">
+
+</head> 
+
+<body>
+    <header class="header">
+       
+      <div id="title" class="jumbotron jumbotron-fluid">
+        <h1>Tell the World</h1>
+        <p>LET THE PEOPLE KNOW</p>
+      </div>
+  
+       
+      <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+             
+
+<ul class="nav navbar-nav">
+  <li class="nav-item">
+    <a class="nav-link" href="/">Home</a>
+  </li>
+  
+    <li class="nav-item">
+      <a class="nav-link" href="/newupdates/">New Updates</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/tags/">Tags</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/myupdates/">My Updates</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" id="addUpdateBtn" href="javascript:void(0);">Add New Update</a>
+    </li>
+  
+</ul>
+
+<ul class="nav navbar-nav navbar-right">
+  <li class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#">About</a>
+    <ul class="dropdown-menu">
+      <li class="nav-item dropdown-menu-item">
+        <a class="nav-link" href="/about/">About us</a>
+      </li>
+      <li class="nav-item dropdown-menu-item">
+        <a class="nav-link" href="/missionstatement/">Mission Statement</a>
+      </li>
+      <li class="nav-item dropdown-menu-item">
+        <a class="nav-link" href="/acceptableusage/">Acceptable Usage Policy</a>
+      </li>
+          <li class="nav-item dropdown-menu-item">
+        <a class="nav-link" href="/privacypolicy/">Privacy Policy</a>
+      </li>
+      <li class="nav-item dropdown-menu-item">
+        <a class="nav-link" href="/termsandconditions/">Terms and Conditions</a>
+      </li>
+    </ul>
+
+  
+    <li class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown" href="#">My Account</a>
+      <ul class="dropdown-menu">
+        <li class="nav-item dropdown-menu-item">
+          <a class="nav-link" href="/changeuserdetails/">Change Account Details</a>
+        </li>
+        <li class="nav-item dropdown-menu-item">
+          <a class="nav-link" href="/changepassword/">Change Password</a>
+        </li>
+        <li class="nav-item dropdown-menu-item">
+          <a class="nav-link" id="deleteAccountBtn" href="javascript:void(0);">Delete My Account</a>
+        </li>
+      </ul>
+    </li>
+    <li class="nav-item">
+        <a href="/accounts/logout/" onclick="return $.confirm_logout();">Log out</a>
+    </li>
+  
+</ul>
+        </div>
+      </nav> 
+    </header>
+
+     
+    <div id="modal_container">
+    </div>
+
+    <noscript>
+        <style type="text/css">
+            .main-content {
+                display: none;
+            }
+        </style>
+        <div class="noscriptmsg">
+            You must have JavaScript enabled to be able to use the full functionality of this website.
+            Here are <a href="https://www.enable-javascript.com/">
+                instructions for how to enable JavaScript in your web browser
+            </a>.
+        </div>
+    </noscript>
+
+    
+    
+
+  <div class="container-fluid main-content"> 
+    <div class="container currentUserUpdates" id="userUpdates">
+    
+    
+        <div class="row">
+          <h1>Jan. 31, 2020</h1>
+          <div class="panel-group">
+              <div class="panel panel-default" id="panel_post_36">   
+                <div>  
+                  <div class="col-sm-8 panel-postTitle">
+                    <p><a href="/myupdates/" name="admin">
+                       admin says</a> ... Lolis taking over</p>
+                  </div>
+
+                  <div class="col-sm-4 align-panel-text-right">
+                    <button class="btn btn-info collapse_btn" data-toggle="collapse" data-target="#collapse26">View Update</button>
+                      <div class="btn-group">
+                        <button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          <img src="/static/tellings/imgs/settings_cog.png" alt="">
+                          <span class = "caret"></span>
+                        </button>
+
+                        <div class="dropdown-menu">
+                          <a class="dropdown-item" id="hide_post_26" onclick="$.hide_post(36);">Hide Post</a><br /><br />
+                          <a class="dropdown-item" id="edit_post_26" onclick="$.edit_post(36,36);">Edit Post</a><br />
+                          <a class="dropdown-item" id="delete_post_26" onclick="$.delete_post(36);">Delete Post</a>
+                        </div>
+                      </div>   
+                  </div>
+                </div>               
+
+                <div id="collapse26" class="panel-collapse collapse">
+                  <div class="panel-body">
+                    <p id="text_post_26">Aaaaarrrrrgggghhhhh. Lolis everywhere.</p>
+                  </div>
+                </div>                
+
+                <div class="panel-footer align_between"> 
+                  <span class="align-panel-footer-text-left">    
+                      &nbsp;
+                  </span>
+                  
+                  <span class="align-panel-footer-text-right"> 
+                    <a href="/myupdates/?tagName=admin" name="admin">admin</a>
+                    &nbsp;&nbsp;|&nbsp;&nbsp;  
+                    <a href="/myupdates/?tagName=dev team" name="dev team">dev team</a>
+                    &nbsp;&nbsp;|&nbsp;&nbsp;  
+                    <a href="/myupdates/?tagName=updates" name="updates">updates</a>
+                    &nbsp;&nbsp;|&nbsp;&nbsp;  
+                  </span>          
+                </div>
+                
+                <div class="comment-panel panel-footer" id="comments26">
+                  <button class="btn btn-info reply_btn">Reply</button>
+                  <button class="btn btn-info view_comments_btn">View all comments</button>
+                  
+                  <div class="user-reply-section">
+                    <textarea class="form-control user-comment-input-area"  
+                              placeholder="Enter your reply" rows="2"
+                              name="postText" maxlength="254" required></textarea>
+                    <button class="btn btn-info post_reply_btn">POST REPLY</button>
+                    <button class="btn btn-info cancel_reply_btn">CANCEL</button>
+                  </div>
+                  
+                  <div class="user-comment-section">
+                    <p class="user-comment-details"><a href="#">topthot</a>22/01/2020</p>
+                    <p class="user-comment-text">Wonderful idea old chap, lolololol</p>
+                    <p class="user-comment-details"><a href="#">toffee-muncher</a>22/01/2020</p> 
+                    <p class="user-comment-text">Gimme lewds thotty :P</p>
+                  </div>                  
+                  
+                </div>      
+                
+              </div> 
+          </div>              
+        </div>      
+    
+    
+    
+    
+        <div class="row">
+          <h1>Jan. 28, 2020</h1>
+          <div class="panel-group">
+              <div class="panel panel-default" id="panel_post_35">   
+                <div>  
+                  <div class="col-sm-8 panel-postTitle">
+                    <p><a href="/myupdates/" name="admin">
+                       admin says</a> ... What a pullavar</p>
+                  </div>
+
+                  <div class="col-sm-4 align-panel-text-right">
+                    <button class="btn btn-info collapse_btn" data-toggle="collapse" data-target="#collapse35">View Update</button>
+                      <div class="btn-group">
+                        <button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          <img src="/static/tellings/imgs/settings_cog.png" alt="">
+                          <span class = "caret"></span>
+                        </button>
+
+                        <div class="dropdown-menu">
+                          <a class="dropdown-item" id="hide_post_35" onclick="$.hide_post(35);">Hide Post</a><br /><br />
+                          <a class="dropdown-item" id="edit_post_35" onclick="$.edit_post(35,35);">Edit Post</a><br />
+                          <a class="dropdown-item" id="delete_post_35" onclick="$.delete_post(35);">Delete Post</a>
+                        </div>
+                      </div>   
+                  </div>
+                </div>               
+
+                <div id="collapse35" class="panel-collapse collapse">
+                  <div class="panel-body">
+                    <p id="text_post_35">Aaaaarrrrrgggghhhhh. Lolis everywhere.</p>
+                  </div>
+                </div>                
+
+                <div class="panel-footer align_between"> 
+                  <span class="align-panel-footer-text-left">    
+                      &nbsp;
+                  </span>
+                  
+                  <span class="align-panel-footer-text-right"> 
+                    <a href="/myupdates/?tagName=admin" name="admin">admin</a>
+                    &nbsp;&nbsp;|&nbsp;&nbsp;  
+                    <a href="/myupdates/?tagName=dev team" name="dev team">dev team</a>
+                    &nbsp;&nbsp;|&nbsp;&nbsp;  
+                    <a href="/myupdates/?tagName=updates" name="updates">updates</a>
+                    &nbsp;&nbsp;|&nbsp;&nbsp;  
+                  </span>          
+                </div>
+                
+                <div class="comment-panel panel-footer" id="comments35">
+                  <button class="btn btn-info reply_btn">Reply</button>
+                  <button class="btn btn-info view_comments_btn">View all comments</button>
+                  
+                  <div class="user-reply-section">
+                    <textarea class="form-control user-comment-input-area"  
+                              placeholder="Enter your reply" rows="2"
+                              name="postText" maxlength="254" required></textarea>
+                    <button class="btn btn-info post_reply_btn">POST REPLY</button>
+                    <button class="btn btn-info cancel_reply_btn">CANCEL</button>
+                  </div>
+                                   
+                  <div class="user-comment-section">
+                    <p class="user-comment-details"><a href="#">toffee-cock</a>22/01/2020</p> 
+                    <p class="user-comment-text">Thotty, long time no lewds :P</p>
+                    <p class="user-comment-details"><a href="#">thotty</a>22/01/2020</p>
+                    <p class="user-comment-text">Stop stalking me dillweed ;_; I'll tell your mom XD</p>
+                  </div>  
+                </div>      
+                
+              </div> 
+          </div>              
+        </div>      
+
+    </div>    
+  </div>      
+
+
+
+
+
+    
+      
+
+      
+      <div id="paginationDiv">
+        <ul class="pagination pull-right">
+          
+            <li class="disabled"><span>&lt;</span></li>
+
+                <li class="active"><span>1 <span class="sr-only">(current)</span></span></li>
+              
+            
+          
+            
+              
+                <li><a href="?page=2">2</a></li>
+              
+            
+          
+
+          
+          
+
+          
+            <li><a href="?page=2">></a></li>
+          
+        </ul>
+        <br />
+        <div>
+        
+            <span style="text-align: center; padding-bottom: 10px;;">&quot;I am no bird; and no net ensnares me: I am a free human being with an independent will.&quot; - Charlotte Brontë</span>
+        
+        </div>
+      </div>
+      
+     
+    
+
+
+
+     
+    <footer class="footer footerDivs">
+      
+  
+  <div class="col-sm-3 footerDivs">
+    <h1>Business Address</h1>
+    <p>TTW Ltd<br />1-3 Rumford Street,<br /> Liverpool <br />L2 8SZ</p>
+  </div>
+  
+  
+  <div class="col-sm-3 footerDivs">
+    <h1>Contact Us</h1>
+    <p>Telephone: <a href="tel:01512272008">0151 227 2008</a><br />
+       Email: <a href="mailto:info@telltheworld.com?Subject=Website%20contact" target="_top">info@telltheworld.com</a><br />
+       Skype: <a href="skype:telltheworld?call">telltheworld</a>
+	</p>
+  </div>
+  
+  
+  <div class="col-sm-3 footerDivs">
+    <h1>Office Hours</h1>
+    <p>7 days a week<br />08:00am-18:00pm</p>
+  </div>
+
+  
+  <div class="col-sm-3 footerDivs">
+    <h1>Follow us</h1>
+    <p>
+      <a class="btn btn-icon btn-facebook" href="https://www.facebook.com/westernapproachesHQ/">f</a>
+      <a class="btn btn-icon btn-twitter" href="https://twitter.com/WestApproaches">t</a>
+    </p>  <br /> 
+    <p>
+      <a href="/acceptableusage/">Acceptable Usage Policy</a><br />
+      <a href="/privacypolicy/">Privacy Policy</a><br />
+      <a href="/termsandconditions/">Terms and Conditions</a>
+    </p>   
+  </div>
+    </footer>
+</body>
+
+</html>

@@ -54,6 +54,23 @@ class Tagmap(models.Model):
         verbose_name_plural = "Tagmaps"
 
 
+class UserComment(models.Model):
+    commentID = models.AutoField(primary_key=True, db_column='commentID')
+    postID = models.ForeignKey(UserPost, on_delete=models.CASCADE, db_column='postID')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                             db_column='user')
+    dateOfComment = models.DateField()
+    commentText = models.CharField(max_length=255)
+    dateOfEdit = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return self.commentText
+
+    class Meta: 
+        verbose_name = "UserComment"
+        verbose_name_plural = "UserComments"
+        
+
 class DeletedAccount(models.Model):
     deleted_date = models.DateField()
     deleted_reason = models.CharField(max_length=15)

@@ -1,6 +1,5 @@
 {% extends 'tellings/base.html' %}
 {% block title %}Tell the World{% endblock title %} 
-{% block headertitle1 %}My Updates{% endblock headertitle1 %} 
 
 {% comment %} 
  * -------------------------------------------------------------------------------
@@ -64,7 +63,6 @@
                 {# PANEL BODY #}
                 <div id="collapse{{ item.postID }}" class="panel-collapse collapse">
                     <div class="panel-body">
-                      <hr>
                       <p id="text_post_{{ item.postID }}">{{ item.postText }}</p>
                     </div>
                 </div>                
@@ -78,13 +76,32 @@
                     {% endif %}
                   </span>
                   {# Add the tags #}
-                    <span class="align-panel-footer-text-right">
+                  <span class="align-panel-footer-text-right">
                   {% for tag in item.post_tags %}
                     <a href="{% url 'tellings:myupdates' %}?tagName={{ tag }}" name="{{ tag }}">{{ tag }}</a>
                     &nbsp;&nbsp;|&nbsp;&nbsp;  
                   {% endfor %}  
-                  </span style="text-align: right;">          
+                  </span>          
                 </div>
+
+                {# COMMENT PANEL #}
+                <div class="comment-panel panel-footer" id="comments{{ item.postID }}">
+                  <button class="btn btn-info reply_btn">Reply</button>
+                  <button class="btn btn-info view_comments_btn">View all comments</button>
+                  
+                  <div class="user-reply-section">
+                    <textarea class="form-control user-comment-input-area"  
+                              placeholder="Enter your reply" rows="2"
+                              name="postText" maxlength="254" required></textarea>
+                    <button class="btn btn-info post_reply_btn">POST REPLY</button>
+                    <button class="btn btn-info cancel_reply_btn">CANCEL</button>
+                  </div>
+                                   
+                  <div class="user-comment-section">
+                    <p class="user-comment-text">Be the first person to make a comment on this post.</p>
+                  </div>  
+                </div>
+
               </div> {# END OF UPDATE PANEL #}
 
             {% endfor %}

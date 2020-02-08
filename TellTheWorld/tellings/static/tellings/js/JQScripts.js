@@ -15,8 +15,7 @@ $(document).ready(function(){
     var editingPost = false;
 
     /**
-     * Adds the active class to the current page link in the navbar
-     * so that it can be styled with css.
+     * Adds the active class to the current page link in the navbar.
      */
     $(function( ){
         var current = location.pathname;
@@ -331,7 +330,7 @@ $(document).ready(function(){
                     $("#postTitle").val("");
                     $('#postTitle').focus();
                 } else if(data==='Censored') {
-                    alert('Sorry. The title you have chosen contains one or more banned words. Please refer to our acceptable usage policy.');
+                    alert('Sorry, we cannot accept the title you have chosen as it contains one or more banned words. Please refer to our acceptable usage policy for guidance.');
                     $("#postTitle").val("");
                     $('#postTitle').focus();
                 } else if (data!=='False') {
@@ -497,11 +496,21 @@ $(document).ready(function(){
      * Stops user from opening or closing post collapses whilst editing.
      */
     $('.collapse_btn').on('click', function(event) {
-      if($('#edit_box').length) {
+        if($('#edit_box').length) {
           alert("You still have unsaved changes!");
           event.stopPropagation();
-      }
+        }
+        
+        /* Toggle the text shown on the update collapse button */
+        if ( $(this).text() == "View Update")  {
+          $(this).text("Hide Update");
+        } else {
+          $(this).text("View Update");
+        }
     });
+
+
+
 
 
     /**
@@ -542,5 +551,194 @@ $(document).ready(function(){
             alert("Delete cancelled");
         }
     };
+
+
+
+    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    // @@@@@@@@@@@@@@@@@@        COMMENT SECTION CODEZ         @@@@@@@@@@@@@@@@@@@@@
+    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+    /**
+      * Shows the comment panel of an update collapse when it is opened.
+      */
+     $('.panel-collapse').on('shown.bs.collapse', function () {          
+        $(this).siblings('.comment-panel').toggle();
+    });
+
+
+    /**
+      * When an update collapse is closed, this hides the comment panel
+      * and its contents.
+      */
+    $('.panel-collapse').on('hidden.bs.collapse', function () {
+        $(this).siblings('.comment-panel').toggle();
+        $(this).siblings('.comment-panel').children('.user-reply-section').hide();
+        $(this).siblings('.comment-panel').children('.user-comment-section').hide();
+        
+        $(this).siblings('.comment-panel').children('.reply_btn').text("Reply");
+        $(this).siblings('.comment-panel').children('.view_comments_btn').text("View all comments");
+    });
+
+    
+    /**
+      * Shows the user reply section when the reply button is clicked
+      */
+    $('.reply_btn').on('click', function () {
+        $(this).siblings('.user-reply-section').children('.user-comment-input-area').val("");
+        /* Toggle the text shown on the reply button */
+        if ( $(this).text() == "Reply")  {
+          $(this).text("Hide reply");
+        } else {
+          $(this).text("Reply");
+        }
+        $(this).siblings('.user-reply-section').toggle();
+        $(this).siblings('.user-reply-section').children('.user-comment-input-area').focus();
+        
+    });
+
+    /**
+      * Clears user input and closes the user reply section when
+      * the cancel reply button is clicked.
+      */
+    $('.cancel_reply_btn').on('click', function () {
+        $(this).siblings(".user-comment-input-area").val("");
+        $(this).parent().parent().children('.reply_btn').text("Reply");
+        $(this).parent().toggle();
+    });
+
+    /**
+      * Toggles the visibility of the user comment section when the
+      * view/hide comments button is clicked, and populates it with
+      * user comments where necessary.
+      */
+    $('.view_comments_btn').on('click', function () {
+        if ( $(this).text() == "View all comments")  {
+          var postID = $(this).parent().attr('id');
+          postID = postID.replace('comments','');
+          $.fetchComments($(this), postID);
+          $(this).text("Hide comments");
+        } else {
+          $(this).text("View all comments");
+        }
+        $(this).siblings('.user-comment-section').toggle();
+    });
+    
+    
+    /**
+      * Fetches comments attached to a post and adds them to the user-comment-section.
+      */
+    $.fetchComments = function ($this, in_postID) {
+        // Make AJAX call and add html to user-comment-section here
+        var url="/usercomments/?postID=" + in_postID;
+
+        $this.siblings('.user-comment-section').empty();
+        $this.siblings('.user-comment-section').load(url);        
+    };
+    
+    
+
+
+    /**
+      * This callback is used because of the Asychronous nature of AJAX
+      */
+     $.postedCommentCallback = function (post_reply_btn, postID, response) {
+        if (response == 'false') {
+            alert("Error: Unable to add your comment! Please contact the administrator!");
+            return false;
+        } else if (response == 'censored') {
+            alert('Sorry, we cannot accept your comment as it contains one or more banned words. Please refer to our acceptable usage policy for guidance.');
+            post_reply_btn.siblings(".user-comment-input-area").focus();
+            return false;
+        }
+
+        // Tidy up the comment input area, then hide it
+        post_reply_btn.siblings(".user-comment-input-area").val("");
+        post_reply_btn.parent().parent().children('.reply_btn').text("Reply");
+        post_reply_btn.parent().toggle();
+
+        var commentSection = post_reply_btn.parent().siblings('.user-comment-section');
+
+        if(commentSection.is(":visible")){
+            // If the comment section is visible trigger the viewcomments button
+            // to update it, showing the newly posted comment
+            $comments_btn = commentSection.siblings('.view_comments_btn');
+
+            $comments_btn.trigger('click'); // hide comments
+            $comments_btn.trigger('click'); // show comments
+        } else {
+            alert("Your comment has been posted.");
+        }
+
+    };
+
+
+    /**
+      * Fetches comments attached to a post and adds them to the user-comment-section.
+      */
+    $.postComment = function (postBtnElement, in_postID, in_commentText) {
+        var csrftoken = getCookie('csrftoken');
+        
+        $.post("/addcomment/",
+        {
+            postID: in_postID,
+            commentText: in_commentText,
+            csrfmiddlewaretoken: csrftoken,
+        },
+        function(data, status) {
+            if (status === 'success') {
+                if(data == 'true') {
+                    $.postedCommentCallback(postBtnElement, in_postID, 'true');
+                } else if (data == 'censored') {
+                    $.postedCommentCallback(postBtnElement, in_postID, 'censored');
+                } else {
+                    $.postedCommentCallback(postBtnElement, in_postID, 'false');
+                }
+            }
+            else {
+                $.postedCommentCallback(postBtnElement, in_postID, 'false');
+            }
+        });
+    };
+
+
+    /**
+      * Handles adding a comment to the post when the post reply button is clicked.
+      */
+    $('.post_reply_btn').on('click', function () {
+        var commentText = $(this).siblings(".user-comment-input-area").val().trim();
+        var commentLength = commentText.length;
+        var postID = $(this).parent().parent().attr('id');
+        postID = postID.replace('comments','');
+        
+        // No empty comments are allowed
+        if (commentLength == 0) {
+          alert("The 'Enter your reply' field cannot be left empty!");
+          $(this).siblings(".user-comment-input-area").focus();
+          return false;
+        };
+        
+        // Add comment to DB
+        $.postComment($(this), postID, commentText);
+    });    
+   
+   
+    /** 
+     * Resizes the comment text area if necessary when text is inputted 
+     */
+    $('.user-comment-input-area').on('keyup input', function () {
+        var offset = this.offsetHeight - this.clientHeight;
+        $(this).css('height', 'auto').css('height', this.scrollHeight + offset);
+    });    
+   
+   
+    /** 
+     * Resizes the comment text area if necessary when the window is resized. 
+     */
+    $(window).on('resize', function () {
+        $this = $('.user-comment-input-area');
+        $this.trigger('input'); // trigger input event to call function above
+    });  
 
 });
