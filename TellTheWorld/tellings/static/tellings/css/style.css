@@ -154,6 +154,10 @@ body {
   text-align: right;
 }
 
+.align-panel-footer-text-right a {
+  white-space: nowrap;
+}
+
 .footer {
   margin: 0px;
   overflow-y: auto;
@@ -341,6 +345,10 @@ hr {
   margin-left: 30px;
 }
 
+.post-cog-btn {
+  padding: 0px 10px 0px 10px; 
+  background-color: white;
+}
 
 .comment-panel {
   display: none;
@@ -352,6 +360,7 @@ hr {
 }
 
 .user-reply-section textarea {
+  min-height: 50px;
   margin-bottom: 10px;
   box-sizing: border-box;
 }
@@ -362,9 +371,17 @@ hr {
   display: none;
 }
 
+.user-comment-container {
+  border: solid rgb(179, 179, 179) 1px; 
+  padding: 10px;
+}
+
+.comment-cog-btn {
+  padding: 0px; 
+  background-color: white;
+}
+
 .user-comment-details {
-  margin-left: 20px; 
-  padding-top: 20px;
 }
 
 .user-comment-details a {
@@ -373,8 +390,7 @@ hr {
 }
 
 .user-comment-text {
-  margin-left: 20px; 
-  padding-bottom:20px;
+  padding-top:10px;
 }
 
 

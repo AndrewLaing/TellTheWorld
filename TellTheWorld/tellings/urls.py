@@ -16,6 +16,7 @@ urlpatterns = [
     path('checkuserpassword/', CheckUserPassword.as_view(), name='checkuserpassword'),
     path('deleteaccountmodal/', DeleteAccountModal.as_view(), name='deleteaccountmodal'),
     path('deleteuserpost/', DeleteUserPost.as_view(), name='deleteuserpost'),
+    path('deleteusercomment/', DeleteUserComment.as_view(), name='deleteusercomment'),
     path('edituserpost/', EditUserPost.as_view(), name='edituserpost'),
     path('edituserpost/<int:pk>', EditUserPost.as_view(), name='edituserpost'),
     path('errorpage/', ErrorPage.as_view(), name='errorpage'),

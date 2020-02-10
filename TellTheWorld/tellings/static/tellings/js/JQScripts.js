@@ -413,8 +413,7 @@ $(document).ready(function(){
     /**
      * Handles the edit user post link click.
      */
-    $.edit_post = function (in_postID, in_collapseID) {
-    
+    $.edit_post = function (in_postID) {
       // Only allow the user to edit one post at a time
       if (editingPost) {
         alert("You have unsaved changes!");
@@ -427,7 +426,7 @@ $(document).ready(function(){
       originalPostText = $(textPostID).html();  // Store the current post text
       
       // If the collapse is not showing, show it
-      var collapsePostID = "#collapse" + in_collapseID;
+      var collapsePostID = "#collapse" + in_postID;
       $(collapsePostID).collapse("show");
 
       // Load the page element and insert it into the panel
@@ -510,11 +509,8 @@ $(document).ready(function(){
     });
 
 
-
-
-
     /**
-     * Confirms that the user logout wishes to delete their post.
+     * Confirms that the user wishes to delete their post.
      */
     $.confirm_delete_post = function() {
         return confirm("Are you sure you want to delete this post?");
@@ -636,8 +632,6 @@ $(document).ready(function(){
         $this.siblings('.user-comment-section').empty();
         $this.siblings('.user-comment-section').load(url);        
     };
-    
-    
 
 
     /**
@@ -740,5 +734,52 @@ $(document).ready(function(){
         $this = $('.user-comment-input-area');
         $this.trigger('input'); // trigger input event to call function above
     });  
+
+
+
+    /**
+     * Confirms that the user wishes to delete their comment.
+     */
+    $.confirm_delete_comment = function() {
+        return confirm("Are you sure you want to delete this comment?");
+    };
+
+
+    /**
+     * Handles the delete user comment event.
+     */
+    $.delete_comment = function (in_commentID) {
+        if($.confirm_delete_comment()==true) {
+            var csrftoken = getCookie('csrftoken');
+
+            $.post("/deleteusercomment/",
+                {
+                    commentID: in_commentID,
+                    csrfmiddlewaretoken: csrftoken,
+                },
+                function (data, status) {
+                    if (status === 'success') {
+                        if (data === 'True') {
+                            alert('The comment has been deleted.');
+                            location.reload();
+                        } else {
+                            alert(data);
+                        }
+                    }
+                    else {
+                        alert("Database error: please contact the administrator.");
+                    }
+                });
+        }
+        else {
+            alert("Delete cancelled");
+        }
+    };
+
+
+
+
+
+
 
 });

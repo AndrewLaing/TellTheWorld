@@ -3,7 +3,7 @@
  * Filename:     usercomment_list.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 07/02/2020
+ * Last updated: 10/02/2020
  * Description:  Template used for creating the User Comments html.
  * -------------------------------------------------------------------------------
 {% endcomment %}
@@ -11,10 +11,39 @@
 {% block content %}
   {% if usercomment_list %}
     {% for item in usercomment_list %}
-      <p class="user-comment-details"><a href="#">{{ item.user }}</a>{{ item.dateOfComment }}</p> 
-      <p class="user-comment-text">{{ item.commentText }}</p>
+
+       <div class="user-comment-container">
+         <div class="align_between"> 
+           <span class="user-comment-details align-panel-footer-text-left"><a href="#">{{ item.user }}</a>{{ item.dateOfComment }}</span>    
+           
+      {% if current_username and author_of_post %}
+        {% if item.user.username == current_username or current_username == author_of_post %}
+          <div class="btn-group">
+            <button type="button" class="btn dropdown-toggle align-panel-footer-text-right comment-cog-btn" 
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <img src="/static/tellings/imgs/settings_medium_cog.png" alt="">
+              <span class = "caret"></span>
+            </button>
+
+            <div class="dropdown-menu">
+            {# Only comment posters can edit their own comments #}
+            {% if item.user.username == current_username %}
+              <a class="dropdown-item" id="edit_comment_{{ item.commentID }}" onclick="$.edit_comment({{ item.commentID }});">Edit Comment</a><br />
+            {% endif %}
+            {# Both comment posters and authors of the post being commented upon can delete comments #}
+              <a class="dropdown-item" id="delete_comment_{{ item.commentID }}" onclick="$.delete_comment({{ item.commentID }});">Delete Comment</a>
+            </div>
+          </div>  
+        {% endif %}
+      {% endif %}
+          </div>
+      
+         <p class="user-comment-text">{{ item.commentText }}</p>
+      </div>
     {% endfor %}
   {% else %}
-    <p class="user-comment-text">Be the first person to make a comment on this post.</p>
+    <div class="user-comment-container">  
+      <p class="user-comment-text">Be the first person to make a comment on this post.</p>
+    </div>
   {% endif %} 
 {% endblock %}

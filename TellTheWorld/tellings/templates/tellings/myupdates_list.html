@@ -44,14 +44,14 @@
                       {% if item.user.username == current_username %}
                         {# Edit post #}
                         <div class="btn-group">
-                            <button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <button type="button" class="btn dropdown-toggle post-cog-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                               <img src="{% static 'tellings/imgs/settings_cog.png' %}" alt="">
                               <span class = "caret"></span>
                             </button>
 
                             <div class="dropdown-menu">
                               <a class="dropdown-item" id="hide_post_{{ item.postID }}" onclick="$.hide_post({{ item.postID }});">Hide Post</a><br /><br />
-                              <a class="dropdown-item" id="edit_post_{{ item.postID }}" onclick="$.edit_post({{ item.postID }},{{ item.postID }});">Edit Post</a><br />
+                              <a class="dropdown-item" id="edit_post_{{ item.postID }}" onclick="$.edit_post({{ item.postID }});">Edit Post</a><br />
                               <a class="dropdown-item" id="delete_post_{{ item.postID }}" onclick="$.delete_post({{ item.postID }});">Delete Post</a>
                             </div>
                         </div>   
@@ -91,7 +91,7 @@
                   
                   <div class="user-reply-section">
                     <textarea class="form-control user-comment-input-area"  
-                              placeholder="Enter your reply" rows="2"
+                              placeholder="Enter your reply" rows="2" cols="2"
                               name="postText" maxlength="254" required></textarea>
                     <button class="btn btn-info post_reply_btn">POST REPLY</button>
                     <button class="btn btn-info cancel_reply_btn">CANCEL</button>

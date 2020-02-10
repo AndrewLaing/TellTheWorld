@@ -577,7 +577,25 @@ class UserCommentListView(LoginRequiredMixin, generic.ListView):
         
         return new_context
 
+    def get_context_data(self, **kwargs):
+        """ Adds the current logged in user's name to the context data, to allow
+            comment editing/deleting only on their posts. """
+        context = super(UserCommentListView, self).get_context_data(**kwargs)  
+        current_username = user_id = self.request.user.username
+        context['current_username'] = current_username
+
+        if self.request.method == 'GET':
+            if 'postID' in self.request.GET:
+                postID_val = self.request.GET.get('postID', False) 
+
+        post = UserPost.objects.get(postID=postID_val)
+        author_of_post = post.user.username
         
+        context['author_of_post'] = author_of_post
+
+        return context
+
+
 # #########################################################################################
 # AJAX HANDLERS ---------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------
@@ -749,6 +767,73 @@ class DeleteAccountModal(LoginRequiredMixin, View):
         return render(request, 'tellings/includes/deleteAccount_modal.html')
 
 
+class DeleteUserComment(LoginRequiredMixin, View):
+    """ An AJAX handler used to delete comments.
+    """
+    http_method_names = ['post']
+
+    def post(self, request):
+        """ Handles POST requests.
+
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
+        :returns: A string 'True' if the comment was deleted, otherwise 'False'.
+        """
+        if ('commentID' in request.POST):
+            commentID = request.POST.get('commentID')
+            comment_username = self.getUsernameForCommentID(commentID)
+            post_username = self.getUsernameOfPostAuthor(commentID)
+            
+            # Comments can either be deleted by the people who made them ...
+            if( comment_username == request.user.username ):
+                if self.deleteComment(commentID):
+                    return HttpResponse("True")
+                else:
+                    return HttpResponse(_("Something went wrong. We were unable to delete your comment."))
+            # ... or by the author of the post being commented upon.
+            elif( post_username == request.user.username ):
+                if self.deleteComment(commentID):
+                    return HttpResponse("True")
+                else:
+                    return HttpResponse(_("Something went wrong. We were unable to delete this comment."))
+            else:
+                return HttpResponse(_("YOU CANNOT DELETE THIS COMMENT!!!"))
+        else:
+            return HttpResponseRedirect('/errorpage/')
+
+    def getUsernameForCommentID(self, in_commentID):
+        """ Returns the name of the user who made the comment.
+        """
+        try:
+            comment = UserComment.objects.get(commentID=in_commentID)
+            username = comment.user.username
+            return username
+        except:
+            return None
+
+    def getUsernameOfPostAuthor(self, in_commentID):
+        """ Returns the name of the user who made the post being commented upon.
+        """
+        try:
+            comment = UserComment.objects.get(commentID=in_commentID)
+            in_postID = comment.postID.postID
+            post = UserPost.objects.get(postID=in_postID)
+            username = post.user.username
+            return username
+        except:
+            return None
+
+    def deleteComment(self, in_commentID):
+        """ Handles deleting a userComment.
+        """
+        try:
+            comment = UserComment.objects.get(commentID=in_commentID)
+            comment.delete()
+            return True
+        except:
+            return False
+
+
 class DeleteUserPost(LoginRequiredMixin, View):
     """ An AJAX handler used to delete posts for the current user.
     """
@@ -759,11 +844,12 @@ class DeleteUserPost(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A string 'True' if the password is valid, otherwise 'False'.
+        :returns: A string 'True' if the post was deleted, otherwise 'False'.
         """
         if ('postID' in request.POST):
             postID = request.POST.get('postID')
             username = self.getUsernameForPostID(postID)
+
             # Check that the post was made by the user deleting it
             if( username == request.user.username ):
                 if self.deletePost(postID):
