@@ -38,12 +38,12 @@
       {% endif %}
           </div>
       
-         <p class="user-comment-text">{{ item.commentText }}</p>
+         <p class="user-comment-text" id="text_comment_{{ item.commentID }}">{{ item.commentText }}</p>
       </div>
     {% endfor %}
   {% else %}
     <div class="user-comment-container">  
-      <p class="user-comment-text">Be the first person to make a comment on this post.</p>
+      <p class="user-comment-text" id="text_comment_{{ item.commentID }}">Be the first person to make a comment on this post.</p>
     </div>
   {% endif %} 
 {% endblock %}

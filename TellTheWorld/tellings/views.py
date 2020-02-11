@@ -882,6 +882,62 @@ class DeleteUserPost(LoginRequiredMixin, View):
             return False
         
 
+class EditUserComment(LoginRequiredMixin, generic.UpdateView):
+    """ An AJAX handler used to add the edit user comment HTML to pages,
+        and update UserComment records.
+    """
+    model = UserComment 
+    template_name = "tellings/includes/editComment.html"    
+    fields = ['postID', 'user', 'dateOfComment', 'dateOfEdit', 'commentText']  
+    http_method_names = ['get', 'post']
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['pk'] = self.object.commentID
+        return context
+
+    def post(self, request):
+        """ Handles POST requests.
+   
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A string 'True' if the comment could be edited, otherwise an error message.
+        """
+        if ('commentID' in request.POST and 'commentText' in request.POST):
+            return self.updateUserCommentRecord(request)
+        else:
+            return HttpResponseRedirect('/errorpage/')
+
+    def censor_text(self, text):
+        for banned_word in banned_words:
+            censored = text.replace(banned_word, "*" * len(banned_word))
+            text = censored.replace(banned_word, "*" * len(banned_word))
+        return censored
+                
+    def updateUserCommentRecord(self, request):
+        """ Updates a UserComment record.
+           
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
+        :returns: A string 'True' if the comment could be edited, otherwise an error message.
+        """
+        in_commentID = request.POST.get('commentID')
+        in_commentText = request.POST.get('commentText')
+        in_commentText = self.censor_text(in_commentText)
+        userComment = get_object_or_404(UserComment, commentID=in_commentID)
+
+        if(userComment.user.username == request.user.username):
+            try:
+                # Update the record (sql injection-safe)
+                today = date.today()
+                UserComment.objects.filter(commentID=in_commentID).update(commentText=in_commentText, dateOfComment=today)
+                return HttpResponse("True")
+            except:
+                return HttpResponse(_("Unable to make changes to the comment. Please contact the site administrator."))
+        else:
+            return HttpResponse(_("YOU CANNOT EDIT OTHER USERS COMMENTS!!!"))  
+
+
 class EditUserPost(LoginRequiredMixin, generic.UpdateView):
     """ An AJAX handler used to add the edit user post HTML to pages,
         and update UserPost records.

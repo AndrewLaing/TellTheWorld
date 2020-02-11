@@ -9,10 +9,12 @@
 $(document).ready(function(){
 
     /**
-     * Variables used for editing posts.
+     * Variables used for editing posts and comments.
      */
     var originalPostText;
     var editingPost = false;
+    var originalCommentText;
+    var editingComment = false;
 
     /**
      * Adds the active class to the current page link in the navbar.
@@ -273,7 +275,7 @@ $(document).ready(function(){
 
 
     /**
-     * Confirms that the user logout wishes to log out.
+     * Confirms that the user wishes to log out.
      */
     $.confirm_logout = function() {
         var r = confirm("Are you sure you want to log out of your account?");
@@ -403,7 +405,101 @@ $(document).ready(function(){
 
 
     /**
-     * Confirms that the user logout wishes to edit their post.
+     * Confirms that the user wishes to edit their comment.
+     */
+    $.confirm_edit_comment = function() {
+        return confirm("Are you sure you want to save your changes?");
+    };
+
+
+    /**
+     * Handles the edit user comment link click.
+     */
+    $.edit_comment = function (in_commentID) {
+      // Only allow the user to edit one comment at a time
+      if ( editingComment || editingPost ) {
+        alert("You have unsaved changes!");
+        return false;
+      }
+      
+      editingComment = true;
+      
+      var textCommentID = "#text_comment_" + in_commentID;
+      originalCommentText = $(textCommentID).html();  // Store the current comment text
+      
+      // Load the page element and insert it into the panel
+      url = '/editusercomment/' + in_commentID;
+      $(textCommentID).load(url);
+    
+      // Focus on the input and position cursor at end of text to edit
+      $("#edit_comment_box").focus().val(originalCommentText);
+      return true;
+    };
+
+
+    /**
+     * Replaces the edit box with the edited comment after saving.
+     */
+    $.show_new_comment_text = function(textCommentID, commentText) {
+        editingComment = false;
+        $(textCommentID).html(commentText);
+    } 
+
+    /**
+     * Handles saving changes to a user's commentText.
+     */
+    $.save_edit_comment = function (in_commentID) {
+        var textCommentID = "#text_comment_" + in_commentID;
+        var currentText = $("#edit_comment_box").val();
+
+        if($.confirm_edit_comment()==true) {
+            var csrftoken = getCookie('csrftoken');
+
+            $.post("/editusercomment/",
+                {
+                    commentID: in_commentID,
+                    commentText: currentText,
+                    csrfmiddlewaretoken: csrftoken,
+                },
+                function (data, status) {
+                    if (status === 'success') {
+                        if (data === 'True') {
+                            alert('Your comment has been updated.');
+                            $.show_new_comment_text(textCommentID, currentText)
+                        } else {
+                            alert(data);
+                            location.reload();
+                        }
+                    }
+                    else {
+                        alert("Database error: please contact the administrator.");
+                        // redirect to error page instead?
+                        location.reload();
+                    }
+                });
+        }
+        else {
+            alert("Cancelled");
+        } 
+      };    
+
+
+    /**
+     * Retores the original commentText when editing is cancelled.
+     */
+    $.cancel_edit_comment = function (commentID) {
+      var textCommentID = "#text_comment_" + commentID;
+    
+      alert("Cancelled");
+
+      $(textCommentID).html(originalCommentText);   
+      editingComment = false;
+    };
+
+
+
+    /**
+     * Confirms that the user wishes to edit their post.
      */
     $.confirm_edit_post = function() {
         return confirm("Are you sure you want to save your changes?");
@@ -414,8 +510,8 @@ $(document).ready(function(){
      * Handles the edit user post link click.
      */
     $.edit_post = function (in_postID) {
-      // Only allow the user to edit one post at a time
-      if (editingPost) {
+      // Only allow the user to edit one thing at a time.
+      if (editingPost || editingComment ) {
         alert("You have unsaved changes!");
         return false;
       }
@@ -434,17 +530,25 @@ $(document).ready(function(){
       $(textPostID).load(url);
     
       // Focus on the input and position cursor at end of text to edit
-      $("#edit_box").focus().val(originalPostText);
+      $("#edit_post_box").focus().val(originalPostText);
       return true;
     };
 
+
+    /**
+     * Replaces the edit box with the edited post after saving.
+     */
+    $.show_new_post_text = function(textPostID, postText) {
+        editingPost = false;
+        $(textPostID).html(postText);
+    } 
 
     /**
      * Handles saving changes to a user's postText.
      */
     $.save_edit_post = function (in_postID) {
         var textPostID = "#text_post_" + in_postID;
-        var currentText = $("#edit_box").val();
+        var currentText = $("#edit_post_box").val();
 
         if($.confirm_edit_post()==true) {
             var csrftoken = getCookie('csrftoken');
@@ -459,7 +563,7 @@ $(document).ready(function(){
                     if (status === 'success') {
                         if (data === 'True') {
                             alert('Your post has been updated.');
-                            location.reload();
+                            $.show_new_post_text(textPostID, currentText);
                         } else {
                             alert(data);
                             location.reload();
@@ -495,7 +599,7 @@ $(document).ready(function(){
      * Stops user from opening or closing post collapses whilst editing.
      */
     $('.collapse_btn').on('click', function(event) {
-        if($('#edit_box').length) {
+        if($('#edit_post_box').length) {
           alert("You still have unsaved changes!");
           event.stopPropagation();
         }
@@ -548,13 +652,6 @@ $(document).ready(function(){
         }
     };
 
-
-
-    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    // @@@@@@@@@@@@@@@@@@        COMMENT SECTION CODEZ         @@@@@@@@@@@@@@@@@@@@@
-    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
     /**
       * Shows the comment panel of an update collapse when it is opened.
@@ -717,24 +814,22 @@ $(document).ready(function(){
         $.postComment($(this), postID, commentText);
     });    
    
-   
+
+   /**
+    * Resizes the comment text area if necessary when text is inputted 
+    */
+   $('.user-comment-input-area').on('keyup input', function () {
+       var offset = this.offsetHeight - this.clientHeight;
+       $(this).css('height', 'auto').css('height', this.scrollHeight + offset);
+   });    
+
     /** 
-     * Resizes the comment text area if necessary when text is inputted 
-     */
-    $('.user-comment-input-area').on('keyup input', function () {
-        var offset = this.offsetHeight - this.clientHeight;
-        $(this).css('height', 'auto').css('height', this.scrollHeight + offset);
-    });    
-   
-   
-    /** 
-     * Resizes the comment text area if necessary when the window is resized. 
+     * Resizes editing textareas  if necessary when the window is resized. 
      */
     $(window).on('resize', function () {
-        $this = $('.user-comment-input-area');
-        $this.trigger('input'); // trigger input event to call function above
+        $this1 = $( '.user-comment-input-area' );
+        $this1.trigger('input'); // trigger input event to call function above
     });  
-
 
 
     /**
