@@ -54,7 +54,8 @@ class TemplatesExistTests(TestCase):
                                'tellings/privacypolicy.html',
                                'tellings/signup.html',
                                'tellings/tag_list.html',
-                               'tellings/termsandconditions.html' ]
+                               'tellings/termsandconditions.html',
+                               'tellings/usercomment_list.html' ]
 
     def setUp(self):
         pass
@@ -71,6 +72,7 @@ class IncludedFilesExistTests(TestCase):
     def setUpTestData(cls):
         cls.base_html_files = [ 'tellings/includes/addUpdate_modal.html',
                                 'tellings/includes/deleteAccount_modal.html',
+                                'tellings/includes/editComment.html',
                                 'tellings/includes/editPost.html',
                                 'tellings/includes/footerContents.html',
                                 'tellings/includes/formErrors.html',
@@ -105,8 +107,9 @@ class StaticFilesExistTests(TestCase):
         cls.other_css_files = ['tellings/css/style.css',
                                'tellings/css/typeaheadjs.css']
         cls.image_files = ['tellings/imgs/bgimage.jpg',
-                           'tellings/imgs/todayIHaveLogo.jpg', 
-                           'tellings/imgs/todayIHave.png']
+                           'tellings/imgs/settings_cog.png',
+                           'tellings/imgs/settings_medium_cog.png',
+                           'tellings/imgs/ttwLogo.jpg']
         
     def setUp(self):
         pass

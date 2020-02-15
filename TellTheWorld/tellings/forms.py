@@ -12,9 +12,13 @@ import json
 
 
 class ChangeUserDetailsForm(forms.ModelForm):
+    first_name = forms.CharField(required=True)
+    last_name = forms.CharField(required=True)
+    email = forms.EmailField(required=True)
+
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email',]
+        fields = ['first_name', 'last_name', 'email']
 
 
 class NewUserCreationForm(UserCreationForm):
@@ -46,6 +50,22 @@ class DeleteAccountForm(forms.ModelForm):
         fields = ['deleted_date', 'deleted_reason', 'membership_length' ]   
 
 
+class UserCommentForm(forms.ModelForm):
+    class Meta:
+        model = UserComment
+        fields = ('postID', 'user', 'dateOfComment', 'dateOfEdit', 'commentText') 
+
+    def censor_text(self, text):
+        for banned_word in banned_words:
+            censored = text.replace(banned_word, "*" * len(banned_word))
+            text = censored.replace(banned_word, "*" * len(banned_word))
+        return censored
+
+    def clean_commentText(self):
+        postText = self.cleaned_data['commentText']
+        return self.censor_text(postText)
+
+
 class UserPostForm(forms.ModelForm):
     
     postTitle = forms.CharField(required=True,
@@ -63,8 +83,9 @@ class UserPostForm(forms.ModelForm):
         
         # pop post tags because this is not used to create a postRecord
         if len(args) > 0:
-            postTags = args[0].pop('postTags')
-            self.tagList = json.loads(postTags[0])
+            if 'postTags' in args[0]:
+                postTags = args[0].pop('postTags')
+                self.tagList = json.loads(postTags[0])
 
         super(UserPostForm, self).__init__(*args, **kwargs)
 
@@ -148,31 +169,4 @@ class UserPostForm(forms.ModelForm):
 
     def clean_postText(self):
         postText = self.cleaned_data['postText']
-        return self.censor_text(postText)
-
-
-class UserCommentForm(forms.ModelForm):
-    class Meta:
-        model = UserComment
-        fields = ('postID', 'user', 'dateOfComment', 'dateOfEdit', 'commentText') 
-   
-
-    def save(self, commit=True):
-        """ Used to save the UserPost record and create its Tagmap records.
-        """
-        comment = super(UserCommentForm, self).save(commit=False)
-
-        if commit:
-            comment.save()
-
-        return comment
-
-    def censor_text(self, text):
-        for banned_word in banned_words:
-            censored = text.replace(banned_word, "*" * len(banned_word))
-            text = censored.replace(banned_word, "*" * len(banned_word))
-        return censored
-
-    def clean_commentText(self):
-        postText = self.cleaned_data['commentText']
         return self.censor_text(postText)

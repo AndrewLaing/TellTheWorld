@@ -2,7 +2,7 @@
 # Filename:     test_forms.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 16/01/2020
+# Last Updated: 13/02/2020
 # Description:  Test cases for tellings forms
 """
 
@@ -10,19 +10,23 @@ import django
 from django.test import TestCase
 
 from tellings.forms import *
-
+from datetime import date
 
 class ChangeUserDetailsFormTests(TestCase):
     """Tests for the ChangeUserDetailsForm form."""
 
     def test_pass_good_data(self):
-        form_data = {'first_name': 'testfirst', 'last_name': 'testlast', 'email': 'testfirst@email.com'}
-        form = ChangeUserDetailsForm(data=form_data)
+        valid_data = {'first_name': 'testfirst', 'last_name': 'testlast', 'email': 'testfirst@email.com'}
+        form = ChangeUserDetailsForm(data=valid_data)
         self.assertTrue(form.is_valid())
         
     def test_pass_bad_data(self):
-        form_data = {'first_name': 'testfirst', 'last_name': 'testlast', 'email': 'testfirst@incomplete'}
-        form = ChangeUserDetailsForm(data=form_data)
+        invalid_data = {'first_name': 'testfirst', 'last_name': 'testlast', 'email': 'testfirst@incomplete'}
+        form = ChangeUserDetailsForm(data=invalid_data)
+        self.assertFalse(form.is_valid())
+
+    def test_blank_data(self):
+        form = ChangeUserDetailsForm({})
         self.assertFalse(form.is_valid())
 
 
@@ -30,32 +34,89 @@ class DeleteAccountFormTests(TestCase):
     """Tests for the DeleteAccountForm form."""
 
     def test_pass_good_data(self):
-        form_data = {'deleted_date': '2019-08-12', 
+        valid_data = {'deleted_date': '2019-08-12', 
                      'deleted_reason': 'somethingelse', 
                      'membership_length': 365}
-        form = DeleteAccountForm(data=form_data)
+        form = DeleteAccountForm(data=valid_data)
         self.assertTrue(form.is_valid())
         
     def test_pass_bad_data(self):
-        form_data = {'deleted_date': '2019-08-12', 
+        invalid_data = {'deleted_date': '2019-08-12', 
                      'deleted_reason': 'somethingelse', 
                      'membership_length': -244}
-        form = DeleteAccountForm(data=form_data)
+        form = DeleteAccountForm(data=invalid_data)
         self.assertFalse(form.is_valid())
+
+    def test_blank_data(self):
+        form = DeleteAccountForm({})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            'deleted_date': ['This field is required.'],
+            'deleted_reason': ['This field is required.'],
+            'membership_length': ['This field is required.']
+        })
 
 
 class NewUserCreationFormTests(TestCase):
     """Tests for the NewUserCreationForm form."""
 
     def test_pass_good_data(self):
-        form_data = {'username': 'testuser1', 'email': 'testuser@gmail.com', 'password1': '@P455w0rd', 'password2': '@P455w0rd'}
-        form = NewUserCreationForm(data=form_data)
+        valid_data = {'username': 'testuser1', 'email': 'testuser@gmail.com', 'password1': '@P455w0rd', 'password2': '@P455w0rd'}
+        form = NewUserCreationForm(data=valid_data)
         self.assertTrue(form.is_valid())
         
     def test_pass_bad_data(self):
-        form_data = {'username': 'testuser1', 'email': 'testuser@incomplete', 'password1': '@P455w0rd', 'password2': '@P455w0rd'}
-        form = ChangeUserDetailsForm(data=form_data)
+        invalid_data = {'username': 'testuser1', 'email': 'testuser@incomplete', 'password1': '@P455w0rd', 'password2': '@P455w0rd'}
+        form = ChangeUserDetailsForm(data=invalid_data)
         self.assertFalse(form.is_valid())
+
+    def test_blank_data(self):
+        form = NewUserCreationForm({})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            'username': ['This field is required.'],
+            'password2': ['This field is required.'],
+            'password1': ['This field is required.'],
+            'email': ['This field is required.']
+        })
+
+
+class UserCommentFormTests(TestCase):
+    """Tests for the UserCommentForm form."""
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        cls.user1 = User.objects.create_user('testuser1', 'testUser1@email.com', '@myp455w0rd')
+        cls.user2 = User.objects.create_user('testuser2', 'testUser2@email.com', '@myp455w0rd')
+        cls.testpost = UserPost.objects.create(user_id=cls.user1.id, dateOfPost='2019-11-12', 
+                                               postTitle='postTitle 1', postText='postText 1')                               
+
+    def test_pass_good_data(self):
+        valid_data = {'postID': self.testpost.postID, 
+                     'user': self.user2.id, 
+                     'dateOfComment': date.today(),
+                     'commentText': 'Text for another post'}
+        form = UserCommentForm(data=valid_data)
+        self.assertTrue(form.is_valid())
+        
+    def test_pass_bad_data(self):
+        invalid_data = {'postID': self.testpost.postID, 
+                       'user': self.user2.id, 
+                       'dateOfComment': 'yesterday',
+                       'commentText': 'Text for another post'}
+        form = UserCommentForm(data=invalid_data)
+        self.assertFalse(form.is_valid())
+
+    def test_blank_data(self):
+        form = UserCommentForm({})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            'postID': ['This field is required.'],
+            'dateOfComment': ['This field is required.'],
+            'commentText': ['This field is required.'],
+            'user': ['This field is required.']
+        })
 
 
 class UserPostFormTests(TestCase):
@@ -73,17 +134,28 @@ class UserPostFormTests(TestCase):
                                              cls.credentials['pwd'])   
 
     def test_pass_good_data(self):
-        form_data = {'user': self.user1.id, 
+        valid_data = {'user': self.user1.id, 
                      'dateOfPost': '2020-01-01', 
                      'postTitle': 'Another post', 
                      'postText': 'Text for another post'}
-        form = UserPostForm(data=form_data)
+        form = UserPostForm(data=valid_data)
         self.assertTrue(form.is_valid())
         
     def test_pass_bad_data(self):
-        form_data = {'user': self.user1.id, 
+        invalid_data = {'user': self.user1.id, 
                      'dateOfPost': 'yesterday', 
                      'postTitle': 'Another post', 
                      'postText': 'Text for another post'}
-        form = UserPostForm(data=form_data)
+        form = UserPostForm(data=invalid_data)
         self.assertFalse(form.is_valid())
+
+    def test_blank_data(self):
+        form = UserPostForm({})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors, {
+            'dateOfPost': ['This field is required.'],
+            'postTitle': ['This field is required.'],
+            'user': ['This field is required.'],
+            'postText': ['This field is required.']
+        })
+

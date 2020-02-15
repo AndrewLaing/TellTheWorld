@@ -29,6 +29,10 @@ class URLTests(SimpleTestCase):
         url = reverse('tellings:accountdeleted')
         self.assertEquals(resolve(url).func.view_class, AccountDeletedPage)
 
+    def test_addcomment_url_resolves(self):
+        url = reverse('tellings:addcomment')
+        self.assertEquals(resolve(url).func.view_class, AddComment)
+
     def test_addnewupdate_url_resolves(self):
         url = reverse('tellings:addnewupdate')
         self.assertEquals(resolve(url).func.view_class, AddNewUpdate)
@@ -53,9 +57,17 @@ class URLTests(SimpleTestCase):
         url = reverse('tellings:deleteaccountmodal')
         self.assertEquals(resolve(url).func.view_class, DeleteAccountModal)
 
+    def test_deleteusercomment_url_resolves(self):
+        url = reverse('tellings:deleteusercomment')
+        self.assertEquals(resolve(url).func.view_class, DeleteUserComment)
+
     def test_deleteuserpost_url_resolves(self):
         url = reverse('tellings:deleteuserpost')
         self.assertEquals(resolve(url).func.view_class, DeleteUserPost)
+
+    def test_editusercomment_url_resolves(self):
+        url = reverse('tellings:editusercomment')
+        self.assertEquals(resolve(url).func.view_class, EditUserComment)
 
     def test_edituserpost_url_resolves(self):
         url = reverse('tellings:edituserpost')
@@ -112,3 +124,7 @@ class URLTests(SimpleTestCase):
     def test_titleexists_url_resolves(self):
         url = reverse('tellings:titleexists')
         self.assertEquals(resolve(url).func.view_class, TitleExists)
+
+    def test_usercomments_url_resolves(self):
+        url = reverse('tellings:usercomments')
+        self.assertEquals(resolve(url).func.view_class, UserCommentListView)

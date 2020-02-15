@@ -79,9 +79,9 @@
                 </div>                
 
                 <div class="panel-footer align_between"> 
-                  <span class="align-panel-footer-text-left">
+                  <span class="align-panel-footer-text-left last-edited-text">
                     {% if item.dateOfEdit %}
-                      <i>Last edited on {{ item.dateOfEdit|date:"d/m/Y" }}</i>
+                      (Last edited on {{ item.dateOfEdit|date:"d/m/Y" }})
                     {% else %}
                       &nbsp;
                     {% endif %}

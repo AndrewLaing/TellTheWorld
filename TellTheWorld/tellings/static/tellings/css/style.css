@@ -358,6 +358,11 @@ hr {
   display: none;
 }
 
+.last-edited-text {
+  font-size: 0.8em; 
+  font-style: italic; 
+}
+
 .user-reply-section {
   margin: 20px; 
   display: none;

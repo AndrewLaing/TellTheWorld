@@ -32,8 +32,7 @@ class DeletedAccountModelTests(TestCase):
         self.assertTrue(isinstance(record, DeletedAccount))
 
     def test_deleted_reason_max_length(self):
-        record = self.createRecord()
-        max_length = record._meta.get_field('deleted_reason').max_length
+        max_length = DeletedAccount._meta.get_field('deleted_reason').max_length
         self.assertEquals(max_length, 15)
                 
 
@@ -62,8 +61,7 @@ class TagModelTests(TestCase):
         self.assertEqual(str(tag), tag.tagName)
 
     def test_tagName_max_length(self):
-        tag = self.createTag()
-        max_length = tag._meta.get_field('tagName').max_length
+        max_length = Tag._meta.get_field('tagName').max_length
         self.assertEquals(max_length, 15)
 
 
@@ -88,6 +86,42 @@ class TagmapModelTests(TestCase):
 
     def test_verbose_name_plural(self):
         self.assertEqual(str(Tagmap._meta.verbose_name_plural), "Tagmaps")
+
+
+class UserCommentModelTests(TestCase):
+    """Tests for the UserComment model."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user1 = User.objects.create_user('testuser1', 'testUser1@email.com', '@myp455w0rd')
+        cls.user2 = User.objects.create_user('testuser2', 'testUser2@email.com', '@myp455w0rd')
+        cls.testpost = UserPost.objects.create(user_id=cls.user2.id, dateOfPost='2019-11-12', 
+                                               postTitle='postTitle 1', postText='postText 1') 
+
+    def setUp(self):
+        pass
+
+
+    def createComment(self, postID=1, userID=1, dateOfComment='2020-02-02', commentText='Comment Text'):
+    
+        return UserComment.objects.create(postID=postID, user_id=userID, 
+                                          dateOfComment=dateOfComment, 
+                                          commentText=commentText)
+
+    def test_verbose_name_plural(self):
+        self.assertEqual(str(UserComment._meta.verbose_name_plural), "UserComments")
+
+    def test_comment_creation(self):
+        comment = self.createComment(self.testpost, self.user2.id, '2019-11-12', 'comment text 1')
+        self.assertTrue(isinstance(comment, UserComment))
+
+    def test_string_representation(self):
+        comment = self.createComment(self.testpost, self.user2.id, '2019-12-12', 'comment text 2')
+        self.assertEqual(str(comment), comment.commentText)
+
+    def test_commentText_max_length(self):
+        max_length = UserComment._meta.get_field('commentText').max_length
+        self.assertEquals(max_length, 255)
 
 
 class UserPostModelTests(TestCase):
@@ -117,11 +151,9 @@ class UserPostModelTests(TestCase):
         self.assertEqual(str(post), post.postTitle)
 
     def test_postTitle_max_length(self):
-        post = self.createPost()
-        max_length = post._meta.get_field('postTitle').max_length
+        max_length = UserPost._meta.get_field('postTitle').max_length
         self.assertEquals(max_length, 35)
 
     def test_postText_max_length(self):
-        post = self.createPost()
-        max_length = post._meta.get_field('postText').max_length
+        max_length = UserPost._meta.get_field('postText').max_length
         self.assertEquals(max_length, 255)

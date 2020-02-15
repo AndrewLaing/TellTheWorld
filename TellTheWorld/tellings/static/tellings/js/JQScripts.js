@@ -125,7 +125,7 @@ $(document).ready(function(){
     };
 
     $.confirm_deleteAccount = function (data) {
-        if (data === 'True') {
+        if (data === 'true') {
             if (confirm("Are you sure you want to delete your account?")) {
                 alert("Your account will now be deleted!");
                 $("#deleteAccountModal").modal('toggle');
@@ -161,7 +161,7 @@ $(document).ready(function(){
             function (data, status) {
                 //alert("Data: " + data + "\nStatus: " + status);
                 if (status === 'success') {
-                    if (data === 'True' || data === 'False') {
+                    if (data === 'true' || data === 'false') {
                         $.confirm_deleteAccount(data);
                     } else {
                         alert("Error: Cannot perform this action. please contact the administrator.");
@@ -224,10 +224,10 @@ $(document).ready(function(){
             url: "/haspostedtoday/",
             type: 'get',
             success: function (data) {
-                if (data === 'True') {
+                if (data === 'true') {
                     // User has already posted today!
                     alert("Sorry. You have already posted today's update.");
-                } else if (data!=='False') {
+                } else if (data!=='false') {
                     alert("Database error: please contact the administrator.");    
                 } else {
                     // Show the add update modal 
@@ -327,15 +327,15 @@ $(document).ready(function(){
         },
         function(data, status) {
             if(status==='success') {
-                if(data==='True') {
+                if(data==='true') {
                     alert('Sorry. You must choose a unique title.');
                     $("#postTitle").val("");
                     $('#postTitle').focus();
-                } else if(data==='Censored') {
+                } else if(data==='censored') {
                     alert('Sorry, we cannot accept the title you have chosen as it contains one or more banned words. Please refer to our acceptable usage policy for guidance.');
                     $("#postTitle").val("");
                     $('#postTitle').focus();
-                } else if (data!=='False') {
+                } else if (data!=='false') {
                     alert("Database error: please contact the administrator.");    
                     $("#addUpdateModal").modal('toggle');  // Hide the add update modal.
                 }  
@@ -366,10 +366,10 @@ $(document).ready(function(){
         },
         function(data, status) {
             if (status === 'success') {
-                if(data==='True') {
+                if(data==='true') {
                     alert('Your update has been added.');
                     location.reload();
-                } else if (data!=='False') {
+                } else if (data!=='false') {
                     alert("Database error: please contact the administrator.");    
                 } else {
                     alert('Sorry. Unable to add your update.');
@@ -463,9 +463,11 @@ $(document).ready(function(){
                 },
                 function (data, status) {
                     if (status === 'success') {
-                        if (data === 'True') {
+                        if (data === 'true') {
                             alert('Your comment has been updated.');
                             $.show_new_comment_text(textCommentID, currentText)
+                        } else if (data === 'censored') {
+                            alert('Sorry, we cannot accept your edit as it contains one or more banned words. Please refer to our acceptable usage policy for guidance.');
                         } else {
                             alert(data);
                             location.reload();
@@ -561,9 +563,11 @@ $(document).ready(function(){
                 },
                 function (data, status) {
                     if (status === 'success') {
-                        if (data === 'True') {
+                        if (data === 'true') {
                             alert('Your post has been updated.');
                             $.show_new_post_text(textPostID, currentText);
+                        } else if (data === 'censored') {
+                            alert('Sorry, we cannot accept your edit as it contains one or more banned words. Please refer to our acceptable usage policy for guidance.');
                         } else {
                             alert(data);
                             location.reload();
@@ -635,7 +639,7 @@ $(document).ready(function(){
                 },
                 function (data, status) {
                     if (status === 'success') {
-                        if (data === 'True') {
+                        if (data === 'true') {
                             alert('Your post has been deleted.');
                             location.reload();
                         } else {
@@ -657,7 +661,7 @@ $(document).ready(function(){
       * Shows the comment panel of an update collapse when it is opened.
       */
      $('.panel-collapse').on('shown.bs.collapse', function () {          
-        $(this).siblings('.comment-panel').toggle();
+        $(this).siblings('.comment-panel').slideToggle();
     });
 
 
@@ -666,7 +670,7 @@ $(document).ready(function(){
       * and its contents.
       */
     $('.panel-collapse').on('hidden.bs.collapse', function () {
-        $(this).siblings('.comment-panel').toggle();
+        $(this).siblings('.comment-panel').slideToggle();
         $(this).siblings('.comment-panel').children('.user-reply-section').hide();
         $(this).siblings('.comment-panel').children('.user-comment-section').hide();
         
@@ -686,7 +690,7 @@ $(document).ready(function(){
         } else {
           $(this).text("Reply");
         }
-        $(this).siblings('.user-reply-section').toggle();
+        $(this).siblings('.user-reply-section').slideToggle();
         $(this).siblings('.user-reply-section').children('.user-comment-input-area').focus();
         
     });
@@ -698,7 +702,7 @@ $(document).ready(function(){
     $('.cancel_reply_btn').on('click', function () {
         $(this).siblings(".user-comment-input-area").val("");
         $(this).parent().parent().children('.reply_btn').text("Reply");
-        $(this).parent().toggle();
+        $(this).parent().slideToggle();
     });
 
     /**
@@ -715,7 +719,7 @@ $(document).ready(function(){
         } else {
           $(this).text("View all comments");
         }
-        $(this).siblings('.user-comment-section').toggle();
+        $(this).siblings('.user-comment-section').slideToggle();
     });
     
     
@@ -747,7 +751,7 @@ $(document).ready(function(){
         // Tidy up the comment input area, then hide it
         post_reply_btn.siblings(".user-comment-input-area").val("");
         post_reply_btn.parent().parent().children('.reply_btn').text("Reply");
-        post_reply_btn.parent().toggle();
+        post_reply_btn.parent().slideToggle();
 
         var commentSection = post_reply_btn.parent().siblings('.user-comment-section');
 
@@ -771,7 +775,7 @@ $(document).ready(function(){
     $.postComment = function (postBtnElement, in_postID, in_commentText) {
         var csrftoken = getCookie('csrftoken');
         
-        $.post("/addcomment/",
+        $.post("/addusercomment/",
         {
             postID: in_postID,
             commentText: in_commentText,
@@ -841,11 +845,21 @@ $(document).ready(function(){
 
 
     /**
+     * Refreshes the comments section after deleting a comment.
+     */
+    $.comment_deleted = function(viewCommentsBtn) {
+        viewCommentsBtn.trigger('click');   // Hide comments
+        viewCommentsBtn.trigger('click');   // Show comments
+    } 
+
+    /**
      * Handles the delete user comment event.
      */
     $.delete_comment = function (in_commentID) {
         if($.confirm_delete_comment()==true) {
             var csrftoken = getCookie('csrftoken');
+            var textCommentID = "#text_comment_" + in_commentID;
+            var viewCommentsBtn = $(textCommentID).parent().parent().parent().children('.view_comments_btn');
 
             $.post("/deleteusercomment/",
                 {
@@ -854,9 +868,9 @@ $(document).ready(function(){
                 },
                 function (data, status) {
                     if (status === 'success') {
-                        if (data === 'True') {
+                        if (data === 'true') {
                             alert('The comment has been deleted.');
-                            location.reload();
+                            $.comment_deleted(viewCommentsBtn);
                         } else {
                             alert(data);
                         }

@@ -1,7 +1,7 @@
 # Filename:     views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last updated: 28/01/2020
+# Last updated: 13/02/2020
 # Description:  Contains the views for the website.
 
 from django.contrib import messages
@@ -24,6 +24,31 @@ from datetime import datetime, date, timedelta, timezone
 # #########################################################################################
 # SHARED FUNCTIONS ------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------
+
+def censor_text(text):
+    """ Replaces banned words in a text with asterisks.
+
+    :param text: A string to remove banned words from.
+    :returns: A string with banned words replaced by asterisks.
+    """
+    for banned_word in banned_words:
+        censored = text.replace(banned_word, "*" * len(banned_word))
+        text = censored.replace(banned_word, "*" * len(banned_word))
+    return censored
+
+
+def contains_banned_word(text):
+    """ Tests if a text contains a banned word.
+    
+    :param text: A string to test for banned words.
+    :returns: True if the text contains a banned word, otherwise false.
+    """
+    text = text.lower()
+    for banned_word in banned_words:
+        if banned_word in text:
+            return True
+    return False
+
 
 def get_random_quote():
     """ Used to return a random quote.
@@ -373,7 +398,7 @@ class MyUpdatesListView(LoginRequiredMixin, generic.ListView):
             except:
                 # If the user tries to search for a non existing tag, return all posts instead
                 qs = qs.filter(user=user_id).order_by('-dateOfPost')
-        else:            # get all posts for current user
+        else:   # get all posts for current user
             qs = qs.filter(user=user_id).order_by('-dateOfPost')
 
         return qs
@@ -587,11 +612,9 @@ class UserCommentListView(LoginRequiredMixin, generic.ListView):
         if self.request.method == 'GET':
             if 'postID' in self.request.GET:
                 postID_val = self.request.GET.get('postID', False) 
-
-        post = UserPost.objects.get(postID=postID_val)
-        author_of_post = post.user.username
-        
-        context['author_of_post'] = author_of_post
+                post = UserPost.objects.get(postID=postID_val)
+                author_of_post = post.user.username
+                context['author_of_post'] = author_of_post
 
         return context
 
@@ -599,49 +622,6 @@ class UserCommentListView(LoginRequiredMixin, generic.ListView):
 # #########################################################################################
 # AJAX HANDLERS ---------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------
-
-class AddComment(LoginRequiredMixin, View):
-    """ An AJAX handler used to add a new comment on a user update to the database."""
-    http_method_names = ['post']
-
-    def post(self, request):
-        """ Handles POST requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters 
-                        sent by a site visitor. 
-        :returns: A string 'true' if the comment was successfully added to UserComment table,
-                  'censored' if the comment contains banned words, 'false' if the comment
-                  couldn't be added, otherwise a redirect to the error page if POST data is missing.
-        """
-        if ('postID' in request.POST) and ('commentText' in request.POST): 
-            commentText = request.POST['commentText']   #posted password
-
-            if self.contains_banned_word(commentText):
-                return HttpResponse('censored')           
-
-            # make a copy of POST to add fields not supplied by the client                   
-            request.POST = request.POST.copy()
-            request.POST['user'] = request.user.id
-            request.POST['dateOfComment'] = date.today()
-
-            form = UserCommentForm(request.POST)
-            
-            if form.is_valid():
-                form.save()
-                return HttpResponse('true')
-            else:
-                return HttpResponse('false')
-        else:
-            return HttpResponseRedirect('/errorpage/')
-               
-    def contains_banned_word(self, text):
-        text = text.lower()
-        for banned_word in banned_words:
-            if banned_word in text:
-                return True
-        return False
-
-
 
 class AddNewUpdate(LoginRequiredMixin, View):
     """ An AJAX handler used to add a new user update to the database."""
@@ -652,7 +632,7 @@ class AddNewUpdate(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all HTTP POST parameters 
                         sent by a site visitor. 
-        :returns: A string 'True' if the title already exists in the UserPost table,
+        :returns: A string 'true' if the title already exists in the UserPost table,
                   otherwise a redirect to the error page.
         """
         if user_has_posted_today(request):
@@ -667,7 +647,7 @@ class AddNewUpdate(LoginRequiredMixin, View):
             form = UserPostForm(request.POST)
             if form.is_valid():
                 form.save()
-                return HttpResponse('True')
+                return HttpResponse('true')
             else:
                 return HttpResponseRedirect('/errorpage/')
         else:
@@ -688,7 +668,7 @@ class AddUpdateModal(LoginRequiredMixin, View):
         """
         # Ensure that the user has not posted today
         if user_has_posted_today(request):
-            return HttpResponse('False')
+            return HttpResponse('false')
 
         return render(request, 'tellings/includes/addUpdate_modal.html')
 
@@ -702,10 +682,45 @@ class AddUpdateModal(LoginRequiredMixin, View):
         # Ensure that the user has not posted today
         current_user_id = request.user.id
         if user_has_posted_today(request):
-            return HttpResponse('False')
+            return HttpResponse('false')
 
         return render(request, 'tellings/includes/addUpdate_modal.html')
-    
+
+
+class AddUserComment(LoginRequiredMixin, View):
+    """ An AJAX handler used to add a new comment on a user update to the database."""
+    http_method_names = ['post']
+
+    def post(self, request):
+        """ Handles POST requests.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A string 'true' if the comment was successfully added to UserComment table,
+                  'censored' if the comment contains banned words, 'false' if the comment
+                  couldn't be added, otherwise a redirect to the error page if POST data is missing.
+        """
+        if ('postID' in request.POST) and ('commentText' in request.POST): 
+            commentText = request.POST['commentText']   
+
+            if contains_banned_word(commentText):
+                return HttpResponse('censored')           
+
+            # make a copy of POST to add fields not supplied by the client                   
+            request.POST = request.POST.copy()
+            request.POST['user'] = request.user.id
+            request.POST['dateOfComment'] = date.today()
+
+            form = UserCommentForm(request.POST)
+            
+            if form.is_valid():
+                form.save()
+                return HttpResponse('true')
+            else:
+                return HttpResponse('false')
+        else:
+            return HttpResponseRedirect('/errorpage/')
+
         
 class CheckUserPassword(LoginRequiredMixin, View):
     """ An AJAX handler used to check a user's password.
@@ -718,7 +733,7 @@ class CheckUserPassword(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A string 'True' if the password is valid, otherwise 'False'.
+        :returns: A string 'true' if the password is valid, otherwise 'false'.
         """
         if ('pwd' in request.POST):
             return self.isValidPassword(request)
@@ -730,7 +745,7 @@ class CheckUserPassword(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A string 'True' if the password is valid, otherwise 'False'.
+        :returns: A string 'true' if the password is valid, otherwise 'false'.
         """
         current_password = request.user.password #user's password
         entered_password = request.POST['pwd']   #posted password
@@ -738,9 +753,9 @@ class CheckUserPassword(LoginRequiredMixin, View):
         passwords_match = check_password(entered_password, current_password)
         
         if passwords_match:
-            return HttpResponse('True')
+            return HttpResponse('true')
         else:
-            return HttpResponse('False')
+            return HttpResponse('false')
 
 
 class DeleteAccountModal(LoginRequiredMixin, View):
@@ -777,7 +792,7 @@ class DeleteUserComment(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A string 'True' if the comment was deleted, otherwise 'False'.
+        :returns: A string 'true' if the comment was deleted, otherwise an error message.
         """
         if ('commentID' in request.POST):
             commentID = request.POST.get('commentID')
@@ -787,13 +802,13 @@ class DeleteUserComment(LoginRequiredMixin, View):
             # Comments can either be deleted by the people who made them ...
             if( comment_username == request.user.username ):
                 if self.deleteComment(commentID):
-                    return HttpResponse("True")
+                    return HttpResponse("true")
                 else:
                     return HttpResponse(_("Something went wrong. We were unable to delete your comment."))
             # ... or by the author of the post being commented upon.
             elif( post_username == request.user.username ):
                 if self.deleteComment(commentID):
-                    return HttpResponse("True")
+                    return HttpResponse("true")
                 else:
                     return HttpResponse(_("Something went wrong. We were unable to delete this comment."))
             else:
@@ -844,7 +859,7 @@ class DeleteUserPost(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A string 'True' if the post was deleted, otherwise 'False'.
+        :returns: A string 'true' if the post was deleted, otherwise an error message.
         """
         if ('postID' in request.POST):
             postID = request.POST.get('postID')
@@ -853,7 +868,7 @@ class DeleteUserPost(LoginRequiredMixin, View):
             # Check that the post was made by the user deleting it
             if( username == request.user.username ):
                 if self.deletePost(postID):
-                    return HttpResponse("True")
+                    return HttpResponse("true")
                 else:
                     return HttpResponse(_("Something went wrong. We were unable to delete your post."))
             else:
@@ -901,37 +916,35 @@ class EditUserComment(LoginRequiredMixin, generic.UpdateView):
    
         :param request: A dictionary-like object containing all HTTP POST parameters 
                         sent by a site visitor. 
-        :returns: A string 'True' if the comment could be edited, otherwise an error message.
+        :returns: A string 'true' if the comment could be edited, otherwise an error message.
         """
         if ('commentID' in request.POST and 'commentText' in request.POST):
             return self.updateUserCommentRecord(request)
         else:
             return HttpResponseRedirect('/errorpage/')
-
-    def censor_text(self, text):
-        for banned_word in banned_words:
-            censored = text.replace(banned_word, "*" * len(banned_word))
-            text = censored.replace(banned_word, "*" * len(banned_word))
-        return censored
                 
     def updateUserCommentRecord(self, request):
         """ Updates a UserComment record.
            
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A string 'True' if the comment could be edited, otherwise an error message.
+        :returns: A string 'true' if the comment could be edited, 'censored' if the comment
+                  contains a banned word, otherwise an error message.
         """
         in_commentID = request.POST.get('commentID')
         in_commentText = request.POST.get('commentText')
-        in_commentText = self.censor_text(in_commentText)
+
+        if contains_banned_word(in_commentText):
+            return HttpResponse('censored')
+
         userComment = get_object_or_404(UserComment, commentID=in_commentID)
 
         if(userComment.user.username == request.user.username):
             try:
                 # Update the record (sql injection-safe)
                 today = date.today()
-                UserComment.objects.filter(commentID=in_commentID).update(commentText=in_commentText, dateOfComment=today)
-                return HttpResponse("True")
+                UserComment.objects.filter(commentID=in_commentID).update(commentText=in_commentText, dateOfEdit=today)
+                return HttpResponse("true")
             except:
                 return HttpResponse(_("Unable to make changes to the comment. Please contact the site administrator."))
         else:
@@ -957,29 +970,26 @@ class EditUserPost(LoginRequiredMixin, generic.UpdateView):
    
         :param request: A dictionary-like object containing all HTTP POST parameters 
                         sent by a site visitor. 
-        :returns: A string 'True' if the post could be edited, otherwise an error message.
+        :returns: A string 'true' if the post could be edited, otherwise an error message.
         """
         if ('postID' in request.POST and 'postText' in request.POST):
             return self.updateUserPostRecord(request)
         else:
             return HttpResponseRedirect('/errorpage/')
-
-    def censor_text(self, text):
-        for banned_word in banned_words:
-            censored = text.replace(banned_word, "*" * len(banned_word))
-            text = censored.replace(banned_word, "*" * len(banned_word))
-        return censored
                 
     def updateUserPostRecord(self, request):
         """ Updates a UserPost record.
            
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A string 'True' if the post could be edited, otherwise an error message.
+        :returns: A string 'true' if the post could be edited, otherwise an error message.
         """
         in_postID = request.POST.get('postID')
         in_postText = request.POST.get('postText')
-        in_postText = self.censor_text(in_postText)
+
+        if contains_banned_word(in_postText):
+            return HttpResponse('censored')
+
         userPost = get_object_or_404(UserPost, postID=in_postID)
 
         if(userPost.user.username == request.user.username):
@@ -987,7 +997,7 @@ class EditUserPost(LoginRequiredMixin, generic.UpdateView):
                 # Update the record (sql injection-safe)
                 today = date.today()
                 UserPost.objects.filter(postID=in_postID).update(postText=in_postText, dateOfEdit=today)
-                return HttpResponse("True")
+                return HttpResponse("true")
             except:
                 return HttpResponse(_("Unable to make changes to the post. Please contact the site administrator."))
         else:
@@ -1004,13 +1014,13 @@ class HasPostedToday(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A string 'True' if the user has already posted an update today,
-                  otherwise 'False'.
+        :returns: A string 'true' if the user has already posted an update today,
+                  otherwise 'false'.
         """
         if user_has_posted_today(request):
-            return HttpResponse('True')
+            return HttpResponse('true')
         else:
-            return HttpResponse('False')
+            return HttpResponse('false')
 
     def post(self, request):
         """ Handles POST requests.
@@ -1020,9 +1030,9 @@ class HasPostedToday(LoginRequiredMixin, View):
         :returns: A HTML page.
         """
         if user_has_posted_today(request):
-            return HttpResponse('True')
+            return HttpResponse('true')
         else:
-            return HttpResponse('False')
+            return HttpResponse('false')
 
 
 class LoginModal(View):
@@ -1059,8 +1069,8 @@ class TitleExists(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A string 'True' if the title already exists in the UserPost table,
-                  otherwise 'False'.
+        :returns: A string 'true' if the title already exists in the UserPost table,
+                  otherwise 'false'.
         """
         if ('title' in request.POST):
             return self.titleExists(request)
@@ -1073,23 +1083,17 @@ class TitleExists(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A string 'True' if the title already exists in the UserPost table,
-                  'Censored' if the title contains a banned word,
-                  otherwise 'False'.
+        :returns: A string 'true' if the title already exists in the UserPost table,
+                  'censored' if the title contains a banned word,
+                  otherwise 'false'.
         """
         in_postTitle = request.POST['title']
 
-        if self.contains_banned_word(in_postTitle):
-            return HttpResponse('Censored')
+        if contains_banned_word(in_postTitle):
+            return HttpResponse('censored')
 
         if UserPost.objects.filter(postTitle=in_postTitle).exists():
-            return HttpResponse('True')
+            return HttpResponse('true')
         else:
-            return HttpResponse('False')
-
-    def contains_banned_word(self, text):
-        text = text.lower()
-        for banned_word in banned_words:
-            if banned_word in text:
-                return True
-        return False
+            return HttpResponse('false')
+            

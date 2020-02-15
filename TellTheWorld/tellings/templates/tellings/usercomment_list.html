@@ -39,6 +39,9 @@
           </div>
       
          <p class="user-comment-text" id="text_comment_{{ item.commentID }}">{{ item.commentText }}</p>
+      {% if item.dateOfEdit %}
+         <p class="last-edited-text">(Last edited on {{ item.dateOfEdit|date:"d/m/Y" }})</p>   
+      {% endif %}
       </div>
     {% endfor %}
   {% else %}
