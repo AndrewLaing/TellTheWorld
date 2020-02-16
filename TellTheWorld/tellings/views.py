@@ -18,7 +18,7 @@ from django.views import View, generic
 from tellings.forms import *
 from tellings.page_extras import random_quotes, banned_words
 
-import random
+import random, json
 from datetime import datetime, date, timedelta, timezone
 
 # #########################################################################################
@@ -638,7 +638,20 @@ class AddNewUpdate(LoginRequiredMixin, View):
         if user_has_posted_today(request):
             return HttpResponseRedirect('/errorpage/')
 
-        if ('postTitle' in request.POST) and ('postText' in request.POST) and ('postTags' in request.POST): 
+        if ('postTitle' in request.POST) and ('postText' in request.POST) and ('postTags' in request.POST):
+
+            postTitle = request.POST['postTitle']   
+            postText = request.POST['postText']   
+            postTags = request.POST['postTags']   
+
+            if contains_banned_word(postTitle):
+                return HttpResponse('censored')  
+            elif contains_banned_word(postText):
+                return HttpResponse('censored')  
+            elif contains_banned_word(postTags):
+                return HttpResponse('censored')  
+            
+
             # make a copy of POST to add user to as this is not supplied by the form       
             request.POST = request.POST.copy()
             request.POST['user'] = request.user.id
@@ -721,7 +734,38 @@ class AddUserComment(LoginRequiredMixin, View):
         else:
             return HttpResponseRedirect('/errorpage/')
 
-        
+ 
+class CensorText(LoginRequiredMixin, View):
+    """ An AJAX handler used to censor a text containing banned words. 
+        Banned words are replaced with asterisks. """
+
+    http_method_names = ['post']
+
+    def post(self, request):
+        """ Handles POST requests.
+
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
+        :returns: A censored text string.
+        """
+        if ('textToCensor' in request.POST):
+            return self.censorText(request)
+        else:
+            return HttpResponseRedirect('/errorpage/')
+
+    def censorText(self, request):
+        """ Censors a text and rerurns it as a HttpResponse.
+
+        :param request: A dictionary-like object containing all the HTTP parameters 
+                        sent by a site visitor. 
+        :returns: A censored text string.
+        """
+        textToCensor  = request.POST['textToCensor'] 
+        censoredText = censor_text(textToCensor)
+  
+        return HttpResponse(censoredText)
+
+
 class CheckUserPassword(LoginRequiredMixin, View):
     """ An AJAX handler used to check a user's password.
         Used by the Delete Account modal. """

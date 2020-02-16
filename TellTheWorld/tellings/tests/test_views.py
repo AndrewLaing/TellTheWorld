@@ -46,6 +46,7 @@ class SharedVariables:
     test_postText2 = 'PT_text_2'
     test_postTags = ["qwertyuiop","zxcvbnm","this is a test", "still a test"]
     test_reasonForDeletingAccount = "somethingelse"
+    test_bannedText = "fucking admins"
 
 
 class SharedTestMethods(TestCase):
@@ -289,9 +290,10 @@ class AddUserCommentViewTests(SharedTestMethods):
         cls.test_postDate = SV.test_postDate
         cls.test_postTitle1 = SV.test_postTitle1
         cls.test_postText1 = SV.test_postText1   
+        cls.test_bannedText = SV.test_bannedText 
         
-        cls.test_valid_commentData = { 'postID': 1, 'commentText': 'test comment' }        
-        cls.test_banned_commentData = { 'postID': 1, 'commentText': 'test fuck comment' }        
+        cls.test_valid_commentData = { 'postID': 1, 'commentText': 'test comment' }      
+        cls.test_banned_commentData = { 'postID': 1, 'commentText': cls.test_bannedText }        
         cls.test_invalid_commentData = { 'postID': 1, 'commentText': '' }
 
     def add_valid_postID_to_commentData(self, in_postTitle, commentData):
@@ -379,6 +381,7 @@ class AddNewUpdateViewTests(SharedTestMethods):
                                              cls.credentials2['pwd'])
 
         cls.test_postTags_json = json.dumps(SV.test_postTags)
+        cls.test_bannedText = SV.test_bannedText 
 
         cls.test_postData1 = { 'postTitle': SV.test_postTitle1,
                               'postText': SV.test_postText1,
@@ -390,6 +393,10 @@ class AddNewUpdateViewTests(SharedTestMethods):
         
         cls.test_duplicate_title_postData = { 'postTitle': SV.test_postTitle1,
                               'postText': SV.test_postText2,
+                              'postTags': cls.test_postTags_json, }
+        
+        cls.test_banned_postData = { 'postTitle': SV.test_postTitle1,
+                              'postText': SV.test_bannedText,
                               'postTags': cls.test_postTags_json, }
 
     def test_GET_loggedout(self):
@@ -411,6 +418,14 @@ class AddNewUpdateViewTests(SharedTestMethods):
                                     self.test_postData1, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "true")
+
+    def test_POST_censored(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        response = self.client.post(reverse(self.viewname), 
+                                    self.test_banned_postData, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "censored")
 
     def test_POST_fail_title_exists(self):
         self.client.login(username=self.credentials1['username'], 
@@ -893,11 +908,6 @@ class DeleteUserPostViewTests(SharedTestMethods):
         self.assertTrue(postStillExists)
 
 
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
 class EditUserCommentViewTests(SharedTestMethods):
     """Tests for the EditUserComment view."""
 
@@ -922,7 +932,8 @@ class EditUserCommentViewTests(SharedTestMethods):
 
         cls.test_postDate = SV.test_postDate
         cls.test_postTitle1 = SV.test_postTitle1
-        cls.test_postText1 = SV.test_postText1   
+        cls.test_postText1 = SV.test_postText1 
+        cls.test_bannedText = SV.test_bannedText  
         
         cls.test_newCommentText = 'Edited comment'   
 
@@ -989,6 +1000,27 @@ class EditUserCommentViewTests(SharedTestMethods):
         self.assertIn("true", content)
         self.assertEqual(self.test_newCommentText, editedField)
 
+    def test_POST_censored(self):
+        self.createComment('post_validEdit', 'test comment')
+        comment = UserComment.objects.latest('commentID')
+        test_commentID = comment.commentID  
+
+        test_validEdit = {
+            'commentID': test_commentID,
+            'commentText': self.test_bannedText
+        }
+
+        self.client.login(username=self.credentials2['username'], 
+                          password=self.credentials2['pwd'])
+        response = self.client.post(reverse(self.viewname), 
+                                    test_validEdit, follow=True)
+        content = response.content.decode("utf-8")
+
+        editedComment = UserComment.objects.get(pk=test_commentID)
+        editedField = editedComment.commentText
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("censored", content)
+        self.assertNotEqual(self.test_newCommentText, editedField)
 
     def test_POST_invalidEdit_user(self):
         """ Tests that a user cannot edit another user's comments.
@@ -1014,13 +1046,6 @@ class EditUserCommentViewTests(SharedTestMethods):
         self.assertEqual(response.status_code, 200)
         self.assertIn("YOU CANNOT EDIT", content)
         self.assertNotEqual(self.test_newCommentText, editedField)
-
-
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
 
 
 class EditUserPostViewTests(SharedTestMethods):
@@ -1050,6 +1075,7 @@ class EditUserPostViewTests(SharedTestMethods):
         cls.test_postTitle1 = SV.test_postTitle1
         cls.test_postText1 = SV.test_postText1                                             
         cls.test_newPostText = SV.test_postText2
+        cls.test_bannedText = SV.test_bannedText
 
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
@@ -1089,7 +1115,29 @@ class EditUserPostViewTests(SharedTestMethods):
         editedField = editedPost.postText
         self.assertEqual(response.status_code, 200)
         self.assertIn("true", content)
-        self.assertEqual(self.test_newPostText, editedField)
+        self.assertEqual(self.test_newPostText, editedField)   
+
+    def test_POST_censored(self):
+        self.createPostRecord(userID=self.user1.id, dateOfPost=self.test_postDate, 
+                              postTitle=self.test_postTitle1, postText=self.test_postText1)
+        post = UserPost.objects.latest('postID')
+        test_postID = post.postID
+        test_validEdit = {
+            'postID': test_postID,
+            'postText': self.test_bannedText
+        }
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+
+        response = self.client.post(reverse(self.viewname), 
+                                    test_validEdit, follow=True)
+        content = response.content.decode("utf-8")
+
+        editedPost = UserPost.objects.get(pk=test_postID)
+        editedField = editedPost.postText
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("censored", content)
+        self.assertNotEqual(self.test_bannedText, editedField)
 
     def test_POST_invalidEdit(self):
         self.createPostRecord(userID=self.user1.id, dateOfPost=self.test_postDate, 

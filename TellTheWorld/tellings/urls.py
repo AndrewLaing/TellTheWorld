@@ -11,6 +11,7 @@ urlpatterns = [
     path('addnewupdate/', AddNewUpdate.as_view(), name='addnewupdate'),
     path('addupdatemodal/', AddUpdateModal.as_view(), name='addupdatemodal'),
     path('addusercomment/', AddUserComment.as_view(), name='addusercomment'), 
+    path('censortext/', CensorText.as_view(), name='censortext'),
     path('changepassword/', ChangePasswordPage.as_view(), name='changepassword'),
     path('changeuserdetails/', ChangeUserDetailsPage.as_view(), name='changeuserdetails'),
     path('checkuserpassword/', CheckUserPassword.as_view(), name='checkuserpassword'),

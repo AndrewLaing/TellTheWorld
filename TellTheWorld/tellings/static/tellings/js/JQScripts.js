@@ -348,6 +348,114 @@ $(document).ready(function(){
     }); 
 
 
+    $.newUpdateWasAdded = function(wasAdded) {
+        // Hide the add update modal.
+        if(wasAdded) {
+            $("#addUpdateModal").modal('toggle');            
+        }
+    };
+
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+    /**
+     * Changes the element text to the one passed.
+     * Used as a callback because of the asynchromnous nature of AJAX calls.
+     */
+    $.updateElementText = function (ele, newText) {
+        ele.val(newText);
+    };
+
+
+    /**
+     * Censors text in the element passed.
+     * ele = $("#postTitle")     etc
+     */
+    $.censorElementText = function (ele) {
+        var in_toCensor = ele.val();
+        var csrftoken = getCookie('csrftoken');
+
+        $.post("/censortext/",
+        {
+            textToCensor: in_toCensor,
+            csrfmiddlewaretoken: csrftoken,
+        },
+        function(data, status) {
+            if (status === 'success') {
+                $.updateElementText(ele, data);   
+            }
+            else {
+                alert("AJAX error: please contact the administrator.");
+            }
+        });
+    };
+
+
+    /**
+     * Updates an array element. Note this is done as a callback
+     * because of the Asynchronous nature of AJAX.
+     */
+    $.updateArrayElement = function(arr, index, data) {
+        arr[index] = data;
+    }; 
+
+
+    /**
+     * Censors text in the element passed.
+     * ele = $("#postTitle")     etc
+     */
+    $.censorArrayText = function (arr) {
+        var csrftoken = getCookie('csrftoken');
+
+        arr.forEach(function (item, index) {
+            in_toCensor = item;
+
+            $.post("/censortext/",
+            {
+                textToCensor: in_toCensor,
+                csrfmiddlewaretoken: csrftoken,
+            },
+            function(data, status) {
+                if (status === 'success') {
+                    $.updateArrayElement(arr, index, data);   
+                }
+                else {
+                    alert("AJAX error: please contact the administrator.");
+                }
+            });
+        });
+    };
+
+
+    $.censorNewUpdateModal = function () {
+        var ele_postTitle = $("#postTitle");
+        var ele_postText  = $("#postText");
+        var ele_postTags = $("#tagDiv");
+
+        $.censorElementText(ele_postTitle);
+        $.censorElementText(ele_postText);
+
+        var new_postTags = ele_postTags.val();
+        $.censorArrayText(new_postTags);
+
+        ele_postTags.tagsinput('removeAll');
+        new_postTags.forEach(function (item, index) {
+            ele_postTags.tagsinput('add', item);
+        });
+
+        ele_postTags.tagsinput('refresh');
+    };
+
+
+
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
     /**
      * Adds a new user update to the database.
      */
@@ -369,6 +477,10 @@ $(document).ready(function(){
                 if(data==='true') {
                     alert('Your update has been added.');
                     location.reload();
+                    $.newUpdateWasAdded(true)
+                } else if (data === 'censored') {
+                    alert('Sorry, we cannot accept your post data as it contains one or more banned words. Please refer to our acceptable usage policy for guidance.');
+                    $.censorNewUpdateModal();
                 } else if (data!=='false') {
                     alert("Database error: please contact the administrator.");    
                 } else {
@@ -380,9 +492,6 @@ $(document).ready(function(){
                 $("#postTitle").val("");
             }
         });
-
-        // Hide the add update modal.
-        $("#addUpdateModal").modal('toggle');
     };
 
 
