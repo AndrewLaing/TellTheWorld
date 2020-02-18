@@ -355,10 +355,11 @@ $(document).ready(function(){
         }
     };
 
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+    /** -----------------------------------------------------------------
+     *                         CENSORSHIP METHODS
+     * ------------------------------------------------------------------
+     */
 
     /**
      * Changes the element text to the one passed.
@@ -393,42 +394,52 @@ $(document).ready(function(){
     };
 
 
+
     /**
      * Updates an array element. Note this is done as a callback
      * because of the Asynchronous nature of AJAX.
      */
-    $.updateArrayElement = function(arr, index, data) {
-        arr[index] = data;
+    $.updatePostTags = function(ele_postTags, data) {
+        var newTags = JSON.parse(data);
+
+        ele_postTags.tagsinput('removeAll');
+        newTags.forEach(function (item, index) {
+            ele_postTags.tagsinput('add', item);
+        });
+
+        ele_postTags.tagsinput('refresh');
     }; 
 
-
+           
+            
     /**
-     * Censors text in the element passed.
-     * ele = $("#postTitle")     etc
+     * Censors text in the tag element passed.
+     * Note: Arrays are passed by reference.
      */
-    $.censorArrayText = function (arr) {
+    $.censorPostTags = function (ele_postTags) {
         var csrftoken = getCookie('csrftoken');
+        var p_postTags = ele_postTags.val();
 
-        arr.forEach(function (item, index) {
-            in_toCensor = item;
-
-            $.post("/censortext/",
-            {
-                textToCensor: in_toCensor,
-                csrfmiddlewaretoken: csrftoken,
-            },
-            function(data, status) {
-                if (status === 'success') {
-                    $.updateArrayElement(arr, index, data);   
-                }
-                else {
-                    alert("AJAX error: please contact the administrator.");
-                }
-            });
+        $.post("/censortext/",
+        {
+            textToCensor: JSON.stringify(p_postTags),
+            csrfmiddlewaretoken: csrftoken,
+        },
+        function(data, status) {
+            if (status === 'success') {
+                $.updatePostTags(ele_postTags, data);               
+            }
+            else {
+                alert("AJAX error: please contact the administrator.");
+            }
         });
     };
 
 
+    /**
+     * This censors the content of the new update modal after
+     * banned words are detected in it.
+     */
     $.censorNewUpdateModal = function () {
         var ele_postTitle = $("#postTitle");
         var ele_postText  = $("#postText");
@@ -436,24 +447,8 @@ $(document).ready(function(){
 
         $.censorElementText(ele_postTitle);
         $.censorElementText(ele_postText);
-
-        var new_postTags = ele_postTags.val();
-        $.censorArrayText(new_postTags);
-
-        ele_postTags.tagsinput('removeAll');
-        new_postTags.forEach(function (item, index) {
-            ele_postTags.tagsinput('add', item);
-        });
-
-        ele_postTags.tagsinput('refresh');
+        $.censorPostTags(ele_postTags);
     };
-
-
-
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
     /**
@@ -479,7 +474,7 @@ $(document).ready(function(){
                     location.reload();
                     $.newUpdateWasAdded(true)
                 } else if (data === 'censored') {
-                    alert('Sorry, we cannot accept your post data as it contains one or more banned words. Please refer to our acceptable usage policy for guidance.');
+                    alert('Sorry, we cannot accept your post data as it contains one or more banned words. The update has been censored. You can either now post the censored version of the update, or rewrite it with the banned words omitted.  Please refer to our acceptable usage policy for guidance.');
                     $.censorNewUpdateModal();
                 } else if (data!=='false') {
                     alert("Database error: please contact the administrator.");    
@@ -554,6 +549,8 @@ $(document).ready(function(){
         $(textCommentID).html(commentText);
     } 
 
+    
+
     /**
      * Handles saving changes to a user's commentText.
      */
@@ -574,8 +571,9 @@ $(document).ready(function(){
                     if (status === 'success') {
                         if (data === 'true') {
                             alert('Your comment has been updated.');
-                            $.show_new_comment_text(textCommentID, currentText)
+                            $.show_new_comment_text(textCommentID, currentText);
                         } else if (data === 'censored') {
+                            $.censorElementText($("#edit_comment_box"));
                             alert('Sorry, we cannot accept your edit as it contains one or more banned words. Please refer to our acceptable usage policy for guidance.');
                         } else {
                             alert(data);
@@ -676,7 +674,8 @@ $(document).ready(function(){
                             alert('Your post has been updated.');
                             $.show_new_post_text(textPostID, currentText);
                         } else if (data === 'censored') {
-                            alert('Sorry, we cannot accept your edit as it contains one or more banned words. Please refer to our acceptable usage policy for guidance.');
+                            $.censorElementText($("#edit_post_box"));
+                            alert('Sorry, we cannot accept your edit as it contains one or more banned words. The edit has been censored. You can either now post the censored version of the edit, or rewrite it with the banned words omitted. Please refer to our acceptable usage policy for guidance.');
                         } else {
                             alert(data);
                             location.reload();
@@ -852,7 +851,8 @@ $(document).ready(function(){
             alert("Error: Unable to add your comment! Please contact the administrator!");
             return false;
         } else if (response == 'censored') {
-            alert('Sorry, we cannot accept your comment as it contains one or more banned words. Please refer to our acceptable usage policy for guidance.');
+            $.censorElementText(post_reply_btn.siblings(".user-comment-input-area"));
+            alert('Sorry, we cannot accept your comment as it contains one or more banned words. The comment has been censored. You can either now post the censored version of the comment, or rewrite it with the banned words omitted.  Please refer to our acceptable usage policy for guidance.');
             post_reply_btn.siblings(".user-comment-input-area").focus();
             return false;
         }
@@ -897,11 +897,11 @@ $(document).ready(function(){
                 } else if (data == 'censored') {
                     $.postedCommentCallback(postBtnElement, in_postID, 'censored');
                 } else {
-                    $.postedCommentCallback(postBtnElement, in_postID, 'false');
+                    alert("Error: Unable to add your comment! Please contact the administrator!");
                 }
             }
             else {
-                $.postedCommentCallback(postBtnElement, in_postID, 'false');
+                alert("Error: Unable to add your comment! Please contact the administrator!");
             }
         });
     };

@@ -25,17 +25,6 @@ from datetime import datetime, date, timedelta, timezone
 # SHARED FUNCTIONS ------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------
 
-def censor_text(text):
-    """ Replaces banned words in a text with asterisks.
-
-    :param text: A string to remove banned words from.
-    :returns: A string with banned words replaced by asterisks.
-    """
-    for banned_word in banned_words:
-        censored = text.replace(banned_word, "*" * len(banned_word))
-        text = censored.replace(banned_word, "*" * len(banned_word))
-    return censored
-
 
 def contains_banned_word(text):
     """ Tests if a text contains a banned word.
@@ -48,7 +37,6 @@ def contains_banned_word(text):
         if banned_word in text:
             return True
     return False
-
 
 def get_random_quote():
     """ Used to return a random quote.
@@ -754,15 +742,18 @@ class CensorText(LoginRequiredMixin, View):
             return HttpResponseRedirect('/errorpage/')
 
     def censorText(self, request):
-        """ Censors a text and rerurns it as a HttpResponse.
+        """ Censors a text and returns it as a HttpResponse.
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
         :returns: A censored text string.
         """
         textToCensor  = request.POST['textToCensor'] 
-        censoredText = censor_text(textToCensor)
-  
+
+        for banned_word in banned_words:
+            censoredText = textToCensor.replace(banned_word, "*" * len(banned_word))
+            textToCensor = censoredText.replace(banned_word, "*" * len(banned_word))
+
         return HttpResponse(censoredText)
 
 
