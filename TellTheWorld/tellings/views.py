@@ -748,7 +748,8 @@ class CensorText(LoginRequiredMixin, View):
                         sent by a site visitor. 
         :returns: A censored text string.
         """
-        textToCensor  = request.POST['textToCensor'] 
+        textToCensor = request.POST['textToCensor'] 
+        textToCensor = textToCensor.lower()
 
         for banned_word in banned_words:
             censoredText = textToCensor.replace(banned_word, "*" * len(banned_word))

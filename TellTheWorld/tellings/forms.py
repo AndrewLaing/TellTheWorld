@@ -5,7 +5,6 @@ from django.contrib.auth.forms import UserCreationForm
 from django.utils.translation import gettext as _
 
 from tellings.models import *
-from tellings.page_extras import banned_words
 
 from datetime import datetime
 import json
@@ -54,16 +53,6 @@ class UserCommentForm(forms.ModelForm):
     class Meta:
         model = UserComment
         fields = ('postID', 'user', 'dateOfComment', 'dateOfEdit', 'commentText') 
-
-    def censor_text(self, text):
-        for banned_word in banned_words:
-            censored = text.replace(banned_word, "*" * len(banned_word))
-            text = censored.replace(banned_word, "*" * len(banned_word))
-        return censored
-
-    def clean_commentText(self):
-        postText = self.cleaned_data['commentText']
-        return self.censor_text(postText)
 
 
 class UserPostForm(forms.ModelForm):
@@ -155,18 +144,8 @@ class UserPostForm(forms.ModelForm):
         with open(djangoSettings.TELLINGS_ROOT+'/static/tellings/data/tagNames.json', 'w') as f:
             json.dump(updatedTags, f)
 
-    def censor_text(self, text):
-        for banned_word in banned_words:
-            censored = text.replace(banned_word, "*" * len(banned_word))
-            text = censored.replace(banned_word, "*" * len(banned_word))
-        return censored
-
     def clean_postTitle(self):
         postTitle = self.cleaned_data['postTitle']
         if UserPost.objects.filter(postTitle=postTitle).exists():
             raise forms.ValidationError("already_exists")
-        return self.censor_text(postTitle)
-
-    def clean_postText(self):
-        postText = self.cleaned_data['postText']
-        return self.censor_text(postText)
+        return postTitle

@@ -29,9 +29,9 @@ class URLTests(SimpleTestCase):
         url = reverse('tellings:accountdeleted')
         self.assertEquals(resolve(url).func.view_class, AccountDeletedPage)
 
-    def test_addcomment_url_resolves(self):
-        url = reverse('tellings:addcomment')
-        self.assertEquals(resolve(url).func.view_class, AddComment)
+    def test_addusercomment_url_resolves(self):
+        url = reverse('tellings:addusercomment')
+        self.assertEquals(resolve(url).func.view_class, AddUserComment)
 
     def test_addnewupdate_url_resolves(self):
         url = reverse('tellings:addnewupdate')
@@ -40,6 +40,10 @@ class URLTests(SimpleTestCase):
     def test_addupdatemodal_url_resolves(self):
         url = reverse('tellings:addupdatemodal')
         self.assertEquals(resolve(url).func.view_class, AddUpdateModal)
+
+    def test_censortext_url_resolves(self):
+        url = reverse('tellings:censortext')
+        self.assertEquals(resolve(url).func.view_class, CensorText)
 
     def test_changepassword_url_resolves(self):
         url = reverse('tellings:changepassword')

@@ -47,6 +47,8 @@ class SharedVariables:
     test_postTags = ["qwertyuiop","zxcvbnm","this is a test", "still a test"]
     test_reasonForDeletingAccount = "somethingelse"
     test_bannedText = "fucking admins"
+    test_censoredText = "****ing admins"
+    test_cleanText = "fluffy little bunnies"
 
 
 class SharedTestMethods(TestCase):
@@ -527,6 +529,70 @@ class AddUpdateModalTests(SharedTestMethods):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("false", content)
+
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2222
+
+
+class CensorTextViewTests(SharedTestMethods):
+    """Tests for the CensorText view."""
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        SV = SharedVariables
+        cls.viewname = 'tellings:censortext'
+        cls.errorPage_viewname = SV.errorPage_viewname
+        cls.loggedout_redirect_URL = '/loginpage/?next=/censortext/'
+
+        cls.credentials1 = SV.credentials1
+        cls.user1 = User.objects.create_user(cls.credentials1['username'], 
+                                             cls.credentials1['email'],
+                                             cls.credentials1['pwd'])
+        cls.test_cleanText = SV.test_cleanText
+        cls.test_bannedText = SV.test_bannedText 
+        cls.test_censoredText = SV.test_censoredText 
+                                             
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_redirect_tests()
+
+    def test_GET_loggedin(self):
+        self.get_login_HTTPResponseNotAllowed_tests()
+
+    def test_POST_loggedout(self):
+        self.post_loggedout_redirect_tests()
+
+    def test_POST_no_data(self):
+        self.post_no_data_redirect_to_errorpage_tests()
+
+    def test_POST_textCensored(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        data_with_bannedWords = {'textToCensor': self.test_bannedText}
+        response = self.client.post(reverse(self.viewname), 
+                                    data_with_bannedWords, follow=True)
+                                    
+        content = response.content.decode("utf-8")
+                                    
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(self.test_censoredText, content)
+
+    def test_POST_textUncensored(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        data_without_bannedWords = {'textToCensor': self.test_cleanText}
+        response = self.client.post(reverse(self.viewname), 
+                                    data_without_bannedWords, follow=True)
+                                    
+        content = response.content.decode("utf-8")
+                                    
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(self.test_cleanText, content)
+
+
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
 class ChangePasswordPageTests(SharedTestMethods):
