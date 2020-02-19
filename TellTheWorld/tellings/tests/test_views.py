@@ -531,9 +531,6 @@ class AddUpdateModalTests(SharedTestMethods):
         self.assertIn("false", content)
 
 
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2222
-
-
 class CensorTextViewTests(SharedTestMethods):
     """Tests for the CensorText view."""
 
@@ -589,10 +586,6 @@ class CensorTextViewTests(SharedTestMethods):
                                     
         self.assertEqual(response.status_code, 200)
         self.assertIn(self.test_cleanText, content)
-
-
-
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
 class ChangePasswordPageTests(SharedTestMethods):
