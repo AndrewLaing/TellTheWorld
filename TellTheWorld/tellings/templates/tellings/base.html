@@ -2,7 +2,7 @@
  * Filename:     base.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 27/01/2020
+ * Last updated: 21/02/2020
  * Description:  Main base template for site pages.
 {% endcomment %}
 
@@ -75,9 +75,9 @@
       <div id="paginationDiv">
         <ul class="pagination pull-right">
           {% if page_obj.has_previous %}
-            <li><a href="?{% param_replace page=page_obj.previous_page_number %}"><</a></li>            
+            <li><a href="?{% param_replace page=page_obj.previous_page_number %}">&#60;</a></li>            
           {% else %}
-            <li class="disabled"><span>&lt;</span></li>
+            <li class="disabled"><span>&#60;</span></li>
           {% endif %}
 
           {# Show link to first page #}
@@ -108,15 +108,15 @@
           {% endif %}
 
           {% if page_obj.has_next %}
-            <li><a href="?{% param_replace page=page_obj.next_page_number %}">></a></li>
+            <li><a href="?{% param_replace page=page_obj.next_page_number %}">&#62;</a></li>
           {% else %}
-            <li class="disabled"><span>&gt;</span></li>
+            <li class="disabled"><span>&#62;</span></li>
           {% endif %}
         </ul>
         <br />
         <div>
         {% if quote %}
-            <span style="text-align: center; padding-bottom: 10px;;">{{quote}}</span>
+            <span style="text-align: center; padding-bottom: 10px;">{{quote}}</span>
         {% else %}
             <p>Just say it. It needs to be said sometime.</p>
         {% endif %}
@@ -125,8 +125,6 @@
       {% endif %}
     {% endblock %} 
     
-
-
 
     {# FOOTER SECTION #} 
     <footer class="footer footerDivs">

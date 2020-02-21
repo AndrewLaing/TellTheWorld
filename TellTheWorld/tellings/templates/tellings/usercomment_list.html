@@ -45,8 +45,6 @@
       </div>
     {% endfor %}
   {% else %}
-    <div class="user-comment-container">  
-      <p class="user-comment-text" id="text_comment_{{ item.commentID }}">Be the first person to make a comment on this post.</p>
-    </div>
+      <p class="user-no-comments-text">Be the first person to make a comment on this post.</p>
   {% endif %} 
 {% endblock %}

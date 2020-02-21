@@ -403,6 +403,10 @@ hr {
   word-wrap: break-word;
 }
 
+.user-no-comments-text {
+  padding:10px;
+}
+
 
 /* -------------------------------------------------------- */
 /* Styling for the tags typeahead in the addNewUpdate modal */

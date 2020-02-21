@@ -450,7 +450,8 @@ $(document).ready(function(){
      * Used as a callback because of the asynchromnous nature of AJAX calls.
      */
     $.updateElementText = function (ele, newText) {
-      ele.val(newText);
+      ele.focus().val(newText);
+      //ele.focus();
     };
   
   
@@ -606,13 +607,10 @@ $(document).ready(function(){
               alert('Sorry, we cannot accept your edit as it contains one or more banned words. Please refer to our acceptable usage policy for guidance.');
             } else {
               alert(data);
-              location.reload();
             }
           }
           else {
             alert("Database error: please contact the administrator.");
-            // redirect to error page instead?
-            location.reload();
           }
         });
       }
@@ -724,13 +722,10 @@ $(document).ready(function(){
               alert('Sorry, we cannot accept your edit as it contains one or more banned words. The edit has been censored. You can either now post the censored version of the edit, or rewrite it with the banned words omitted. Please refer to our acceptable usage policy for guidance.');
             } else {
               alert(data);
-              location.reload();
             }
           }
           else {
             alert("Database error: please contact the administrator.");
-            // redirect to error page instead?
-            location.reload();
           }
         });
       }
@@ -910,6 +905,16 @@ $(document).ready(function(){
      * ------------------------------------------------------------------
      */
   
+
+    /**
+     * Triggers the reply_btn click when the user clicks on the
+     * .user-no-comments-text paragraph
+     */ 
+    $('.user-comment-section').on('click', '.user-no-comments-text', function() {
+      $(this).parent().parent().children('.reply_btn').trigger('click');
+    });
+
+
     /**
       * Clears user input and closes the user reply section when
       * the cancel reply button is clicked.
