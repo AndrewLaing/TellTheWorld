@@ -18,42 +18,40 @@ body {
   background-image: url('../imgs/bgimage.jpg'); 
 }
 
-.header {
-  position: relative;
-	color: #000;          
-	background-color: #222222; 
-	padding: 20px;
+.header {       
+  background-color: #222222; 
+  padding: 1.5em;
 }
 
 
 .jumbotron {
-  padding-top: 25px;
+  padding-top: 0em;
+  padding-bottom: 0.4em;
   text-align: center;
-  width: 100%;
-  height: 200px;
+  margin-bottom: 1.5em;
   background-color: #03062F;
 }
 
-@media only screen and (max-width: 767px) {
-  .jumbotron {
-    height: 150px;
-  }
-}
 
 .jumbotron h1 {
   letter-spacing: .2em;
+  line-height: normal;
   color: white;
   font-family: Verdana, Geneva, Tahoma, sans-serif;
-
+  padding-top: .4em;
+  padding-bottom: .15em;
 }
 
 .jumbotron p {
-  letter-spacing: .6em;
+  letter-spacing: .5em;
   font-size: calc(14px + (26 - 14) * ((100vw - 300px) / (1600 - 300)));
   line-height: calc(1.3em + (1.5 - 1.2) * ((100vw - 300px)/(1600 - 300)));
-  color: white;
+  color: rgb(150, 150, 150);
   font-weight: bold;
-  padding: 0px;
+  font-style: italic;
+  padding: 0em;
+  padding-bottom: .4em;
+  margin-bottom: 0em;
 }
 
 .img-wrapper img {
@@ -64,8 +62,7 @@ body {
 #title h1 {
   font-family: Arial, Helvetica, sans-serif;
   font-weight: bold;
-  margin: 0px;
-  padding-top: 20px;
+  margin: 0em;
 }
 
 
@@ -77,9 +74,9 @@ body {
 
 
 .navbar {
-  margin: 0px;
-  margin-bottom: 0px;
-  text-shadow: 0px 0px 11px rgba(232,0,0,0.5);
+  margin: 0em;
+  margin-bottom: 0em;
+  text-shadow: 0em 0em 11px rgba(232,0,0,0.5);
 }
 
 
@@ -95,7 +92,7 @@ body {
 
 
 .container-fluid {
-  margin: 0px;
+  margin: 0em;
   padding-left: 20px;
   padding-right: 20px;
 }
@@ -107,19 +104,19 @@ body {
 
 
 .col {
-  margin:0px;
-	padding: 0px;
+  margin: 0em;
+	padding: 0em;
 }
 
 
 .row {
-  margin:0px;
+  margin: 0em;
 }
 
 
 .content {
-  margin: 0px;
-  padding: 0px;
+  margin: 0em;
+  padding: 0em;
   padding-left: 10px;
 }
 
@@ -147,7 +144,7 @@ body {
 
 .align-panel-text-right {
   text-align: right;
-  padding-right: 0px;
+  padding-right: 0em;
 }
 
 .align-panel-footer-text-left {
@@ -163,11 +160,11 @@ body {
 }
 
 .footer {
-  margin: 0px;
+  margin: 0em;
   overflow-y: auto;
   position: relative;
   clear: both;
-  margin: 0px;
+  margin: 0em;
 } 
 
 .footer h1 {
@@ -204,7 +201,7 @@ body {
   margin-top: 30px;
   margin-bottom: 30px;
   padding: 20px;
-  padding-top: 0px;
+  padding-top: 0em;
   background-color: #FFF;
 }
 
@@ -255,13 +252,13 @@ body {
 
 
 .btn-icon {
-	position:relative;
-	padding:0px;
-	color:#FFF;
-	padding:0px;
-	height:40px;
-	width:40px;
-	font-size:24px;
+	position: relative;
+	padding: 0em;
+	color: #FFF;
+	padding: 0em;
+	height: 40px;
+	width: 40px;
+	font-size: 24px;
 	font-weight: bold;
 }
 
@@ -314,15 +311,15 @@ body {
 hr {
   display: block;
   position: relative;
-  padding: 0%;
+  padding: 0em;
   margin: auto;
 
   margin-bottom: 16px; /* added */
-  height: 0;
+  height: 0em;
   width: 100%;
-  max-height: 0;
+  max-height: 0em;
   font-size: 1px;
-  line-height: 0;
+  line-height: 0em;
   clear: both;
   border:none;
   border-top: .15em solid #575757;
@@ -341,7 +338,7 @@ hr {
 .inputField {
   min-width: 350px;
   display: inline-block;
-  margin: 0%;
+  margin: 0em;
 }
 
 .inputHeaders {
@@ -350,7 +347,7 @@ hr {
 }
 
 .post-cog-btn {
-  padding: 0px 10px 0px 10px; 
+  padding: 0em 10px 0em 10px; 
   background-color: white;
 }
 
@@ -386,7 +383,7 @@ hr {
 }
 
 .comment-cog-btn {
-  padding: 0px; 
+  padding: 0em; 
   background-color: white;
 }
 
@@ -399,12 +396,12 @@ hr {
 }
 
 .user-comment-text {
-  padding-top:10px;
+  padding-top: 10px;
   word-wrap: break-word;
 }
 
 .user-no-comments-text {
-  padding:10px;
+  padding: 10px;
 }
 
 
@@ -454,5 +451,5 @@ hr {
 }
 
 .tt-suggestion p {
-  margin: 0;
+  margin: 0em;
 }
