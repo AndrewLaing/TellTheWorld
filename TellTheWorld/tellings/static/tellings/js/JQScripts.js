@@ -677,6 +677,8 @@ $(document).ready(function(){
       // If the collapse is not showing, show it
       var collapsePostID = "#collapse" + in_postID;
       $(collapsePostID).collapse("show");
+      $(collapsePostID).siblings('.panel-header').children('.align-panel-text-right').children('.collapse_btn').text("Hide Update");
+
   
       // Load the page element and insert it into the panel
       url = '/edituserpost/' + in_postID;
@@ -743,7 +745,7 @@ $(document).ready(function(){
     
       alert("Cancelled");
   
-      $(textPostID).html(originalPostText);   
+      $(textPostID).html(originalPostText);  
       editingPost = false;
     };
   
@@ -752,9 +754,10 @@ $(document).ready(function(){
      * Stops user from opening or closing post collapses whilst editing.
      */
     $('.collapse_btn').on('click', function(event) {
-      if($('#edit_post_box').length) {
+      if(editingComment || editingPost) {
         alert("You still have unsaved changes!");
         event.stopPropagation();
+        return;
       }
       
       /* Toggle the text shown on the update collapse button */
@@ -867,6 +870,7 @@ $(document).ready(function(){
         $(this).text("Hide comments");
       } else {
         $(this).text("View all comments");
+        editingComment = false;
       }
       $(this).siblings('.user-comment-section').slideToggle();
     });

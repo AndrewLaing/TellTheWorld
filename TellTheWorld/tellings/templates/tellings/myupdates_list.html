@@ -27,7 +27,7 @@
             {# Update panel #} 
               <div class="panel panel-default" id="panel_post_{{ item.postID }}">
                 {# PANEL HEADER #} 
-                <div>  
+                <div class="panel-header">  
                   {# Post title and username #}
                   <div class="col-sm-8 panel-postTitle">
                     <p><a href="{% url 'tellings:myupdates' %}" name="{{ item.user }}">
@@ -49,10 +49,17 @@
                               <span class = "caret"></span>
                             </button>
 
-                            <div class="dropdown-menu">
-                              <a class="dropdown-item" id="hide_post_{{ item.postID }}" onclick="$.hide_post({{ item.postID }});">Hide Post</a><br /><br />
-                              <a class="dropdown-item" id="edit_post_{{ item.postID }}" onclick="$.edit_post({{ item.postID }});">Edit Post</a><br />
-                              <a class="dropdown-item" id="delete_post_{{ item.postID }}" onclick="$.delete_post({{ item.postID }});">Delete Post</a>
+                            <div class="dropdown-menu dropdown-menu-right">
+                              <li>
+                                <a id="hide_post_{{ item.postID }}" onclick="$.hide_post({{ item.postID }});">Hide Post</a>
+                              </li>
+                              <li>
+                                <a id="edit_post_{{ item.postID }}" onclick="$.edit_post({{ item.postID }});">Edit Post</a>
+                              </li>
+                              <li>
+                                <a id="delete_post_{{ item.postID }}" onclick="$.delete_post({{ item.postID }});">Delete Post</a>
+                              </li>
+                              
                             </div>
                         </div>   
                       {% endif %}

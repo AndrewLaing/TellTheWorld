@@ -25,14 +25,18 @@
               <span class = "caret"></span>
             </button>
 
-            <div class="dropdown-menu">
+            <ul class="dropdown-menu dropdown-menu-right">
             {# Only comment posters can edit their own comments #}
             {% if item.user.username == current_username %}
-              <a class="dropdown-item" id="edit_comment_{{ item.commentID }}" onclick="$.edit_comment({{ item.commentID }});">Edit Comment</a><br />
-            {% endif %}
+              <li>
+                <a id="edit_comment_{{ item.commentID }}" onclick="$.edit_comment({{ item.commentID }});">Edit Comment</a><br />
+              </li>
+              {% endif %}
             {# Both comment posters and authors of the post being commented upon can delete comments #}
-              <a class="dropdown-item" id="delete_comment_{{ item.commentID }}" onclick="$.delete_comment({{ item.commentID }});">Delete Comment</a>
-            </div>
+              <li>
+                <a id="delete_comment_{{ item.commentID }}" onclick="$.delete_comment({{ item.commentID }});">Delete Comment</a>
+              </li>
+            </ul>
           </div>  
         {% endif %}
       {% endif %}
