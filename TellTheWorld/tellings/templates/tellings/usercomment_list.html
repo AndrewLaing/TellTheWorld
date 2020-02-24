@@ -29,12 +29,12 @@
             {# Only comment posters can edit their own comments #}
             {% if item.user.username == current_username %}
               <li>
-                <a id="edit_comment_{{ item.commentID }}" onclick="$.edit_comment({{ item.commentID }});">Edit Comment</a><br />
+                <a onclick="$.edit_comment({{ item.commentID }});">Edit Comment</a>
               </li>
               {% endif %}
             {# Both comment posters and authors of the post being commented upon can delete comments #}
               <li>
-                <a id="delete_comment_{{ item.commentID }}" onclick="$.delete_comment({{ item.commentID }});">Delete Comment</a>
+                <a onclick="$.delete_comment({{ item.commentID }});">Delete Comment</a>
               </li>
             </ul>
           </div>  

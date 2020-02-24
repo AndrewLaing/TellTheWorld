@@ -85,6 +85,11 @@ body {
 }
 
 
+.dropdown-menu > li > a {
+  padding: .6em 1.2em;
+}
+
+
 .dropdown-menu-item {
   padding: 5px;
   text-align: center;
@@ -387,8 +392,6 @@ hr {
   background-color: white;
 }
 
-.user-comment-details {
-}
 
 .user-comment-details a {
   font-weight: bold; 

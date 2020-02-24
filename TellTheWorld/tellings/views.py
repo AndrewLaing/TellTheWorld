@@ -16,7 +16,7 @@ from django.utils.translation import gettext as _
 from django.views import View, generic 
 
 from tellings.forms import *
-from tellings.page_extras import random_quotes, banned_words
+from tellings.page_extras import banned_words
 
 import random, json
 from datetime import datetime, date, timedelta, timezone
@@ -38,14 +38,6 @@ def contains_banned_word(text):
             return True
     return False
 
-def get_random_quote():
-    """ Used to return a random quote.
-       
-    :returns: A random quote from the random_quotes list.
-    """
-    secure_random = random.SystemRandom()
-    random_quote = secure_random.choice(random_quotes)
-    return _(random_quote)
 
 def user_has_posted_today(request):
     """ Used to determine if the user has already posted an update today.
@@ -90,8 +82,7 @@ class AboutPage(View):
                         sent by a site visitor. 
         :returns: A HTML page.
         """
-        quote = get_random_quote()
-        return render(request, 'tellings/about.html', {'quote': quote})
+        return render(request, 'tellings/about.html')
 
     def post(self, request):
         """ Handles POST requests for the About us page.
@@ -103,8 +94,7 @@ class AboutPage(View):
         if ('username' in request.POST) and ('pwd' in request.POST):
             return user_login(request)
         else:
-            quote = get_random_quote()
-            return render(request, 'tellings/about.html', {'quote': quote})
+            return render(request, 'tellings/about.html')
 
 
 class AcceptableUsagePage(View):
@@ -118,8 +108,7 @@ class AcceptableUsagePage(View):
                         sent by a site visitor. 
         :returns: A HTML page.
         """
-        quote = get_random_quote()
-        return render(request, 'tellings/acceptableusage.html', {'quote': quote})
+        return render(request, 'tellings/acceptableusage.html')
 
     def post(self, request):
         """ Handles POST requests for the Acceptable Usage Policy page.
@@ -131,8 +120,7 @@ class AcceptableUsagePage(View):
         if ('username' in request.POST) and ('pwd' in request.POST):
             return user_login(request)
         else:
-            quote = get_random_quote()
-            return render(request, 'tellings/acceptableusage.html', {'quote': quote})
+            return render(request, 'tellings/acceptableusage.html')
 
 
 class AccountDeletedPage(LoginRequiredMixin, View):
@@ -159,7 +147,6 @@ class AccountDeletedPage(LoginRequiredMixin, View):
         :returns: A HTML page.
         """
         try:
-            quote = get_random_quote()
             u = request.user
 
             # Create a DeletedAccount record
@@ -181,7 +168,7 @@ class AccountDeletedPage(LoginRequiredMixin, View):
             # Logout and delete the user's account
             logout(request)
             u.delete()
-            return render(request, 'tellings/accountDeleted.html', {'quote': quote})
+            return render(request, 'tellings/accountDeleted.html')
         except:
             return HttpResponseRedirect('/errorpage/')
 
@@ -197,9 +184,8 @@ class ChangePasswordPage(LoginRequiredMixin, View):
                         sent by a site visitor. 
         :returns: A HTML page.
         """
-        quote = get_random_quote()
         form = PasswordChangeForm(request.user)
-        return render(request, 'tellings/changePassword.html', {'form': form, 'quote': quote})
+        return render(request, 'tellings/changePassword.html', {'form': form})
 
     def post(self, request):
         """ Handles POST requests for the Change Password page.
@@ -212,8 +198,7 @@ class ChangePasswordPage(LoginRequiredMixin, View):
         if form.is_valid():
             return self.changePassword(request, form)
         else:
-            quote = get_random_quote()
-            return render(request, 'tellings/changePassword.html', {'form': form, 'quote': quote})
+            return render(request, 'tellings/changePassword.html', {'form': form})
 
     def changePassword(self, request, form):
         """ Handles changing the user's password.
@@ -226,9 +211,8 @@ class ChangePasswordPage(LoginRequiredMixin, View):
         form.save()
         user = form.save()
         update_session_auth_hash(request, user)  # Important!
-        quote = get_random_quote()
         return render(request, 'tellings/changePassword.html', 
-                      {'message': _('Your password was successfully updated!'), 'form': form, 'quote': quote})
+                      {'message': _('Your password was successfully updated!'), 'form': form})
 
 
 class ChangeUserDetailsPage(LoginRequiredMixin, View):
@@ -242,9 +226,8 @@ class ChangeUserDetailsPage(LoginRequiredMixin, View):
                         sent by a site visitor. 
         :returns: A HTML page.
         """  
-        quote = get_random_quote() 
         form = ChangeUserDetailsForm(instance=request.user)
-        return render(request, 'tellings/changeUserDetails.html', {'form': form, 'quote': quote})
+        return render(request, 'tellings/changeUserDetails.html', {'form': form})
 
     def post(self, request):
         """ Handles POST requests for the Change User Details page.
@@ -257,9 +240,8 @@ class ChangeUserDetailsPage(LoginRequiredMixin, View):
         if form.is_valid():
             return self.changeDetails(request, form)
         else:
-            quote = get_random_quote()
             messages.error(request, _('Please correct the error below.'))
-            return render(request, 'tellings/changeUserDetails.html', {'form': form, 'quote': quote})
+            return render(request, 'tellings/changeUserDetails.html', {'form': form})
 
     def changeDetails(self, request, form):
         """ Handles changing the user's details.
@@ -273,9 +255,8 @@ class ChangeUserDetailsPage(LoginRequiredMixin, View):
         u.last_name = request.POST['last_name']
         u.email = request.POST['email']
         u.save()
-        quote = get_random_quote()
         return render(request, 'tellings/changeUserDetails.html', 
-                      {'message': _('Your details have been updated'), 'form': form, 'quote': quote})
+                      {'message': _('Your details have been updated'), 'form': form})
 
 
 class IndexPage(View):
@@ -289,8 +270,7 @@ class IndexPage(View):
                         sent by a site visitor. 
         :returns: A HTML page.
         """
-        quote = get_random_quote()
-        return render(request, 'tellings/index.html', {'quote': quote})
+        return render(request, 'tellings/index.html')
 
     def post(self, request):
         """ Handles POST requests for the home page.
@@ -302,8 +282,7 @@ class IndexPage(View):
         if ('username' in request.POST) and ('pwd' in request.POST):
             return user_login(request)
         else:
-            quote = get_random_quote()
-            return render(request, 'tellings/index.html', {'quote': quote})
+            return render(request, 'tellings/index.html')
 
 
 class ErrorPage(View):
@@ -317,8 +296,7 @@ class ErrorPage(View):
                         sent by a site visitor. 
         :returns: A HTML page.
         """
-        quote = get_random_quote()
-        return render(request, 'tellings/errorPage.html', {'quote': quote})
+        return render(request, 'tellings/errorPage.html')
 
     def post(self, request):
         """ Handles POST requests for the Error page.
@@ -330,8 +308,7 @@ class ErrorPage(View):
         if ('username' in request.POST) and ('pwd' in request.POST):
             return user_login(request)
         else:
-            quote = get_random_quote()
-            return render(request, 'tellings/errorPage.html', {'quote': quote})
+            return render(request, 'tellings/errorPage.html')
 
 
 class MissionStatementPage(View):
@@ -345,8 +322,7 @@ class MissionStatementPage(View):
                         sent by a site visitor. 
         :returns: A HTML page.
         """
-        quote = get_random_quote()
-        return render(request, 'tellings/missionstatement.html', {'quote': quote})
+        return render(request, 'tellings/missionstatement.html')
 
     def post(self, request):
         """ Handles POST requests for the Mission Statement page.
@@ -358,8 +334,7 @@ class MissionStatementPage(View):
         if ('username' in request.POST) and ('pwd' in request.POST):
             return user_login(request)
         else:
-            quote = get_random_quote()
-            return render(request, 'tellings/missionstatement.html', {'quote': quote})
+            return render(request, 'tellings/missionstatement.html')
 
 
 class MyUpdatesListView(LoginRequiredMixin, generic.ListView):
@@ -394,13 +369,11 @@ class MyUpdatesListView(LoginRequiredMixin, generic.ListView):
     def get_context_data(self, **kwargs):
         context = super(MyUpdatesListView, self).get_context_data(**kwargs)  
         current_username = user_id = self.request.user.username
-        quote = get_random_quote()
 
         if self.request.method == 'GET' and 'tagName' in self.request.GET:
             context['tagName'] = self.request.GET.get('tagName', '')
 
         context['current_username'] = current_username
-        context['quote'] = quote
         return context
 
 
@@ -441,7 +414,6 @@ class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
     def get_context_data(self, **kwargs):
         context = super(NewUpdatesListView, self).get_context_data(**kwargs)  
         current_username = self.request.user.username
-        quote = get_random_quote()
 
         if self.request.method == 'GET':
             if 'tagName' in self.request.GET:
@@ -450,7 +422,6 @@ class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
                 context['userName'] = self.request.GET.get('userName', '')
 
         context['current_username'] = current_username
-        context['quote'] = quote
         return context
 
 
@@ -465,8 +436,7 @@ class PrivacyPolicyPage(View):
                         sent by a site visitor. 
         :returns: A HTML page.
         """
-        quote = get_random_quote()
-        return render(request, 'tellings/privacypolicy.html', {'quote': quote})
+        return render(request, 'tellings/privacypolicy.html')
 
     def post(self, request):
         """ Handles POST requests for the Privacy Policy page.
@@ -478,8 +448,7 @@ class PrivacyPolicyPage(View):
         if ('username' in request.POST) and ('pwd' in request.POST):
             return user_login(request)
         else:
-            quote = get_random_quote()
-            return render(request, 'tellings/privacypolicy.html', {'quote': quote})
+            return render(request, 'tellings/privacypolicy.html')
 
 
 class SignUpPage(View):
@@ -493,9 +462,8 @@ class SignUpPage(View):
                         sent by a site visitor. 
         :returns: A HTML page.
         """
-        quote = get_random_quote()
         form = NewUserCreationForm()
-        return render(request, 'tellings/signup.html', {'form': form, 'quote': quote})
+        return render(request, 'tellings/signup.html', {'form': form})
 
     def post(self, request):
         """ Handles POST requests for the Sign Up page.
@@ -525,9 +493,8 @@ class SignUpPage(View):
             login(request, user)
             return HttpResponseRedirect('/')
         else:
-            quote = get_random_quote()
             messages.error(request, _('Please correct the error below.'))
-            return render(request, 'tellings/signup.html', {'form': form, 'quote': quote})
+            return render(request, 'tellings/signup.html', {'form': form})
 
 
 class TagListView(LoginRequiredMixin, generic.ListView):
@@ -536,11 +503,6 @@ class TagListView(LoginRequiredMixin, generic.ListView):
     paginate_by = 20
     http_method_names = ['get', 'post']
 
-    def get_context_data(self, **kwargs):
-        context = super(TagListView, self).get_context_data(**kwargs)  
-        quote = get_random_quote()
-        context['quote'] = quote
-        return context
 
 
 class TermsAndConditionsPage(View):
@@ -554,8 +516,7 @@ class TermsAndConditionsPage(View):
                         sent by a site visitor. 
         :returns: A HTML page.
         """
-        quote = get_random_quote()
-        return render(request, 'tellings/termsandconditions.html', {'quote': quote})
+        return render(request, 'tellings/termsandconditions.html')
 
     def post(self, request):
         """ Handles POST requests for the Terms and Conditions page.
@@ -567,8 +528,7 @@ class TermsAndConditionsPage(View):
         if ('username' in request.POST) and ('pwd' in request.POST):
             return user_login(request)
         else:
-            quote = get_random_quote()
-            return render(request, 'tellings/termsandconditions.html', {'quote': quote})
+            return render(request, 'tellings/termsandconditions.html')
 
 
 class UserCommentListView(LoginRequiredMixin, generic.ListView):
