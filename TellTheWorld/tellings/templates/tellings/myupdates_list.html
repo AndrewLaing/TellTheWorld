@@ -17,7 +17,7 @@
     <div class="container currentUserUpdates" id="userUpdates">
         {% if userpost_list %}
         {% load static %}
-        {% regroup userpost_list by dateOfPost as ordered_post_list %}
+        {% regroup userpost_list by dateOfPost|date:"M. d Y" as ordered_post_list %}
 
         {% for mypost in ordered_post_list %}
         <div class="row">

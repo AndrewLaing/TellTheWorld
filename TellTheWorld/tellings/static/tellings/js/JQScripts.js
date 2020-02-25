@@ -2,7 +2,7 @@
  * Filename:     JQScripts.js
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 19/02/2020.
+ * Last updated: 24/02/2020.
  * Description:  JQuery scripts used by the 'Tell the World' website.
  */
 

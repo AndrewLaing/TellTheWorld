@@ -10,17 +10,17 @@ import django
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.urls import reverse
-
+from datetime import timezone
 from tellings.models import *
 
 class DeletedAccountModelTests(TestCase):
     """Tests for the DeletedAccount model."""
 
     def setUp(self):
-        pass
+        test_postDate = django.utils.timezone.now()
+        self.test_postDate = test_postDate.replace(tzinfo=timezone.utc)        
 
-    def createRecord(self, deleted_date='2019-08-12', 
-                     deleted_reason='somethingelse', membership_length=365):
+    def createRecord(self, deleted_date, deleted_reason, membership_length):
         return DeletedAccount.objects.create(deleted_date=deleted_date, 
                      deleted_reason=deleted_reason, membership_length=membership_length)
 
@@ -28,7 +28,7 @@ class DeletedAccountModelTests(TestCase):
         self.assertEqual(str(DeletedAccount._meta.verbose_name_plural), "DeletedAccounts")
 
     def test_record_creation(self):
-        record = self.createRecord()
+        record = self.createRecord(self.test_postDate, "something else", 365)
         self.assertTrue(isinstance(record, DeletedAccount))
 
     def test_deleted_reason_max_length(self):
@@ -72,7 +72,9 @@ class TagmapModelTests(TestCase):
     def setUpTestData(cls):
         cls.user2 = User.objects.create_user('testuser2', 'testUser2@email.com', '@myp455w0rd')
         cls.testtag = Tag(tagName='testtag')
-        cls.testpost = UserPost(cls.user2.id, '2019-08-12', 'postTitle 3', 'postText 3')
+        test_postDate = django.utils.timezone.now()
+        cls.test_postDate = test_postDate.replace(tzinfo=timezone.utc)
+        cls.testpost = UserPost(cls.user2.id, test_postDate, 'postTitle 3', 'postText 3')
 
     def setUp(self):
         pass    
@@ -93,16 +95,18 @@ class UserCommentModelTests(TestCase):
 
     @classmethod
     def setUpTestData(cls):
+        test_postDate = django.utils.timezone.now()
+        cls.test_postDate = test_postDate.replace(tzinfo=timezone.utc)
         cls.user1 = User.objects.create_user('testuser1', 'testUser1@email.com', '@myp455w0rd')
         cls.user2 = User.objects.create_user('testuser2', 'testUser2@email.com', '@myp455w0rd')
-        cls.testpost = UserPost.objects.create(user_id=cls.user2.id, dateOfPost='2019-11-12', 
+        cls.testpost = UserPost.objects.create(user_id=cls.user2.id, dateOfPost=cls.test_postDate, 
                                                postTitle='postTitle 1', postText='postText 1') 
 
     def setUp(self):
         pass
 
 
-    def createComment(self, postID=1, userID=1, dateOfComment='2020-02-02', commentText='Comment Text'):
+    def createComment(self, postID, userID, dateOfComment, commentText):
     
         return UserComment.objects.create(postID=postID, user_id=userID, 
                                           dateOfComment=dateOfComment, 
@@ -112,11 +116,11 @@ class UserCommentModelTests(TestCase):
         self.assertEqual(str(UserComment._meta.verbose_name_plural), "UserComments")
 
     def test_comment_creation(self):
-        comment = self.createComment(self.testpost, self.user2.id, '2019-11-12', 'comment text 1')
+        comment = self.createComment(self.testpost, self.user2.id, self.test_postDate, 'comment text 1')
         self.assertTrue(isinstance(comment, UserComment))
 
     def test_string_representation(self):
-        comment = self.createComment(self.testpost, self.user2.id, '2019-12-12', 'comment text 2')
+        comment = self.createComment(self.testpost, self.user2.id, self.test_postDate, 'comment text 2')
         self.assertEqual(str(comment), comment.commentText)
 
     def test_commentText_max_length(self):
@@ -129,13 +133,14 @@ class UserPostModelTests(TestCase):
 
     @classmethod
     def setUpTestData(cls):
+        test_postDate = django.utils.timezone.now()
+        cls.test_postDate = test_postDate.replace(tzinfo=timezone.utc)
         cls.user1 = User.objects.create_user('testuser1', 'testUser1@email.com', '@myp455w0rd')
 
     def setUp(self):
         pass
 
-    def createPost(self, userID=1, dateOfPost='2019-08-12', 
-                   postTitle='Post Title', postText='Post Text'):
+    def createPost(self, userID, dateOfPost, postTitle, postText):
         return UserPost.objects.create(user_id=userID, dateOfPost=dateOfPost, 
                      postTitle=postTitle, postText=postText)
 
@@ -143,11 +148,11 @@ class UserPostModelTests(TestCase):
         self.assertEqual(str(UserPost._meta.verbose_name_plural), "UserPosts")
 
     def test_post_creation(self):
-        post = self.createPost()
+        post = self.createPost(1, self.test_postDate, 'postTitle 2', 'postText 2')
         self.assertTrue(isinstance(post, UserPost))
 
     def test_string_representation(self):
-        post = self.createPost(self.user1.id, '2019-08-12', 'postTitle 2', 'postText 2')
+        post = self.createPost(self.user1.id, self.test_postDate, 'postTitle 2', 'postText 2')
         self.assertEqual(str(post), post.postTitle)
 
     def test_postTitle_max_length(self):

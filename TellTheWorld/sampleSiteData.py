@@ -1,11 +1,12 @@
 from django.contrib.auth.models import User
-
+from datetime import datetime, timezone
 
 def addUser(username, email, password):
     user=User.objects.create_user(username, email, password)
     user.is_superuser=False
     user.is_staff=False
     user.save()
+
 
 
 addUser('jackie', 'user@test.com', '4uniquep@55w0rd')
@@ -35,11 +36,13 @@ addUser('jeff', 'user@test.com', '4uniquep@55w0rd')
 addUser('monica', 'user@test.com', '4uniquep@55w0rd')
 
 
+
 from tellings.models import Tag
 
 def addTag(name):
     tag = Tag(tagName=name)
     tag.save()
+
     
     
 addTag('admin')
@@ -89,6 +92,7 @@ addTag('toxi')
 addTag('treehouse')
 
 
+
 from tellings.models import UserPost
 
 
@@ -98,35 +102,36 @@ def addPost(in_userID, in_dateOfPost, in_postTitle, in_postText):
 
 
 
-addPost(1, '2019-07-18', 'Merry Christmas Jackie 2019', 'I am spending Xmas at the office alone again with my computer. Send cake and coffee quickly :)')
-addPost(1, '2019-07-19', 'Living Snake', 'New the her nor case that lady paid read. Invitation friendship travelling eat everything the out two.')
-addPost(1, '2019-07-20', 'The Missing Female', 'Too cultivated use solicitude frequently. Dashwood likewise up consider continue entrance ladyship ')
-addPost(1, '2019-07-24', 'Truth of Secrets', 'Gay attended vicinity prepared now diverted. Esteems it ye sending reached as. Longer lively her design settle tastes advice mrs off who. ')
-addPost(5, '2019-07-18', 'The Births Soul', 'Prepared do an dissuade be so whatever steepest. Yet her beyond looked either day wished nay.')
-addPost(5, '2019-07-19', 'The Door of the Wave', 'Collected preserved are middleton dependent residence but him how. Handsome weddings yet mrs you has carriage packages. ')
-addPost(5, '2019-07-24', 'Moon in the Fire', 'Spot to many it four bred soon well to. Or am promotion in no departure abilities. Whatever landlord yourself at by pleasure of children be. ')
-addPost(3, '2019-07-19', 'Thorns of Spark', 'Amongst moments do in arrived at my replied. Fat weddings servants but man believed prospect. ')
-addPost(3, '2019-07-20', 'The Edge of the Son', 'Seems folly if in given scale. Sex contented dependent conveying advantage can use.')
-addPost(3, '2019-07-24', 'Slave of Willow', 'Pas vit bravoure trouvent une couleurs. Pourquoi collines jeunesse continue il susciter on. ')
-addPost(6, '2019-07-25', 'Millican', 'Just a word')
-addPost(7, '2019-07-25', 'Effervesent elements', 'Then there was another one just like cheese')
-addPost(8, '2019-07-25', 'lolalot', 'How does this work?')
-addPost(9, '2019-07-25', 'Hello World', 'Was this my first post')
-addPost(11, '2019-07-25', 'Holiday in Cambodia', 'What you guys need!')
-addPost(5, '2019-07-25', 'Refi in da house', 'put ur hands in the air')
-addPost(3, '2019-07-28', 'It was morning', 'I woke up played vidya then went to the library')
-addPost(4, '2019-07-28', 'This is it', 'I have removed all of the vanilla JS and replaced it with JQuery')
-addPost(3, '2019-07-30', 'Today I talked to Setsumi', 'Setsumi was very interested in me today, and we had a great discussion on metaphysics :)')
-addPost(4, '2019-07-30', 'Nice coffee', 'Three cups of coffee for my breakfast, I guess I don\'t have a power nap until tonight :P')
-addPost(5, '2019-07-30', 'Refi is da man', 'Hey just wanted to let you guys know that my new album is available in iTunes. So just buy it already.')
-addPost(6, '2019-07-30', 'john', 'lol I took another great title')
-addPost(7, '2019-07-30', 'Cats are so kawaii.', 'I just love cats don\'t you.\nPlease visit my site at http;//youtube.com')
-addPost(8, '2019-07-30', '<script>alert(\'XSStest\');</script>', 'Just testing Mr Admin. Please don\'t ban me.')
-addPost(9, '2019-07-30', 'I\'m a friend of Joe :P', '<script>alert(\'XSS-ed you ;P\');</script>\n<strong>Please don\'t ban me I\'m only Joe-king</strong>')
-addPost(10, '2019-07-30', 'Naughty Joe', 'Joe has been making naughty updates. How about adding a report user functionality?')
-addPost(11, '2019-07-30', 'First post', 'This is my first post and ... yes my mother really did call me Jello. (Don\'t ask!)')
-addPost(1, '2019-07-30', 'Thanks Admin', 'Thank you for resetting my password. I have been unable to login for two days now and I have so much to tell you guys ... I guess you will have to wait until tomorrow to find out :P')
-addPost(1, '2019-08-02', 'Breakfast', 'Today I had cheese on toast with beans for my breakfast. It was very cheesy.')
+addPost(1, datetime(2019, 7, 18, 0,0,0).replace(tzinfo=timezone.utc), 'Merry Christmas Jackie 2019', 'I am spending Xmas at the office alone again with my computer. Send cake and coffee quickly :)')
+addPost(1, datetime(2019, 7, 19, 0,0,0).replace(tzinfo=timezone.utc), 'Living Snake', 'New the her nor case that lady paid read. Invitation friendship travelling eat everything the out two.')
+addPost(1, datetime(2019, 7, 20, 0,0,0).replace(tzinfo=timezone.utc), 'The Missing Female', 'Too cultivated use solicitude frequently. Dashwood likewise up consider continue entrance ladyship ')
+addPost(1, datetime(2019, 7, 24, 0,0,0).replace(tzinfo=timezone.utc), 'Truth of Secrets', 'Gay attended vicinity prepared now diverted. Esteems it ye sending reached as. Longer lively her design settle tastes advice mrs off who. ')
+addPost(5, datetime(2019, 7, 18, 0,0,0).replace(tzinfo=timezone.utc), 'The Births Soul', 'Prepared do an dissuade be so whatever steepest. Yet her beyond looked either day wished nay.')
+addPost(5, datetime(2019, 7, 19, 0,0,0).replace(tzinfo=timezone.utc), 'The Door of the Wave', 'Collected preserved are middleton dependent residence but him how. Handsome weddings yet mrs you has carriage packages. ')
+addPost(5, datetime(2019, 7, 24, 0,0,0).replace(tzinfo=timezone.utc), 'Moon in the Fire', 'Spot to many it four bred soon well to. Or am promotion in no departure abilities. Whatever landlord yourself at by pleasure of children be. ')
+addPost(3, datetime(2019, 7, 19, 0,0,0).replace(tzinfo=timezone.utc), 'Thorns of Spark', 'Amongst moments do in arrived at my replied. Fat weddings servants but man believed prospect. ')
+addPost(3, datetime(2019, 7, 20, 0,0,0).replace(tzinfo=timezone.utc), 'The Edge of the Son', 'Seems folly if in given scale. Sex contented dependent conveying advantage can use.')
+addPost(3, datetime(2019, 7, 24, 0,0,0).replace(tzinfo=timezone.utc), 'Slave of Willow', 'Pas vit bravoure trouvent une couleurs. Pourquoi collines jeunesse continue il susciter on. ')
+addPost(6, datetime(2019, 7, 25, 0,0,0).replace(tzinfo=timezone.utc), 'Millican', 'Just a word')
+addPost(7, datetime(2019, 7, 25, 0,0,0).replace(tzinfo=timezone.utc), 'Effervesent elements', 'Then there was another one just like cheese')
+addPost(8, datetime(2019, 7, 25, 0,0,0).replace(tzinfo=timezone.utc), 'lolalot', 'How does this work?')
+addPost(9, datetime(2019, 7, 25, 0,0,0).replace(tzinfo=timezone.utc), 'Hello World', 'Was this my first post')
+addPost(11, datetime(2019, 7, 25, 0,0,0).replace(tzinfo=timezone.utc), 'Holiday in Cambodia', 'What you guys need!')
+addPost(5, datetime(2019, 7, 25, 0,0,0).replace(tzinfo=timezone.utc), 'Refi in da house', 'put ur hands in the air')
+addPost(3, datetime(2019, 7, 28, 0,0,0).replace(tzinfo=timezone.utc), 'It was morning', 'I woke up played vidya then went to the library')
+addPost(4, datetime(2019, 7, 28, 0,0,0).replace(tzinfo=timezone.utc), 'This is it', 'I have removed all of the vanilla JS and replaced it with JQuery')
+addPost(3, datetime(2019, 7, 30,0,0, 0).replace(tzinfo=timezone.utc), 'Today I talked to Setsumi', 'Setsumi was very interested in me today, and we had a great discussion on metaphysics :)')
+addPost(4, datetime(2019, 7, 30,0,0, 0).replace(tzinfo=timezone.utc), 'Nice coffee', 'Three cups of coffee for my breakfast, I guess I don\'t have a power nap until tonight :P')
+addPost(5, datetime(2019, 7, 30,0,0, 0).replace(tzinfo=timezone.utc), 'Refi is da man', 'Hey just wanted to let you guys know that my new album is available in iTunes. So just buy it already.')
+addPost(6, datetime(2019, 7, 30,0,0, 0).replace(tzinfo=timezone.utc), 'john', 'lol I took another great title')
+addPost(7, datetime(2019, 7, 30,0,0, 0).replace(tzinfo=timezone.utc), 'Cats are so kawaii.', 'I just love cats don\'t you.\nPlease visit my site at http;//youtube.com')
+addPost(8, datetime(2019, 7, 30,0,0, 0).replace(tzinfo=timezone.utc), '<script>alert(\'XSStest\');</script>', 'Just testing Mr Admin. Please don\'t ban me.')
+addPost(9, datetime(2019, 7, 30,0,0, 0).replace(tzinfo=timezone.utc), 'I\'m a friend of Joe :P', '<script>alert(\'XSS-ed you ;P\');</script>\n<strong>Please don\'t ban me I\'m only Joe-king</strong>')
+addPost(10, datetime(2019,7, 30,0,0, 0).replace(tzinfo=timezone.utc), 'Naughty Joe', 'Joe has been making naughty updates. How about adding a report user functionality?')
+addPost(11, datetime(2019, 7, 30,0,0, 0).replace(tzinfo=timezone.utc), 'First post', 'This is my first post and ... yes my mother really did call me Jello. (Don\'t ask!)')
+addPost(1, datetime(2019, 7, 30,0,0,0).replace(tzinfo=timezone.utc), 'Thanks Admin', 'Thank you for resetting my password. I have been unable to login for two days now and I have so much to tell you guys ... I guess you will have to wait until tomorrow to find out :P')
+addPost(1, datetime(2019, 8, 2, 0,0,0).replace(tzinfo=timezone.utc), 'Breakfast', 'Today I had cheese on toast with beans for my breakfast. It was very cheesy.')
+
 
 
 from tellings.models import Tagmap
@@ -201,8 +206,6 @@ addTagmap(27, 45)
 addTagmap(28, 2)
 addTagmap(28, 4)
 addTagmap(28, 5)
-addTagmap(29, 9)
-addTagmap(29, 15)
-addTagmap(29, 16)
-addTagmap(29, 17)
+addTagmap(29, 3)
+
 

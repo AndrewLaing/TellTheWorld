@@ -10,7 +10,7 @@ import django
 from django.test import TestCase
 
 from tellings.forms import *
-from datetime import date
+from datetime import date, timezone
 
 class ChangeUserDetailsFormTests(TestCase):
     """Tests for the ChangeUserDetailsForm form."""
@@ -32,16 +32,22 @@ class ChangeUserDetailsFormTests(TestCase):
 
 class DeleteAccountFormTests(TestCase):
     """Tests for the DeleteAccountForm form."""
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        test_postDate = django.utils.timezone.now()
+        cls.test_postDate = test_postDate.replace(tzinfo=timezone.utc)
+
 
     def test_pass_good_data(self):
-        valid_data = {'deleted_date': '2019-08-12', 
+        valid_data = {'deleted_date': self.test_postDate, 
                      'deleted_reason': 'somethingelse', 
                      'membership_length': 365}
         form = DeleteAccountForm(data=valid_data)
         self.assertTrue(form.is_valid())
         
     def test_pass_bad_data(self):
-        invalid_data = {'deleted_date': '2019-08-12', 
+        invalid_data = {'deleted_date': self.test_postDate, 
                      'deleted_reason': 'somethingelse', 
                      'membership_length': -244}
         form = DeleteAccountForm(data=invalid_data)
@@ -89,13 +95,15 @@ class UserCommentFormTests(TestCase):
         """ Creates the test data used by the methods within this class. """
         cls.user1 = User.objects.create_user('testuser1', 'testUser1@email.com', '@myp455w0rd')
         cls.user2 = User.objects.create_user('testuser2', 'testUser2@email.com', '@myp455w0rd')
-        cls.testpost = UserPost.objects.create(user_id=cls.user1.id, dateOfPost='2019-11-12', 
+        test_postDate = django.utils.timezone.now()
+        cls.test_postDate = test_postDate.replace(tzinfo=timezone.utc)
+        cls.testpost = UserPost.objects.create(user_id=cls.user1.id, dateOfPost=cls.test_postDate, 
                                                postTitle='postTitle 1', postText='postText 1')                               
 
     def test_pass_good_data(self):
         valid_data = {'postID': self.testpost.postID, 
                      'user': self.user2.id, 
-                     'dateOfComment': date.today(),
+                     'dateOfComment': self.test_postDate,
                      'commentText': 'Text for another post'}
         form = UserCommentForm(data=valid_data)
         self.assertTrue(form.is_valid())
@@ -129,13 +137,15 @@ class UserPostFormTests(TestCase):
                             'email': 'testUser1@email.com',
                             'pwd': '@myp455w0rd'
         }
+        test_postDate = django.utils.timezone.now()
+        cls.test_postDate = test_postDate.replace(tzinfo=timezone.utc)
         cls.user1 = User.objects.create_user(cls.credentials['username'], 
                                              cls.credentials['email'],
                                              cls.credentials['pwd'])   
 
     def test_pass_good_data(self):
         valid_data = {'user': self.user1.id, 
-                     'dateOfPost': '2020-01-01', 
+                     'dateOfPost': self.test_postDate, 
                      'postTitle': 'Another post', 
                      'postText': 'Text for another post'}
         form = UserPostForm(data=valid_data)

@@ -2,14 +2,13 @@
 # Filename:     page_extras.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 05/01/2020
+# Last Updated: 25/01/2020
 # Description:  Extra data used on the pages.
-#               At present this contains the random quotes used in the header of each page.
 """
 
 banned_words = [
     '2g1c', '2 girls 1 cup', 'abba-dabba', 'abi-dabi', 'acrotomophilia', 'alabama hot pocket', 
-    'alaskan pipeline', 'anal', 'anilingus', 'anus', 'apeshit', 'arse', 'arsehole', 'aryan', 
+    'alaskan pipeline', 'anal', 'anilingus', 'anus', 'apeshit', 'arse ', 'arsehole', 'aryan', 
     'auto erotic', 'autoerotic', 'baby batter', 'baby juice', 
     'bacon', 'ball gag', 'ball gravy', 'ball kicking', 'ball licking', 'ball sack', 'ball sucking', 
     'bamboola', 'bangbros', 'bareback', 'barely legal', 'bastard', 'beaner', 'beaver cleaver', 
@@ -18,7 +17,7 @@ banned_words = [
     'blonde on blonde action', 'blowjob', 'blow job', 'blow your load', 'blue waffle', 
     'blumpkin', 'bollock', 'bollok', 'boob', 'booty call', 'brown showers', 'brunette action', 
     'bukkake', 'bulldyke', 'bullet vibe', 'bullshit', 'bung hole', 'bunghole', 'busty', 
-    'butt', 'buttcheeks', 'butthole', 'camel toe', 'camgirl', 'camslut', 'camwhore', 'carpet muncher', 
+    'butt ', 'buttcheeks', 'butthole', 'camel toe', 'camgirl', 'camslut', 'camwhore', 'carpet muncher', 
     'carpetmuncher', 'carrot top', 'cheesehead', 'chocolate rosebuds', 'christ', 
     'cleveland steamer', 'clit', 'clitoris', 'clover clamps', 'cock', 'cornhole', ' coon', 
     'creampie', 'cum', 'cumming', 'cunnilingus', 'cunt', 'darkie', 'daterape', 'deep throat', 
@@ -39,14 +38,14 @@ banned_words = [
     'orgasm', 'paedophile', 'panties', 'panty', 'pedobear', 'pedophile', 'pegging', 
     'phone sex', 'piece of shit', 'pikey', 'pleasure chest', 'pole smoker', 'ponyplay', 'poof', 'poon', 
     'poontang', 'poop chute', 'poopchute', 'pubes', 'pussy', 'queaf', 'queef', 'quim', 'rag head', 
-    'raghead', 'raging boner', 'rectum', 'reverse cowgirl', 'rimjob', 'rimming', 'rosy palm', 
+    'raghead', 'raging boner', 'rectum', 'reverse cowgirl', 'rimjob', 'rosy palm', 
     'rusty trombone', 'santorum', 'scat', 'schlong', 'scissoring', 'scrotum', 'semen', 
     'shaved beaver', 'shaved pussy', 'sheep shag', 'shit', 's hit', 'sh1t', 'shota', 'shrimping', 'skeet', 
-    'slanteye', 'slut', 's&m', 'smut', 'snatch', 'snowballing', 'sodomize', 'sodomy', 'spic', 
+    'slanteye', 'slut', 's&m', 'smut', 'snatch', 'snowballing', 'sodomize', 'sodomy', 'spic ', 
     'splooge', 'spooge', 'spread legs', 'spunk', 'strap on', 'strapon', 'strappado', 
     'strip club', 'style doggy', 'swastika', 'tea bagging', 
     'threesome', 'throating', 'tight white', 'titties', 'titty', 'tongue in a', 'tosser', 'towelhead', 
-    'tranny', 'tribadism', 'tub girl', 'tubgirl', 'turd', 'tushy', 'twat', 'two girls one cup', 
+    'tranny', 'tribadism', 'tub girl', 'tubgirl', ' turd', 'tushy', 'twat', 'two girls one cup', 
     'upskirt', 'up the bum', 'urethra play', 'urophilia', 'vagina', 'venus mound', 'vibrator', 'violet wand', 
     'wank', 'wetback', 'white power', 'whore', 'wrinkled starfish', 'yellow showers', 'zoophilia'
 ]

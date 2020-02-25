@@ -10,7 +10,7 @@ import django
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.urls import reverse
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 
 from tellings.models import *
 import json
@@ -37,7 +37,8 @@ class SharedVariables:
     partial_credentials = {'username': 'testuser1'}
 
     today = date.today()
-    test_postDate = today.strftime("%Y-%m-%d")
+    test_postDate = django.utils.timezone.now()
+    test_postDate = test_postDate.replace(tzinfo=timezone.utc)
     test_postTitle = 'PT_title'
     test_postText = 'PT_text'        
     test_postTitle1 = 'PT_title_1'
@@ -61,8 +62,7 @@ class SharedTestMethods(TestCase):
         self.assertTemplateUsed(response, 'tellings/includes/navbar.html')
         self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
 
-    def createPostRecord(self, userID=1, dateOfPost='2019-08-02', 
-                         postTitle='Post Title', postText='Post Text'):
+    def createPostRecord(self, userID, dateOfPost, postTitle, postText):
         """ Creates a new UserPost record """
         return UserPost.objects.create(user_id=userID, dateOfPost=dateOfPost, 
                      postTitle=postTitle, postText=postText)
@@ -492,8 +492,10 @@ class AddUpdateModalTests(SharedTestMethods):
     def test_GET_loggedin_hasPostedToday(self):
         """ Tests the behaviour if the user has already posted
             an update today. """
-        self.createPostRecord(userID=self.user1.id, dateOfPost=self.test_postDate, 
-                              postTitle=self.test_postTitle1, postText=self.test_postText1)
+        self.createPostRecord(userID=self.user1.id, 
+                              dateOfPost=self.test_postDate, 
+                              postTitle=self.test_postTitle1, 
+                              postText=self.test_postText1)
 
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
@@ -519,8 +521,10 @@ class AddUpdateModalTests(SharedTestMethods):
     def test_POST_loggedin_hasPostedToday(self):
         """ Tests the behaviour if the user has already posted
             an update today. """
-        self.createPostRecord(userID=self.user1.id, dateOfPost=self.test_postDate, 
-                              postTitle=self.test_postTitle1, postText=self.test_postText1)
+        self.createPostRecord(userID=self.user1.id, 
+                              dateOfPost=self.test_postDate, 
+                              postTitle=self.test_postTitle1, 
+                              postText=self.test_postText1)
 
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
@@ -927,8 +931,10 @@ class DeleteUserPostViewTests(SharedTestMethods):
         self.post_no_data_redirect_to_errorpage_tests()
 
     def test_POST_validDelete(self):
-        self.createPostRecord(userID=self.user1.id, dateOfPost=self.test_postDate, 
-                              postTitle=self.test_postTitle1, postText=self.test_postText1)
+        self.createPostRecord(userID=self.user1.id, 
+                              dateOfPost=self.test_postDate, 
+                              postTitle=self.test_postTitle1, 
+                              postText=self.test_postText1)
         post = UserPost.objects.latest('postID')
         test_postID = post.postID
         test_validDelete = {
@@ -947,8 +953,10 @@ class DeleteUserPostViewTests(SharedTestMethods):
         self.assertFalse(postStillExists)
 
     def test_POST_invalidDelete(self):
-        self.createPostRecord(userID=self.user1.id, dateOfPost=self.test_postDate, 
-                              postTitle=self.test_postTitle1, postText=self.test_postText1)
+        self.createPostRecord(userID=self.user1.id, 
+                              dateOfPost=self.test_postDate, 
+                              postTitle=self.test_postTitle1, 
+                              postText=self.test_postText1)
         post = UserPost.objects.latest('postID')
         test_postID = post.postID
         test_invalidDelete = {
@@ -1142,8 +1150,10 @@ class EditUserPostViewTests(SharedTestMethods):
     def test_GET_loggedin(self):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
-        self.createPostRecord(userID=self.user1.id, dateOfPost=self.test_postDate, 
-                              postTitle=self.test_postTitle1, postText=self.test_postText1)
+        self.createPostRecord(userID=self.user1.id, 
+                              dateOfPost=self.test_postDate, 
+                              postTitle=self.test_postTitle1, 
+                              postText=self.test_postText1)
         response = self.client.get(self.testGETURL)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, self.templateURL)
@@ -1155,8 +1165,10 @@ class EditUserPostViewTests(SharedTestMethods):
         self.post_no_data_redirect_to_errorpage_tests()       
 
     def test_POST_validEdit(self):
-        self.createPostRecord(userID=self.user1.id, dateOfPost=self.test_postDate, 
-                              postTitle=self.test_postTitle1, postText=self.test_postText1)
+        self.createPostRecord(userID=self.user1.id, 
+                              dateOfPost=self.test_postDate, 
+                              postTitle=self.test_postTitle1, 
+                              postText=self.test_postText1)
         post = UserPost.objects.latest('postID')
         test_postID = post.postID
         test_validEdit = {
@@ -1177,8 +1189,10 @@ class EditUserPostViewTests(SharedTestMethods):
         self.assertEqual(self.test_newPostText, editedField)   
 
     def test_POST_censored(self):
-        self.createPostRecord(userID=self.user1.id, dateOfPost=self.test_postDate, 
-                              postTitle=self.test_postTitle1, postText=self.test_postText1)
+        self.createPostRecord(userID=self.user1.id, 
+                              dateOfPost=self.test_postDate, 
+                              postTitle=self.test_postTitle1, 
+                              postText=self.test_postText1)
         post = UserPost.objects.latest('postID')
         test_postID = post.postID
         test_validEdit = {
@@ -1199,8 +1213,10 @@ class EditUserPostViewTests(SharedTestMethods):
         self.assertNotEqual(self.test_bannedText, editedField)
 
     def test_POST_invalidEdit(self):
-        self.createPostRecord(userID=self.user1.id, dateOfPost=self.test_postDate, 
-                              postTitle=self.test_postTitle1, postText=self.test_postText1)
+        self.createPostRecord(userID=self.user1.id, 
+                              dateOfPost=self.test_postDate, 
+                              postTitle=self.test_postTitle1,
+                              postText=self.test_postText1)
         post = UserPost.objects.latest('postID')
         test_postID = post.postID
         test_invalidEdit = {
@@ -1295,7 +1311,10 @@ class HasPostedTodayViewTests(SharedTestMethods):
     def test_GET_has_posted(self):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
-        self.createPostRecord(self.user1.id, dateOfPost=self.test_postDate)
+        self.createPostRecord(self.user1.id, 
+                              self.test_postDate, 
+                              self.test_postTitle, 
+                              self.test_postText)
         response = self.client.get((reverse(self.viewname)), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "true")
@@ -1306,7 +1325,10 @@ class HasPostedTodayViewTests(SharedTestMethods):
     def test_POST_loggedin(self):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
-        self.createPostRecord(self.user1.id, dateOfPost=self.test_postDate)
+        self.createPostRecord(self.user1.id, 
+                              self.test_postDate, 
+                              self.test_postTitle, 
+                              self.test_postText)
         response = self.client.post((reverse(self.viewname)), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "true")
@@ -1719,7 +1741,8 @@ class TitleExistsViewTests(SharedTestMethods):
         cls.user1 = User.objects.create_user(cls.credentials1['username'], 
                                              cls.credentials1['email'],
                                              cls.credentials1['pwd'])
-        
+
+        cls.test_postDate = SV.test_postDate
         cls.test_postTitle = SV.test_postTitle
         cls.test_postText = SV.test_postText
 
@@ -1741,8 +1764,10 @@ class TitleExistsViewTests(SharedTestMethods):
     def test_POST_title_not_exists(self):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
-        self.createPostRecord(userID=self.user1.id, dateOfPost='2019-08-02', 
-                        postTitle=self.test_postTitle, postText=self.test_postText)
+        self.createPostRecord(userID=self.user1.id, 
+                              dateOfPost=self.test_postDate, 
+                              postTitle=self.test_postTitle, 
+                              postText=self.test_postText)
         response = self.client.post(reverse(self.viewname), 
                                     self.test_notexists, follow=True)
         self.assertEqual(response.status_code, 200)
@@ -1751,8 +1776,10 @@ class TitleExistsViewTests(SharedTestMethods):
     def test_POST_title_exists(self):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
-        self.createPostRecord(userID=self.user1.id, dateOfPost='2019-08-02', 
-                        postTitle=self.test_postTitle, postText=self.test_postText)
+        self.createPostRecord(userID=self.user1.id, 
+                              dateOfPost=self.test_postDate, 
+                              postTitle=self.test_postTitle, 
+                              postText=self.test_postText)
         response = self.client.post(reverse(self.viewname), 
                                     self.test_exists, follow=True)
         self.assertEqual(response.status_code, 200)

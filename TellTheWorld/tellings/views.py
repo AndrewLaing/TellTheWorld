@@ -1,9 +1,10 @@
 # Filename:     views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last updated: 13/02/2020
+# Last updated: 25/02/2020
 # Description:  Contains the views for the website.
 
+import django.utils.timezone
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm, UserCreationForm
@@ -11,15 +12,14 @@ from django.contrib.auth.hashers import check_password
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.utils.translation import gettext as _
 from django.views import View, generic 
 
 from tellings.forms import *
 from tellings.page_extras import banned_words
 
-import random, json
-from datetime import datetime, date, timedelta, timezone
+from datetime import timedelta, timezone
 
 # #########################################################################################
 # SHARED FUNCTIONS ------------------------------------------------------------------------
@@ -47,7 +47,7 @@ def user_has_posted_today(request):
     :returns: True if the user has posted an update today, otherwise false.
     """
     current_userID = request.user.id
-    yesterday = date.today() - timedelta(1)
+    yesterday = django.utils.timezone.now() - timedelta(1)
     return UserPost.objects.filter(user=current_userID).filter(dateOfPost__gt=yesterday).exists()
 
 def user_login(request):
@@ -150,7 +150,7 @@ class AccountDeletedPage(LoginRequiredMixin, View):
             u = request.user
 
             # Create a DeletedAccount record
-            deleted_date = datetime.now(timezone.utc)
+            deleted_date = django.utils.timezone.now()
             date_joined = u.date_joined
             membership_length = deleted_date - date_joined
 
@@ -603,7 +603,7 @@ class AddNewUpdate(LoginRequiredMixin, View):
             # make a copy of POST to add user to as this is not supplied by the form       
             request.POST = request.POST.copy()
             request.POST['user'] = request.user.id
-            request.POST['dateOfPost'] = date.today()
+            request.POST['dateOfPost'] = django.utils.timezone.now()
 
             form = UserPostForm(request.POST)
             if form.is_valid():
@@ -670,7 +670,7 @@ class AddUserComment(LoginRequiredMixin, View):
             # make a copy of POST to add fields not supplied by the client                   
             request.POST = request.POST.copy()
             request.POST['user'] = request.user.id
-            request.POST['dateOfComment'] = date.today()
+            request.POST['dateOfComment'] = django.utils.timezone.now()
 
             form = UserCommentForm(request.POST)
             
@@ -938,7 +938,7 @@ class EditUserComment(LoginRequiredMixin, generic.UpdateView):
         if(userComment.user.username == request.user.username):
             try:
                 # Update the record (sql injection-safe)
-                today = date.today()
+                today = django.utils.timezone.now()
                 UserComment.objects.filter(commentID=in_commentID).update(commentText=in_commentText, dateOfEdit=today)
                 return HttpResponse("true")
             except:
@@ -991,7 +991,7 @@ class EditUserPost(LoginRequiredMixin, generic.UpdateView):
         if(userPost.user.username == request.user.username):
             try:
                 # Update the record (sql injection-safe)
-                today = date.today()
+                today = django.utils.timezone.now()
                 UserPost.objects.filter(postID=in_postID).update(postText=in_postText, dateOfEdit=today)
                 return HttpResponse("true")
             except:

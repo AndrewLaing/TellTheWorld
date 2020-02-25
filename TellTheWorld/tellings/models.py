@@ -6,10 +6,10 @@ class UserPost(models.Model):
     # db_column forces the use of this name (otherwise Django names it user_Id)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                              db_column='user')
-    dateOfPost = models.DateField()
+    dateOfPost = models.DateTimeField()
     postTitle = models.CharField(max_length=35, unique=True)
     postText = models.CharField(max_length=255)
-    dateOfEdit = models.DateField(null=True, blank=True)
+    dateOfEdit = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.postTitle
@@ -59,9 +59,9 @@ class UserComment(models.Model):
     postID = models.ForeignKey(UserPost, on_delete=models.CASCADE, db_column='postID')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                              db_column='user')
-    dateOfComment = models.DateField()
+    dateOfComment = models.DateTimeField()
     commentText = models.CharField(max_length=255)
-    dateOfEdit = models.DateField(null=True, blank=True)
+    dateOfEdit = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.commentText
@@ -72,7 +72,7 @@ class UserComment(models.Model):
         
 
 class DeletedAccount(models.Model):
-    deleted_date = models.DateField()
+    deleted_date = models.DateTimeField()
     deleted_reason = models.CharField(max_length=15)
     membership_length = models.PositiveIntegerField(default=0)  # in days
 
