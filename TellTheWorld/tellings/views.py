@@ -1,7 +1,7 @@
 # Filename:     views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last updated: 25/02/2020
+# Last updated: 26/02/2020
 # Description:  Contains the views for the website.
 
 import django.utils.timezone
@@ -597,8 +597,7 @@ class AddNewUpdate(LoginRequiredMixin, View):
             elif contains_banned_word(postText):
                 return HttpResponse('censored')  
             elif contains_banned_word(postTags):
-                return HttpResponse('censored')  
-            
+                return HttpResponse('censored')    
 
             # make a copy of POST to add user to as this is not supplied by the form       
             request.POST = request.POST.copy()
@@ -641,7 +640,6 @@ class AddUpdateModal(LoginRequiredMixin, View):
         :returns: A HTML page.
         """
         # Ensure that the user has not posted today
-        current_user_id = request.user.id
         if user_has_posted_today(request):
             return HttpResponse('false')
 

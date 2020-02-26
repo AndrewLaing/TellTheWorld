@@ -250,6 +250,10 @@ body {
   width: 100%;
 }
 
+.tagLink {
+  padding-left: 1em;
+}
+
 
 .modal-footer {
   background-color: #F9F9F9;

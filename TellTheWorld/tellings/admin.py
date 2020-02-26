@@ -3,7 +3,7 @@ from .models import *
 
 
 class UserPostsAdmin(admin.ModelAdmin):
-    fields = ['user', 'dateOfPost','postTitle','postText','isEdited', 'dateOfEdit']
+    fields = ['user', 'dateOfPost','postTitle','postText', 'dateOfEdit']
 
 
 class TagAdmin(admin.ModelAdmin):
@@ -13,13 +13,11 @@ class TagAdmin(admin.ModelAdmin):
 class TagmapAdmin(admin.ModelAdmin):
     fields = ['postID','tagID']
     list_display = ('postID', 'tagID')
-    list_filter = ['postID', 'tagID']
 
 
 class UserCommentAdmin(admin.ModelAdmin):
     fields = ['postID', 'user', 'dateOfComment', 'dateOfEdit', 'commentText'] 
     list_display = ('postID', 'user', 'dateOfComment', 'dateOfEdit', 'commentText')
-    list_filter = ['postID', 'user', 'dateOfComment', 'dateOfEdit']
 
 
 class DeletedAccountAdmin(admin.ModelAdmin):

@@ -84,9 +84,9 @@
                   </span>
                   {# Add the tags #}
                   <span class="align-panel-footer-text-right">
-                  {% for tag in item.post_tags %}
-                    <a href="{% url 'tellings:myupdates' %}?tagName={{ tag }}" name="{{ tag }}">{{ tag }}</a>
-                    &nbsp;&nbsp;|&nbsp;&nbsp;  
+                  {% for tag in item.post_tags %} 
+                    <a class="tagLink" href="{% url 'tellings:myupdates' %}?tagName={{ tag }}" name="{{ tag }}">{{ tag }}</a>
+                     
                   {% endfor %}  
                   </span>          
                 </div>

@@ -122,6 +122,7 @@ $(document).ready(function(){
         alert("Error - both fields must be completed!");
         return false;
       }
+      $('#loginModal').modal('hide');
       return true;
     };
   
@@ -208,6 +209,8 @@ $(document).ready(function(){
         alert("Please complete ALL of the data fields!");
         return false;
       }
+
+      $('#addUpdateModal').modal('hide');
       return true;
     };
   
@@ -252,8 +255,9 @@ $(document).ready(function(){
     /**
      * Hides the addUpdateModal modal.
      */
-    $.hideAddUpdateModal = function() {
-      $("#addUpdateModal").modal('toggle');            
+    $.errorAddUpdateModal = function(msg) {
+      $('#addUpdateModal').modal('show');
+      alert(msg);        
     };
   
   
@@ -277,15 +281,14 @@ $(document).ready(function(){
         if (status === 'success') {
           if(data==='true') {
             alert('Your update has been added.');
-            $.hideAddUpdateModal()
             location.reload();
           } else if (data === 'censored') {
             alert('Sorry, we cannot accept your post data as it contains one or more banned words. The update has been censored. You can either now post the censored version of the update, or rewrite it with the banned words omitted.  Please refer to our acceptable usage policy for guidance.');
             $.censorNewUpdateModal();
           } else if (data!=='false') {
-            alert("Database error: please contact the administrator.");    
+            $.errorAddUpdateModal("Database error: please contact the administrator.");    
           } else {
-            alert('Sorry. Unable to add your update.');
+            $.errorAddUpdateModal('Sorry. Unable to add your update.');
           }    
         }
         else {
@@ -404,7 +407,6 @@ $(document).ready(function(){
         csrfmiddlewaretoken: csrftoken
       },
       function (data, status) {
-        //alert("Data: " + data + "\nStatus: " + status);
         if (status === 'success') {
           if (data === 'true' || data === 'false') {
             $.confirm_deleteAccount(data);
@@ -527,7 +529,8 @@ $(document).ready(function(){
       var ele_postTitle = $("#postTitle");
       var ele_postText  = $("#postText");
       var ele_postTags = $("#tagDiv");
-  
+
+      $('#addUpdateModal').modal('show');
       $.censorElementText(ele_postTitle);
       $.censorElementText(ele_postText);
       $.censorPostTags(ele_postTags);
@@ -934,6 +937,9 @@ $(document).ready(function(){
       * This callback is used because of the Asychronous nature of AJAX
       */
     $.postedCommentCallback = function (post_reply_btn, postID, response) {
+      // Reenable the post reply button because the comment post has been dealt with
+      post_reply_btn.prop('disabled', false);
+
       if (response == 'false') {
         alert("Error: Unable to add your comment! Please contact the administrator!");
         return false;
@@ -950,17 +956,24 @@ $(document).ready(function(){
       post_reply_btn.parent().slideToggle();
   
       var commentSection = post_reply_btn.parent().siblings('.user-comment-section');
-  
+
       if(commentSection.is(":visible")){
         // If the comment section is visible trigger the viewcomments button
         // to update it, showing the newly posted comment
+        alert("Your comment has been posted.");
+
         $comments_btn = commentSection.siblings('.view_comments_btn');
-  
         $comments_btn.trigger('click'); // hide comments
         $comments_btn.trigger('click'); // show comments
       } else {
         alert("Your comment has been posted.");
       }
+    };
+
+
+    $errorPostComment = function(post_reply_btn, msg) {
+      post_reply_btn.prop('disabled', false);
+      alert(msg);
     };
   
   
@@ -969,7 +982,10 @@ $(document).ready(function(){
       */
     $.postComment = function (postBtnElement, in_postID, in_commentText) {
       var csrftoken = getCookie('csrftoken');
-  
+
+      // Disable the post button to stop the user from spamming comments
+      postBtnElement.prop('disabled', true);
+
       $.post("/addusercomment/",
       {
         postID: in_postID,
@@ -983,11 +999,11 @@ $(document).ready(function(){
           } else if (data == 'censored') {
             $.postedCommentCallback(postBtnElement, in_postID, 'censored');
           } else {
-            alert("Error: Unable to add your comment! Please contact the administrator!");
+            $errorPostComment(postBtnElement, "Error: Unable to add your comment! Please contact the administrator!");
           }
         }
         else {
-          alert("Error: Unable to add your comment! Please contact the administrator!");
+          $errorPostComment(postBtnElement, "Error: Unable to add your comment! Please contact the administrator!");
         }
       });
     };
