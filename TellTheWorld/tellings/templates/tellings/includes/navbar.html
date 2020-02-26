@@ -3,79 +3,94 @@
  * Filename:     navbar.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 27/01/2020
+ * Last updated: 26/02/2020
  * Description:  This is used to create the navbar according to the user's 
  *               logged in status.
 
  * Note:         Files which include this script must also extend base.html.
  * -------------------------------------------------------------------------------
 {% endcomment %} 
+<div class="container-fluid">
 
-<ul class="nav navbar-nav">
-  <li class="nav-item">
-    <a class="nav-link" href="{% url 'tellings:index' %}">Home</a>
-  </li>
-  {% if user.is_authenticated %}
-    <li class="nav-item">
-      <a class="nav-link" href="{% url 'tellings:newupdates' %}">New Updates</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="{% url 'tellings:tags' %}">Tags</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="{% url 'tellings:myupdates' %}">My Updates</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" id="addUpdateBtn" href="javascript:void(0);">Add New Update</a>
-    </li>
-  {% endif %}
-</ul>
+  <!-- Brand and toggle get grouped for better mobile display -->
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="{% url 'tellings:index' %}">Home</a>
+  </div>
 
-<ul class="nav navbar-nav navbar-right">
-  <li class="dropdown">
-    <a class="dropdown-toggle" data-toggle="dropdown" href="#">About</a>
-    <ul class="dropdown-menu">
-      <li class="nav-item dropdown-menu-item">
-        <a class="nav-link" href="{% url 'tellings:about' %}">About us</a>
-      </li>
-      <li class="nav-item dropdown-menu-item">
-        <a class="nav-link" href="{% url 'tellings:missionstatement' %}">Mission Statement</a>
-      </li>
-      <li class="nav-item dropdown-menu-item">
-        <a class="nav-link" href="{% url 'tellings:acceptableusage' %}">Acceptable Usage Policy</a>
-      </li>
-          <li class="nav-item dropdown-menu-item">
-        <a class="nav-link" href="{% url 'tellings:privacypolicy' %}">Privacy Policy</a>
-      </li>
-      <li class="nav-item dropdown-menu-item">
-        <a class="nav-link" href="{% url 'tellings:termsandconditions' %}">Terms and Conditions</a>
-      </li>
+  <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+    {# LEFT NAVBAR #}
+    <ul class="nav navbar-nav">
+      {% if user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'tellings:newupdates' %}">New Updates</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'tellings:tags' %}">Tags</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'tellings:myupdates' %}">My Updates</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="addUpdateBtn" href="javascript:void(0);">Add New Update</a>
+        </li>
+      {% endif %}
     </ul>
 
-  {% if user.is_authenticated %}
-    <li class="dropdown">
-      <a class="dropdown-toggle" data-toggle="dropdown" href="#">My Account</a>
-      <ul class="dropdown-menu">
-        <li class="nav-item dropdown-menu-item">
-          <a class="nav-link" href="{% url 'tellings:changeuserdetails' %}">Change Account Details</a>
+    {# RIGHT NAVBAR #}
+    <ul class="nav navbar-nav navbar-right">
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#">About</a>
+        <ul class="dropdown-menu">
+          <li class="nav-item dropdown-menu-item">
+            <a class="nav-link" href="{% url 'tellings:about' %}">About us</a>
+          </li>
+          <li class="nav-item dropdown-menu-item">
+            <a class="nav-link" href="{% url 'tellings:missionstatement' %}">Mission Statement</a>
+          </li>
+          <li class="nav-item dropdown-menu-item">
+            <a class="nav-link" href="{% url 'tellings:acceptableusage' %}">Acceptable Usage Policy</a>
+          </li>
+              <li class="nav-item dropdown-menu-item">
+            <a class="nav-link" href="{% url 'tellings:privacypolicy' %}">Privacy Policy</a>
+          </li>
+          <li class="nav-item dropdown-menu-item">
+            <a class="nav-link" href="{% url 'tellings:termsandconditions' %}">Terms and Conditions</a>
+          </li>
+        </ul>
+
+      {% if user.is_authenticated %}
+        <li class="dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="#">My Account</a>
+          <ul class="dropdown-menu">
+            <li class="nav-item dropdown-menu-item">
+              <a class="nav-link" href="{% url 'tellings:changeuserdetails' %}">Change Account Details</a>
+            </li>
+            <li class="nav-item dropdown-menu-item">
+              <a class="nav-link" href="{% url 'tellings:changepassword' %}">Change Password</a>
+            </li>
+            <li class="nav-item dropdown-menu-item">
+              <a class="nav-link" id="deleteAccountBtn" href="javascript:void(0);">Delete My Account</a>
+            </li>
+          </ul>
         </li>
-        <li class="nav-item dropdown-menu-item">
-          <a class="nav-link" href="{% url 'tellings:changepassword' %}">Change Password</a>
+        <li class="nav-item">
+            <a href="{% url 'logout' %}" onclick="return $.confirm_logout();">Log out</a>
         </li>
-        <li class="nav-item dropdown-menu-item">
-          <a class="nav-link" id="deleteAccountBtn" href="javascript:void(0);">Delete My Account</a>
+      {% else %}
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'tellings:signup' %}">Sign Up</a>
         </li>
-      </ul>
-    </li>
-    <li class="nav-item">
-        <a href="{% url 'logout' %}" onclick="return $.confirm_logout();">Log out</a>
-    </li>
-  {% else %}
-    <li class="nav-item">
-        <a class="nav-link" href="{% url 'tellings:signup' %}">Sign Up</a>
-    </li>
-    <li class="nav-item">
-        <a href="javascript:void(0);" id="loginBtn">Login</a>
-    </li>
-  {% endif %}
-</ul>
+        <li class="nav-item">
+            <a href="javascript:void(0);" id="loginBtn">Login</a>
+        </li>
+      {% endif %}
+    </ul>
+
+</div>
+</div>
