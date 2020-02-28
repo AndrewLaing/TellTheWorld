@@ -15,6 +15,7 @@
 
   <div class="container-fluid main-content"> 
     <div class="container currentUserUpdates" id="userUpdates">
+        <h2>My updates</h2>
         {% if userpost_list %}
         {% load static %}
         {% regroup userpost_list by dateOfPost|date:"M. d Y" as ordered_post_list %}
@@ -31,7 +32,7 @@
                   {# Post title and username #}
                   <div class="col-sm-8 panel-postTitle">
                     <p><a href="{% url 'tellings:myupdates' %}" name="{{ item.user }}">
-                       {{ item.user }} says</a> ... {{ item.postTitle }}</p>
+                       {{ item.user }} says</a> ... <span id="postTitle_{{ item.postID }}">{{ item.postTitle }}</span></p>
                   </div>
 
                   {# Show collapse, edit/hide/delete dropdown #} 

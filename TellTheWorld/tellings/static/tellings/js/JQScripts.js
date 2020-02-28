@@ -56,6 +56,14 @@ $(document).ready(function(){
      */
     $(function( ){
       var current = location.pathname;
+
+      // If on the homepage change bg colour of brand
+      if( $('.navbar-brand').attr('href').indexOf(current) !== -1) {
+        $(".navbar-brand").css("backgroundColor", "black");
+        $(".navbar-brand").css("color", "white");
+        return;
+      }
+
       // Only allow one page to be marked as active
       count = 0;
   
