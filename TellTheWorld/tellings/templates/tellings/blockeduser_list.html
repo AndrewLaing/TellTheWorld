@@ -1,0 +1,31 @@
+{% extends 'tellings/base.html' %}
+{% block title %}Tell the World{% endblock title %} 
+
+{% comment %} 
+ * -------------------------------------------------------------------------------
+ * Filename:     blockeduser_list.html
+ * Author:       Andrew Laing
+ * Email:        parisianconnections@gmail.com
+ * Last updated: 29/02/2020
+ * Description:  Template used for creating the BlockedUsers html.
+ * -------------------------------------------------------------------------------
+{% endcomment %}
+
+{% block content %}
+
+
+<div class="container-fluid main-content"> 
+    <div class="container currentUserUpdates" id="userUpdates">
+
+      <h2>Blocked Users</h2>
+      <p>Je n'aime pas, pas, pas, pas. Va a la poubelle</p>
+      {% if blockeduser_list %}
+      {% for item in blockeduser_list %}
+        <p>You blocked {{ item.blockedUser }}</p>
+      {% endfor %}
+      {% else %}
+        <p class="user-no-comments-text">YOU have not blocked any users. (YAY)</p>
+      {% endif %} 
+    </div>
+</div>
+{% endblock %}

@@ -543,8 +543,49 @@ $(document).ready(function(){
       $.censorElementText(ele_postText);
       $.censorPostTags(ele_postTags);
     };
-  
-  
+
+
+    $.confirm_block_user = function(username) {
+      var msg = "Are you sure that you want to block '" + username + "'?"
+      msg = msg + " Blocking posts by this user means that you will no longer be able to see their posts or comments, and that they will no longer be able to see your posts/comments."
+      return confirm(msg);
+    };
+
+
+    $.block_user = function(in_username) {
+      var msg = "Blocking ";
+
+      if($.confirm_block_user(in_username)==true) {
+        var csrftoken = getCookie('csrftoken');
+
+        $.post("/blockuser/",
+        {
+          username: in_username,
+          csrfmiddlewaretoken: csrftoken,
+        },
+        function (data, status) {
+          if (status === 'success') {
+            if (data === 'true') {
+              alert('You have successfully blocked the user.');
+              location.reload();
+            } else if (data === 'admin') {
+              alert('Sorry, we cannot allow you to block posts or comments from an administrator. If you wish to complain about the posts or comments of an administrator, please send an email to manager@ttw.com. All complaints will be dealt with confidentially.');
+            } else {
+              alert(data);
+            }
+          }
+          else {
+            alert("Database error: please contact the administrator.");
+          }
+        });     
+      }
+      else {
+        alert("Cancelled");
+      } 
+    };
+
+
+
     /** -----------------------------------------------------------------
      *           EDIT COMMENT METHODS
      * ------------------------------------------------------------------

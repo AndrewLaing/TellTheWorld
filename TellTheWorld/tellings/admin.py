@@ -24,7 +24,15 @@ class DeletedAccountAdmin(admin.ModelAdmin):
     fields = ['deleted_date', 'deleted_reason', 'membership_length' ] 
     list_display = ('deleted_date', 'deleted_reason', 'membership_length')
     list_filter = ['deleted_date', 'deleted_reason', 'membership_length' ]
-        
+
+
+class HiddenPostAdmin(admin.ModelAdmin):
+    fields = ['postID', 'hideFrom']
+    list_display = ('postID', 'hideFrom')
+
+class BlockedUserAdmin(admin.ModelAdmin):
+    fields = ['blockedUser', 'blockedBy']
+    list_display = ('blockedUser', 'blockedBy')
 
 
 admin.site.register(UserPost, UserPostsAdmin)
@@ -32,3 +40,8 @@ admin.site.register(Tag, TagAdmin)
 admin.site.register(Tagmap, TagmapAdmin)
 admin.site.register(UserComment, UserCommentAdmin)
 admin.site.register(DeletedAccount, DeletedAccountAdmin)
+admin.site.register(HiddenPost, HiddenPostAdmin)
+admin.site.register(BlockedUser, BlockedUserAdmin)
+
+
+

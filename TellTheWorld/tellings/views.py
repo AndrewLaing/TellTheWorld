@@ -48,7 +48,7 @@ def user_has_posted_today(request):
     """
     current_userID = request.user.id
     yesterday = django.utils.timezone.now() - timedelta(1)
-    return UserPost.objects.filter(user=current_userID).filter(dateOfPost__gt=yesterday).exists()
+    return UserPost.objects.filter(user=current_userID, dateOfPost__gt=yesterday).exists()
 
 def user_login(request):
     """ Handles user authentication.
@@ -171,6 +171,29 @@ class AccountDeletedPage(LoginRequiredMixin, View):
             return render(request, 'tellings/accountDeleted.html')
         except:
             return HttpResponseRedirect('/errorpage/')
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+class BlockedUserListView(LoginRequiredMixin, generic.ListView):
+    """ Creates the BlockedUser page for the website."""
+    model = BlockedUser
+    template_name = "tellings/blockeduser_list.html"
+    paginate_by = 20
+    http_method_names = ['get']
+ 
+    def get_queryset(self):
+      current_user = self.request.user
+      return BlockedUser.objects.filter(blockedBy=current_user)
+
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
 
 
 class ChangePasswordPage(LoginRequiredMixin, View):
@@ -357,7 +380,7 @@ class MyUpdatesListView(LoginRequiredMixin, generic.ListView):
                 tagID = Tag.objects.get(tagName=tagName_val).tagID
                 tagmaps = Tagmap.objects.filter(tagID=tagID)
                 postList = [tm.postID.postID for tm in tagmaps]
-                qs = qs.filter(postID__in=postList).filter(user=user_id).order_by('-dateOfPost') 
+                qs = qs.filter(postID__in=postList, user=user_id).order_by('-dateOfPost') 
             except:
                 # If the user tries to search for a non existing tag, return all posts instead
                 qs = qs.filter(user=user_id).order_by('-dateOfPost')
@@ -384,6 +407,29 @@ class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
     paginate_by = 10
     http_method_names = ['get', 'post']
 
+    def blockedByUser(self):
+        """ Returns a list of the users blocked by the currently loggedin user. 
+
+            :returns: A list of User objects.   
+        """
+        current_user = self.request.user
+        blockedUsers = BlockedUser.objects.filter(blockedBy=current_user)
+        return [blocked.blockedUser for blocked in blockedUsers]    
+
+
+    def posts_filtered_by_blocked(self):
+        """ Returns a queryset of all UserPosts excluding those from users 
+            blocked by the currently logged in user
+
+            :returns: A filtered queryset of UserPosts.
+        """
+        # Get list of users blocked by logged in user
+        blockedList = self.blockedByUser()
+        if blockedList:
+            return UserPost.objects.exclude(user__in=blockedList).order_by('-dateOfPost')
+        else:
+            return UserPost.objects.all().order_by('-dateOfPost')
+
     def get_queryset(self):
         tagName_val = False
         username_val = False
@@ -394,22 +440,20 @@ class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
             if 'userName' in self.request.GET:
                 username_val = self.request.GET.get('userName', False)
                 user_id = User.objects.get(username=username_val).id
-                
+                      
         if tagName_val:  # get posts for current user filtered by tagname
             tagID = Tag.objects.get(tagName=tagName_val).tagID
             tagmaps = Tagmap.objects.filter(tagID=tagID)
-            postList = [tm.postID.postID for tm in tagmaps]        
-        
+            postList = [tm.postID.postID for tm in tagmaps]  
+            filteredPosts = self.posts_filtered_by_blocked()  
             if username_val:
-                new_context = UserPost.objects.filter(postID__in=postList).filter(user=user_id).order_by('-dateOfPost') 
+                return filteredPosts.filter(postID__in=postList, user=user_id).order_by('-dateOfPost') 
             else:
-                new_context = UserPost.objects.filter(postID__in=postList).order_by('-dateOfPost') 
+                return filteredPosts.filter(postID__in=postList).order_by('-dateOfPost') 
         elif username_val:
-            new_context = UserPost.objects.filter(user=user_id).order_by('-dateOfPost') 
-        else:            # get all posts
-            new_context = UserPost.objects.all().order_by('-dateOfPost')
-        
-        return new_context
+            return UserPost.objects.filter(user=user_id).order_by('-dateOfPost') 
+        else: 
+            return self.posts_filtered_by_blocked()
 
     def get_context_data(self, **kwargs):
         context = super(NewUpdatesListView, self).get_context_data(**kwargs)  
@@ -544,15 +588,18 @@ class UserCommentListView(LoginRequiredMixin, generic.ListView):
         if self.request.method == 'GET':
             if 'postID' in self.request.GET:
                 postID_val = self.request.GET.get('postID', False) 
-       
+
         if postID_val:
-            new_context = UserComment.objects.filter(postID=postID_val).order_by('-dateOfComment') 
-        
+            current_user = self.request.user
+            blockedUsers = BlockedUser.objects.filter(blockedBy=current_user)
+            blockedList = [blocked.blockedUser for blocked in blockedUsers]
+            new_context = UserComment.objects.filter(postID=postID_val).exclude(user__in=blockedList).order_by('-dateOfComment')
+
         return new_context
 
     def get_context_data(self, **kwargs):
         """ Adds the current logged in user's name to the context data, to allow
-            comment editing/deleting only on their posts. """
+            comment editing/deleting only on their own posts. """
         context = super(UserCommentListView, self).get_context_data(**kwargs)  
         current_username = user_id = self.request.user.username
         context['current_username'] = current_username
@@ -680,7 +727,47 @@ class AddUserComment(LoginRequiredMixin, View):
         else:
             return HttpResponseRedirect('/errorpage/')
 
- 
+
+class BlockUser(LoginRequiredMixin, View):
+    """ An AJAX handler used to add a new BlockedUser record to the database."""
+    http_method_names = ['post']
+
+    def post(self, request):
+        """ Handles POST requests.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A string 'true' if the user was successfully blocked,
+                  'admin' if the user was trying to block an admin,
+                  otherwise a redirect to the error page if POST data is missing.
+        """
+        if ('username' in request.POST): 
+            in_username = request.POST['username']   
+
+            # Admin posts/comments cannot be blocked!!!
+            if in_username in ['admin']:
+                return HttpResponse('admin')
+
+            return self.blockUser(in_username, request)
+        else:
+            return HttpResponseRedirect('/errorpage/')
+
+    def blockUser(self, in_username, request):
+        """ Returns the 'true' if the user was successfully blocked,
+            otherwise an error message.
+        """
+        try:
+            in_blockedUser = User.objects.get(username=in_username)
+            in_blockedBy = request.user
+
+            bu = BlockedUser(blockedUser=in_blockedUser, blockedBy=in_blockedBy)
+            bu.save()
+
+            return HttpResponse('true')
+        except:
+            return HttpResponse('Error: unable to block the user. Please contact an administrator.')
+
+
 class CensorText(LoginRequiredMixin, View):
     """ An AJAX handler used to censor a text containing banned words. 
         Banned words are replaced with asterisks. """

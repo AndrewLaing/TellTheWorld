@@ -31,11 +31,19 @@
               <li>
                 <a onclick="$.edit_comment({{ item.commentID }});">Edit Comment</a>
               </li>
-              {% endif %}
+            {% endif %}
+
             {# Both comment posters and authors of the post being commented upon can delete comments #}
               <li>
                 <a onclick="$.delete_comment({{ item.commentID }});">Delete Comment</a>
               </li>
+
+            {# Users cannot block themselves #}
+            {% if item.user.username != current_username %}
+              <li>
+                <a onclick="$.block_user('{{ item.user }}');">Block User</a>
+              </li>
+            {% endif %}
             </ul>
           </div>  
         {% endif %}

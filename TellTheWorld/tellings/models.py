@@ -69,7 +69,7 @@ class UserComment(models.Model):
     class Meta: 
         verbose_name = "UserComment"
         verbose_name_plural = "UserComments"
-        
+
 
 class DeletedAccount(models.Model):
     deleted_date = models.DateTimeField()
@@ -79,4 +79,35 @@ class DeletedAccount(models.Model):
     class Meta: 
         verbose_name = "DeletedAccount"
         verbose_name_plural = "DeletedAccounts"
-        
+
+
+class BlockedUser(models.Model):
+    blockedUser = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                             related_name='blockeduser_blockeduser_set',
+                             db_column='blockedUser')
+    blockedBy = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                             related_name='blockedby_blockeduser_set',
+                             db_column='blockedBy')
+
+    def __str__(self):
+        return self.blockedUser.username
+
+    class Meta:
+        verbose_name = "BlockedUser"
+        verbose_name_plural = "BlockedUsers"
+
+
+class HiddenPost(models.Model):
+    postID = models.ForeignKey(UserPost, on_delete=models.CASCADE, db_column='postID')
+    hideFrom = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                             db_column='hideFrom')
+
+    def __str__(self):
+        return self.postID.postTitle
+
+    class Meta:
+        verbose_name = "HiddenPost"
+        verbose_name_plural = "HiddenPosts"
+
+
+
