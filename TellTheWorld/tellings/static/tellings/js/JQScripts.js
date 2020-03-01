@@ -551,10 +551,7 @@ $(document).ready(function(){
       return confirm(msg);
     };
 
-
     $.block_user = function(in_username) {
-      var msg = "Blocking ";
-
       if($.confirm_block_user(in_username)==true) {
         var csrftoken = getCookie('csrftoken');
 
@@ -584,6 +581,45 @@ $(document).ready(function(){
       } 
     };
 
+
+    $.confirm_unblock_user = function(username) {
+      var msg = "Are you sure that you want to unblock '" + username + "'?"
+      return confirm(msg);
+    };
+
+    $.unblock_user = function(in_username) {
+      if($.confirm_unblock_user(in_username)==true) {
+        var csrftoken = getCookie('csrftoken');
+
+        $.post("/unblockuser/",
+        {
+          username: in_username,
+          csrfmiddlewaretoken: csrftoken,
+        },
+        function (data, status) {
+          if (status === 'success') {
+            if (data === 'true') {
+              alert('You have successfully unblocked the user.');
+              location.reload();
+            } else {
+              alert(data);
+            }
+          }
+          else {
+            alert("Database error: please contact the administrator.");
+          }
+        });     
+      }
+      else {
+        alert("Cancelled");
+      } 
+    };
+
+
+    $.confirm_view_blockeduser_posts = function(username) {
+      var msg = "Proceeding further will show you content from a user that you have blocked. If you do not wish to see this content, press CANCEL."
+      return confirm(msg);
+    };
 
 
     /** -----------------------------------------------------------------

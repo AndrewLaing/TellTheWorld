@@ -15,17 +15,28 @@
 
 
 <div class="container-fluid main-content"> 
-    <div class="container currentUserUpdates" id="userUpdates">
+  <div class="container">
 
-      <h2>Blocked Users</h2>
-      <p>Je n'aime pas, pas, pas, pas. Va a la poubelle</p>
+    <h2>Blocked Users</h2>
+    <div class="row white-blockedusers-container">
       {% if blockeduser_list %}
       {% for item in blockeduser_list %}
-        <p>You blocked {{ item.blockedUser }}</p>
+      <div class="user-comment-container">
+        <div class="align_between"> 
+          <span class="user-comment-details align-panel-footer-text-left"><a href="{% url 'tellings:newupdates' %}?userName={{ item.blockedUser }}" onclick="return $.confirm_view_blockeduser_posts()">{{ item.blockedUser|upper }} </a></span>    
+
+          <div class="btn-group">
+            <button type="button" class="btn align-panel-footer-text-right " onclick="$.unblock_user('{{ item.blockedUser }}');">Unblock User</button>
+          </div>
+        </div>   
+      </div>
       {% endfor %}
       {% else %}
-        <p class="user-no-comments-text">YOU have not blocked any users. (YAY)</p>
+      <div class="user-comment-container">
+        <p class="user-no-comments-text">YOU HAVE NOT BLOCKED ANY USERS.</p>
+      </div>
       {% endif %} 
     </div>
+  </div>
 </div>
 {% endblock %}

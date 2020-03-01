@@ -1,7 +1,7 @@
 # Filename:     views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last updated: 26/02/2020
+# Last updated: 29/02/2020
 # Description:  Contains the views for the website.
 
 import django.utils.timezone
@@ -186,13 +186,12 @@ class BlockedUserListView(LoginRequiredMixin, generic.ListView):
  
     def get_queryset(self):
       current_user = self.request.user
-      return BlockedUser.objects.filter(blockedBy=current_user)
+      return BlockedUser.objects.filter(blockedBy=current_user).order_by('blockedUser__username')
 
 
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
 
 
 
@@ -748,6 +747,9 @@ class BlockUser(LoginRequiredMixin, View):
             if in_username in ['admin']:
                 return HttpResponse('admin')
 
+            if request.user.username == in_username:
+                return HttpResponse('Sorry, you cannot block yourself!')
+
             return self.blockUser(in_username, request)
         else:
             return HttpResponseRedirect('/errorpage/')
@@ -1177,4 +1179,41 @@ class TitleExists(LoginRequiredMixin, View):
             return HttpResponse('true')
         else:
             return HttpResponse('false')
-            
+
+
+class UnblockUser(LoginRequiredMixin, View):
+    """ An AJAX handler used to delete an BlockedUser record from the database."""
+    http_method_names = ['post']
+
+    def post(self, request):
+        """ Handles POST requests.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor.
+        :returns: A string 'true' if the user was successfully unblocked,
+                  otherwise a redirect to the error page if POST data is missing.
+        """
+        if ('username' in request.POST):
+            in_username = request.POST['username']
+            return self.unblockUser(in_username, request)
+        else:
+            return HttpResponseRedirect('/errorpage/')
+
+    def unblockUser(self, in_username, request):
+        """ Returns the 'true' if the user was successfully unblocked,
+            otherwise an error message.
+        """
+        try:
+            in_blockedUser = User.objects.get(username=in_username)
+            in_blockedBy = request.user
+
+            blocked = BlockedUser.objects.get(blockedUser=in_blockedUser, blockedBy=in_blockedBy)
+            blocked.delete()
+            return HttpResponse('true')
+        except:
+            return HttpResponse('Error: unable to unblock the user. Please contact an administrator.')
+
+
+
+
+

@@ -241,6 +241,13 @@ body {
   background-color: #FFF;
 }
 
+.white-blockedusers-container {
+  margin-top: 30px;
+  margin-bottom: 30px;
+  padding-top: 0em;
+  background-color: #FFF;
+}
+
 #paginationDiv {
   padding-left: 30px;
   padding-right: 60px;
