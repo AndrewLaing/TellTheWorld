@@ -406,24 +406,35 @@ class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
     paginate_by = 10
     http_method_names = ['get', 'post']
 
-    def blockedByUser(self):
+    def blockedUsers(self):
         """ Returns a list of the users blocked by the currently loggedin user. 
 
             :returns: A list of User objects.   
         """
         current_user = self.request.user
         blockedUsers = BlockedUser.objects.filter(blockedBy=current_user)
-        return [blocked.blockedUser for blocked in blockedUsers]    
+        return [blocked.blockedUser for blocked in blockedUsers]   
 
+    def userBlockedBy(self):
+        """ Returns a list of the users who have blocked the currently loggedin user. 
+
+            :returns: A list of User objects.   
+        """
+        current_user = self.request.user
+        blockedBy = BlockedUser.objects.filter(blockedUser=current_user)
+        return [blocked.blockedBy for blocked in blockedBy]     
 
     def posts_filtered_by_blocked(self):
         """ Returns a queryset of all UserPosts excluding those from users 
-            blocked by the currently logged in user
+            blocked by the currently logged in user, and posts by users who
+            have blocked the logged in user.
 
             :returns: A filtered queryset of UserPosts.
         """
-        # Get list of users blocked by logged in user
-        blockedList = self.blockedByUser()
+        blockedUsers = self.blockedUsers()
+        blockedBy = self.userBlockedBy()
+        blockedList = list(set().union(blockedUsers, blockedBy))
+
         if blockedList:
             return UserPost.objects.exclude(user__in=blockedList).order_by('-dateOfPost')
         else:
@@ -438,19 +449,24 @@ class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
                 tagName_val = self.request.GET.get('tagName', False) 
             if 'userName' in self.request.GET:
                 username_val = self.request.GET.get('userName', False)
-                user_id = User.objects.get(username=username_val).id
+                user_id = User.objects.get(username=username_val)
                       
-        if tagName_val:  # get posts for current user filtered by tagname
+        if tagName_val: 
             tagID = Tag.objects.get(tagName=tagName_val).tagID
             tagmaps = Tagmap.objects.filter(tagID=tagID)
             postList = [tm.postID.postID for tm in tagmaps]  
             filteredPosts = self.posts_filtered_by_blocked()  
+            
             if username_val:
                 return filteredPosts.filter(postID__in=postList, user=user_id).order_by('-dateOfPost') 
             else:
                 return filteredPosts.filter(postID__in=postList).order_by('-dateOfPost') 
         elif username_val:
-            return UserPost.objects.filter(user=user_id).order_by('-dateOfPost') 
+            # Ensure the user is not trying to access posts by a user blocking them
+            if BlockedUser.objects.filter(blockedUser=self.request.user, blockedBy=user_id).exists():
+                return UserPost.objects.none()
+            else:
+                return UserPost.objects.filter(user=user_id).order_by('-dateOfPost') 
         else: 
             return self.posts_filtered_by_blocked()
 
