@@ -26,6 +26,8 @@ urlpatterns = [
     path('edituserpost/<int:pk>', EditUserPost.as_view(), name='edituserpost'),
     path('errorpage/', ErrorPage.as_view(), name='errorpage'),
     path('haspostedtoday/', HasPostedToday.as_view(), name='haspostedtoday'),
+    path('hidepost/', HidePost.as_view(), name='hidepost'),
+    path('hiddenposts/', HiddenPostListView.as_view(), name='hiddenposts'),
     path('loginmodal/', LoginModal.as_view(), name='loginmodal'),
     path('loginpage/', LoginView.as_view(template_name='tellings/loginpage.html'), name='loginpage'),
     path('missionstatement/', MissionStatementPage.as_view(), name='missionstatement'),

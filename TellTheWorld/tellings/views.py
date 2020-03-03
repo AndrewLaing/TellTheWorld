@@ -22,8 +22,10 @@ from tellings.page_extras import banned_words
 from datetime import timedelta, timezone
 
 # #########################################################################################
-# SHARED FUNCTIONS ------------------------------------------------------------------------
+# SHARED FUNCTIONS AND VARIABLES ----------------------------------------------------------
 # -----------------------------------------------------------------------------------------
+
+adminNameList = ['admin']
 
 
 def contains_banned_word(text):
@@ -172,10 +174,6 @@ class AccountDeletedPage(LoginRequiredMixin, View):
         except:
             return HttpResponseRedirect('/errorpage/')
 
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
 
 class BlockedUserListView(LoginRequiredMixin, generic.ListView):
     """ Creates the BlockedUser page for the website."""
@@ -187,12 +185,6 @@ class BlockedUserListView(LoginRequiredMixin, generic.ListView):
     def get_queryset(self):
       current_user = self.request.user
       return BlockedUser.objects.filter(blockedBy=current_user).order_by('blockedUser__username')
-
-
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
 
 
 class ChangePasswordPage(LoginRequiredMixin, View):
@@ -279,6 +271,23 @@ class ChangeUserDetailsPage(LoginRequiredMixin, View):
         u.save()
         return render(request, 'tellings/changeUserDetails.html', 
                       {'message': _('Your details have been updated'), 'form': form})
+
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+class HiddenPostListView(LoginRequiredMixin, generic.ListView):
+    """ Creates the HiddenPost page for the website."""
+    model = HiddenPost
+    template_name = "tellings/hiddenpost_list.html"
+    paginate_by = 20
+    http_method_names = ['get']
+ 
+    def get_queryset(self):
+      current_user = self.request.user
+      return HiddenPost.objects.filter(hideFrom=current_user).order_by('postID')
+
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
 
 
 class IndexPage(View):
@@ -422,7 +431,12 @@ class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
         """
         current_user = self.request.user
         blockedBy = BlockedUser.objects.filter(blockedUser=current_user)
-        return [blocked.blockedBy for blocked in blockedBy]     
+        return [blocked.blockedBy for blocked in blockedBy]   
+
+    def hiddenPosts(self):
+        current_user = self.request.user
+        hiddenPosts = HiddenPost.objects.filter(hideFrom=current_user)
+        return [hidden.postID.postID for hidden in hiddenPosts]   
 
     def posts_filtered_by_blocked(self):
         """ Returns a queryset of all UserPosts excluding those from users 
@@ -435,10 +449,15 @@ class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
         blockedBy = self.userBlockedBy()
         blockedList = list(set().union(blockedUsers, blockedBy))
 
+        hiddenPosts = self.hiddenPosts()
+        print("===================================================")
+        print(hiddenPosts)
+        print("===================================================")
+
         if blockedList:
-            return UserPost.objects.exclude(user__in=blockedList).order_by('-dateOfPost')
+            return UserPost.objects.exclude(user__in=blockedList).exclude(postID__in=hiddenPosts).order_by('-dateOfPost')
         else:
-            return UserPost.objects.all().order_by('-dateOfPost')
+            return UserPost.objects.exclude(postID__in=hiddenPosts).order_by('-dateOfPost')
 
     def get_queryset(self):
         tagName_val = False
@@ -456,7 +475,7 @@ class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
             tagmaps = Tagmap.objects.filter(tagID=tagID)
             postList = [tm.postID.postID for tm in tagmaps]  
             filteredPosts = self.posts_filtered_by_blocked()  
-            
+
             if username_val:
                 return filteredPosts.filter(postID__in=postList, user=user_id).order_by('-dateOfPost') 
             else:
@@ -760,7 +779,7 @@ class BlockUser(LoginRequiredMixin, View):
             in_username = request.POST['username']   
 
             # Admin posts/comments cannot be blocked!!!
-            if in_username in ['admin']:
+            if in_username in adminNameList:
                 return HttpResponse('admin')
 
             if request.user.username == in_username:
@@ -1134,6 +1153,47 @@ class HasPostedToday(LoginRequiredMixin, View):
             return HttpResponse('false')
 
 
+class HidePost(LoginRequiredMixin, View):
+    """ An AJAX handler used to add a new HidePost record to the database."""
+    http_method_names = ['post']
+
+    def post(self, request):
+        """ Handles POST requests.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A string 'true' if the post was successfully hidden,
+                  'admin' if the user was trying to hide an admin post,
+                  otherwise a redirect to the error page if POST data is missing.
+        """
+        if ('postID' in request.POST): 
+            in_postID = request.POST['postID']   
+            return self.hidePost(in_postID, request)
+        else:
+            return HttpResponseRedirect('/errorpage/')
+
+    def hidePost(self, in_postID, request):
+        """ Returns the 'true' if the post was successfully hidden,
+            'admin' if the user was trying to hide an admin post,
+            otherwise an error message.
+        """
+        try:
+            in_post = UserPost.objects.get(postID=in_postID)
+            in_hideFrom = request.user
+            
+            # Admin posts/comments cannot be hidden!!!
+            postername = in_post.user.username
+            if postername in adminNameList:
+                return HttpResponse('admin')
+
+            hp = HiddenPost(postID=in_post, hideFrom=in_hideFrom)
+            hp.save()
+
+            return HttpResponse('true')
+        except:
+            return HttpResponse('Error: unable to hide this post. Please contact an administrator.')
+
+
 class LoginModal(View):
     """ An AJAX handler used to add the login modal to pages.
     """
@@ -1229,6 +1289,38 @@ class UnblockUser(LoginRequiredMixin, View):
         except:
             return HttpResponse('Error: unable to unblock the user. Please contact an administrator.')
 
+
+class UnhidePost(LoginRequiredMixin, View):
+    """ An AJAX handler used to delete an HiddenPost record from the database."""
+    http_method_names = ['post']
+
+    def post(self, request):
+        """ Handles POST requests.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor.
+        :returns: A string 'true' if the post was successfully unhidden,
+                  otherwise a redirect to the error page if POST data is missing.
+        """
+        if ('postID' in request.POST):
+            in_postID = request.POST['postID']
+            return self.unhidePost(in_postID, request)
+        else:
+            return HttpResponseRedirect('/errorpage/')
+
+    def unhidePost(self, in_postID, request):
+        """ Returns the 'true' if the post was successfully unhidden,
+            otherwise an error message.
+        """
+        try:
+            in_post = UserPost.objects.get(postID=in_postID)
+            in_hideFrom = request.user
+
+            hidden = HiddenPost.objects.get(postID=in_post, hideFrom=in_hideFrom)
+            hidden.delete()
+            return HttpResponse('true')
+        except:
+            return HttpResponse('Error: unable to unhide the post. Please contact an administrator.')
 
 
 

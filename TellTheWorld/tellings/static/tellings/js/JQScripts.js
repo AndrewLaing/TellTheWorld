@@ -621,6 +621,43 @@ $(document).ready(function(){
     };
 
 
+    $.confirm_hide_post = function() {
+      var msg = "Are you sure that you want to hide this post?";
+      return confirm(msg);
+    };
+
+
+    $.hide_post = function(in_postID) {
+      if(editingPost || editingComment) {
+        alert("Cannot hide this post whilst there are still unsaved changes on this page.");
+        return;
+      }
+      
+      if($.confirm_hide_post()==true) {
+        var csrftoken = getCookie('csrftoken');
+
+        $.post("/hidepost/",
+        {
+          postID: in_postID,
+          csrfmiddlewaretoken: csrftoken,
+        },
+        function (data, status) {
+          if (status === 'success') {
+            if (data === 'true') {
+              alert('The post will now be hidden from you.');
+              location.reload();
+            } else {
+              alert(data);
+            }
+          }
+          else {
+            alert("Database error: please contact the administrator.");
+          }
+        });     
+      }
+    };
+
+
     /** -----------------------------------------------------------------
      *           EDIT COMMENT METHODS
      * ------------------------------------------------------------------
@@ -719,19 +756,6 @@ $(document).ready(function(){
      *           EDIT POST METHODS
      * ------------------------------------------------------------------
      */
-  
-    /**
-     * Hide a selected post. 
-     */
-    $.hide_post = function (postID) {
-      if(editingPost || editingComment) {
-        alert("Cannot hide this post whilst there are still unsaved changes on this page.");
-      } else {
-        var panelID = "#panel_post_" + postID
-        $(panelID).hide();
-      }
-    };
-  
   
     /**
      * Confirms that the user wishes to edit their post.

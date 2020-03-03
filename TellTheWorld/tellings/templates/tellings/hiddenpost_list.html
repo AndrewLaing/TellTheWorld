@@ -1,0 +1,97 @@
+{% extends 'tellings/base.html' %}
+{% block title %}Tell the World{% endblock title %} 
+
+{% comment %} 
+ * -------------------------------------------------------------------------------
+ * Filename:     hiddenpost_list.html
+ * Author:       Andrew Laing
+ * Email:        parisianconnections@gmail.com
+ * Last updated: 03/03/2020
+ * Description:  Template used for creating the HiddenPost html.
+ * -------------------------------------------------------------------------------
+{% endcomment %}
+
+{% block content %}
+
+
+<div class="container-fluid main-content"> 
+  <div class="container">
+
+    <h2>Hidden Posts</h2>
+    <div class="row">
+      {% if hiddenpost_list %}
+
+      
+      {% load static %}
+      {% regroup hiddenpost_list by postID.dateOfPost|date:"M. d Y" as ordered_post_list  %}
+
+      {% for mypost in ordered_post_list %}
+      <div class="row">
+        <h1>{{ mypost.grouper }}</h1>
+        <div class="panel-group">
+          {% for item in mypost.list %}
+          {# UPDATE PANEL #}
+            <div class="panel panel-default" id="panel_post_{{ item.postID.postID }}">
+              {# PANEL HEADER #} 
+              <div class="panel-header"> 
+                {# Post title and username #}
+                <div class="col-sm-8 panel-postTitle">
+                  <p><a href="{% url 'tellings:newupdates' %}?userName={{ item.postID.user }}" name="{{ item.postID.user }}">
+                     {{ item.postID.user }} says</a> ... <span id="postTitle_{{ item.postID.postID }}">{{ item.postID.postTitle }}</span></p>
+                </div>
+
+                {# Show collapse, edit/hide/delete dropdown #} 
+                <div class="col-sm-4 align-panel-text-right">
+                  {# Unhide post button #}
+                  <button class="btn btn-danger">Unhide Post</button>
+ 
+                </div>
+              </div> {# END OF Panel header #}
+
+              {# PANEL BODY #}
+              <div >
+                  <div class="panel-body">
+                    <p id="text_post_{{ item.postID.postID }}">{{ item.postID.postText }}</p>
+                  </div>
+              </div>                
+
+              <div class="panel-footer align_between"> 
+                <span class="align-panel-footer-text-left last-edited-text">
+                  {% if item.postID.dateOfEdit %}
+                    (Last edited on {{ item.postID.dateOfEdit|date:"d/m/Y" }})
+                  {% else %}
+                    &nbsp;
+                  {% endif %}
+                </span>
+                {# Add the tags #}
+                  <span class="align-panel-footer-text-right">
+                {% for tag in item.postID.post_tags %}
+                  <a class="tagLink" href="{% url 'tellings:newupdates' %}?tagName={{ tag }}" name="{{ tag }}">{{ tag }}</a>
+                {% endfor %}  
+                </span>          
+              </div>
+
+
+            </div> {# END OF UPDATE PANEL #}
+            <br />
+
+          {% endfor %}
+        </div>            {# END OF PANEL GROUP #}
+      </div>              {# END OF ROW #}
+      {% endfor %}
+
+
+
+
+
+
+
+      {% else %}
+      <div class="user-comment-container">
+        <p class="user-no-comments-text">YOU HAVE NOT HIDDEN ANY POSTS.</p>
+      </div>
+      {% endif %} 
+    </div>
+  </div>
+</div>
+{% endblock %}
