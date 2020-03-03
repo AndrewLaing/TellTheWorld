@@ -552,6 +552,11 @@ $(document).ready(function(){
     };
 
     $.block_user = function(in_username) {
+      if(editingPost || editingComment) {
+        alert("Cannot block a user whilst there are still unsaved changes on this page.");
+        return;
+      } 
+
       if($.confirm_block_user(in_username)==true) {
         var csrftoken = getCookie('csrftoken');
 
@@ -576,9 +581,6 @@ $(document).ready(function(){
           }
         });     
       }
-      else {
-        alert("Cancelled");
-      } 
     };
 
 
@@ -610,9 +612,6 @@ $(document).ready(function(){
           }
         });     
       }
-      else {
-        alert("Cancelled");
-      } 
     };
 
 
@@ -702,9 +701,6 @@ $(document).ready(function(){
           }
         });
       }
-      else {
-        alert("Cancelled");
-      } 
     };    
   
   
@@ -713,8 +709,6 @@ $(document).ready(function(){
      */
     $.cancel_edit_comment = function (commentID) {
       var textCommentID = "#text_comment_" + commentID;
-  
-      alert("Cancelled");
   
       $(textCommentID).html(originalCommentText);   
       editingComment = false;
@@ -731,7 +725,7 @@ $(document).ready(function(){
      */
     $.hide_post = function (postID) {
       if(editingPost || editingComment) {
-        alert("Cannot hide this post whilst there are still unsaved changes on this page.")
+        alert("Cannot hide this post whilst there are still unsaved changes on this page.");
       } else {
         var panelID = "#panel_post_" + postID
         $(panelID).hide();
@@ -819,9 +813,6 @@ $(document).ready(function(){
           }
         });
       }
-      else {
-        alert("Cancelled");
-      } 
     };    
   
   
@@ -830,8 +821,6 @@ $(document).ready(function(){
      */
     $.cancel_edit_post = function (postID) {
       var textPostID = "#text_post_" + postID;
-    
-      alert("Cancelled");
   
       $(textPostID).html(originalPostText);  
       editingPost = false;
@@ -874,6 +863,11 @@ $(document).ready(function(){
      * Handles the delete user post event.
      */
     $.delete_post = function (in_postID) {
+      if(editingPost || editingComment) {
+        alert("Cannot delete this post whilst there are still unsaved changes on this page.");
+        return;
+      } 
+
       if($.confirm_delete_post()==true) {
         var csrftoken = getCookie('csrftoken');
   
@@ -895,9 +889,6 @@ $(document).ready(function(){
             alert("Database error: please contact the administrator.");
           }
         });
-      }
-      else {
-        alert("Delete cancelled");
       }
     };
   
@@ -1140,6 +1131,11 @@ $(document).ready(function(){
      * Handles the delete user comment event.
      */
     $.delete_comment = function (in_commentID) {
+      if(editingPost || editingComment) {
+        alert("Cannot delete this comment whilst there are still unsaved changes on this page.");
+        return;
+      } 
+
       if($.confirm_delete_comment()==true) {
         var csrftoken = getCookie('csrftoken');
         var textCommentID = "#text_comment_" + in_commentID;
@@ -1163,9 +1159,6 @@ $(document).ready(function(){
             alert("Database error: please contact the administrator.");
           }
         });
-      }
-      else {
-        alert("Delete cancelled");
       }
     };
   
