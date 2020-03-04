@@ -27,6 +27,7 @@ urlpatterns = [
     path('errorpage/', ErrorPage.as_view(), name='errorpage'),
     path('haspostedtoday/', HasPostedToday.as_view(), name='haspostedtoday'),
     path('hidepost/', HidePost.as_view(), name='hidepost'),
+    path('hideuserposts/', HideUserPosts.as_view(), name='hideuserposts'),
     path('hiddenposts/', HiddenPostListView.as_view(), name='hiddenposts'),
     path('loginmodal/', LoginModal.as_view(), name='loginmodal'),
     path('loginpage/', LoginView.as_view(template_name='tellings/loginpage.html'), name='loginpage'),
@@ -39,5 +40,6 @@ urlpatterns = [
     path('termsandconditions/', TermsAndConditionsPage.as_view(), name='termsandconditions'),
     path('titleexists/', TitleExists.as_view(), name='titleexists'),
     path('unblockuser/', UnblockUser.as_view(), name='unblockuser'),
+    path('unhidepost/', UnhidePost.as_view(), name='unhidepost'),
     path('usercomments/', UserCommentListView.as_view(), name='usercomments'),
 ]

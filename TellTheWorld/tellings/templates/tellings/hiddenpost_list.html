@@ -33,19 +33,36 @@
           {# UPDATE PANEL #}
             <div class="panel panel-default" id="panel_post_{{ item.postID.postID }}">
               {# PANEL HEADER #} 
-              <div class="panel-header"> 
+              <div class="panel-header hiddenposts-panel-header align_between"> 
                 {# Post title and username #}
-                <div class="col-sm-8 panel-postTitle">
-                  <p><a href="{% url 'tellings:newupdates' %}?userName={{ item.postID.user }}" name="{{ item.postID.user }}">
-                     {{ item.postID.user }} says</a> ... <span id="postTitle_{{ item.postID.postID }}">{{ item.postID.postTitle }}</span></p>
+                <div class="panel-postTitle align-panel-footer-text-left">
+                  <p><span class="false-link">
+                     {{ item.postID.user }} says</span> ... <span>{{ item.postID.postTitle }}</span></p>
                 </div>
 
                 {# Show collapse, edit/hide/delete dropdown #} 
-                <div class="col-sm-4 align-panel-text-right">
-                  {# Unhide post button #}
-                  <button class="btn btn-danger">Unhide Post</button>
- 
-                </div>
+                  <div class="btn-group align-panel-footer-text-right">
+                    <button type="button" class="btn dropdown-toggle post-cog-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      <img src="{% static 'tellings/imgs/settings_cog.png' %}" alt="">
+                      <span class = "caret"></span>
+                    </button>
+
+                    <div class="dropdown-menu dropdown-menu-right">
+                      <li>
+                        <a onclick="$.hide_all_user_posts('{{ item.postID.user }}');">Hide all posts by user</a>
+                      </li>
+                      <li>
+                        <a onclick="$.unhide_post({{ item.postID.postID }});">Unhide post</a>
+                      </li>
+                      <li>
+                        <a onclick="$.unhide_all_user_posts('{{ item.postID.user }}');">Unhide all posts by user</a>
+                      </li>
+                      <li>
+                        <a onclick="$.block_user('{{ item.postID.user }}');">Block user</a>
+                      </li>
+                      
+                    </div>
+                </div> 
               </div> {# END OF Panel header #}
 
               {# PANEL BODY #}
@@ -66,12 +83,10 @@
                 {# Add the tags #}
                   <span class="align-panel-footer-text-right">
                 {% for tag in item.postID.post_tags %}
-                  <a class="tagLink" href="{% url 'tellings:newupdates' %}?tagName={{ tag }}" name="{{ tag }}">{{ tag }}</a>
+                  <span class="false-link tagLink">{{ tag }}</span>
                 {% endfor %}  
                 </span>          
               </div>
-
-
             </div> {# END OF UPDATE PANEL #}
             <br />
 
@@ -79,12 +94,6 @@
         </div>            {# END OF PANEL GROUP #}
       </div>              {# END OF ROW #}
       {% endfor %}
-
-
-
-
-
-
 
       {% else %}
       <div class="user-comment-container">

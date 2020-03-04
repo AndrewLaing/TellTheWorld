@@ -68,10 +68,13 @@
 
                         <div class="dropdown-menu dropdown-menu-right">
                           <li> 
-                            <a id="hide_post_{{ item.postID }}" onclick="$.hide_post({{ item.postID }});">Hide Post</a>
+                            <a id="hide_post_{{ item.postID }}" onclick="$.hide_post({{ item.postID }});">Hide post</a>
+                          </li>                      
+                          <li>
+                            <a onclick="$.hide_all_user_posts('{{ item.user.username }}');">Hide all posts by user</a>
                           </li>
                           <li> 
-                            <a id="block_user_{{ item.user }}" onclick="$.block_user('{{ item.user }}');">Block User</a>
+                            <a id="block_user_{{ item.user }}" onclick="$.block_user('{{ item.user }}');">Block user</a>
                           </li>
                         </div>
                     </div>  

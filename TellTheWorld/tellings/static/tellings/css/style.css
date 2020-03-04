@@ -178,6 +178,10 @@ body {
   word-wrap: break-word;
 }
 
+.hiddenposts-panel-header {
+  padding: .5em 0em 0em 1em;
+}
+
 .align-panel-text-right {
   text-align: right;
   padding-right: 0em;
@@ -406,8 +410,21 @@ hr {
   background-color: white;
 }
 
+.post-cog-btn:focus {
+  outline: 0em;
+  outline-offset: 0em;
+  background-image: none;
+  -webkit-box-shadow: none !important;
+  box-shadow: none  !important;
+}
+
 .comment-panel {
   display: none;
+}
+
+.false-link {
+  color: blue;
+  text-decoration: underline;
 }
 
 .last-edited-text {
@@ -442,6 +459,13 @@ hr {
   background-color: white;
 }
 
+.comment-cog-btn:focus {
+  outline: 0em;
+  outline-offset: 0em;
+  background-image: none;
+  -webkit-box-shadow: none !important;
+  box-shadow: none  !important;
+}
 
 .user-comment-details a {
   font-weight: bold; 

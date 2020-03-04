@@ -658,6 +658,76 @@ $(document).ready(function(){
     };
 
 
+    $.confirm_hide_all_user_posts = function() {
+      var msg = "Are you sure that you want to hide all posts by this user?";
+      return confirm(msg);
+    };
+
+
+    $.hide_all_user_posts = function(in_user) {
+      if(editingPost || editingComment) {
+        alert("Cannot hide this post whilst there are still unsaved changes on this page.");
+        return;
+      }
+
+      if($.confirm_hide_all_user_posts()==true) {
+        var csrftoken = getCookie('csrftoken');
+
+        $.post("/hideuserposts/",
+        {
+          user: in_user,
+          csrfmiddlewaretoken: csrftoken,
+        },
+        function (data, status) {
+          if (status === 'success') {
+            if (data === 'true') {
+              alert('The user\'s posts will now be hidden from you.');
+              location.reload();
+            } else {
+              alert(data);
+            }
+          }
+          else {
+            alert("Database error: please contact the administrator.");
+          }
+        });     
+      }
+    };
+
+
+    $.confirm_unhide_post = function() {
+      var msg = "Are you sure that you want to unhide this post?"
+      return confirm(msg);
+    };
+
+
+    $.unhide_post = function(in_postID) {
+      if($.confirm_unhide_post()==true) {
+        var csrftoken = getCookie('csrftoken');
+
+        $.post("/unhidepost/",
+        {
+          postID: in_postID,
+          csrfmiddlewaretoken: csrftoken,
+        },
+        function (data, status) {
+          if (status === 'success') {
+            if (data === 'true') {
+              alert('You have successfully unhidden the post.');
+              location.reload();
+            } else {
+              alert(data);
+            }
+          }
+          else {
+            alert("Database error: please contact the administrator.");
+          }
+        });     
+      }
+    };
+
+
+
     /** -----------------------------------------------------------------
      *           EDIT COMMENT METHODS
      * ------------------------------------------------------------------
