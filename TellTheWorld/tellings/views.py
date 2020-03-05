@@ -1,7 +1,7 @@
 # Filename:     views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last updated: 29/02/2020
+# Last updated: 05/03/2020
 # Description:  Contains the views for the website.
 
 import django.utils.timezone
@@ -282,12 +282,18 @@ class HiddenPostListView(LoginRequiredMixin, generic.ListView):
     template_name = "tellings/hiddenpost_list.html"
     paginate_by = 20
     http_method_names = ['get']
- 
+
     def get_queryset(self):
       current_user = self.request.user
-      blockedPosts = self.get_blockedPosts_list()
-      return HiddenPost.objects.filter(hideFrom=current_user).exclude(postID__in=blockedPosts).order_by('postID')
-      
+      blockedPosts = self.get_blockedPosts_list()  
+
+      if self.request.method == 'GET' and 'username' in self.request.GET:
+          username_val = self.request.GET.get('username')
+          userToBlock = get_object_or_404(User, username=username_val)
+          return HiddenPost.objects.filter(postID__user=userToBlock, hideFrom=current_user).exclude(postID__in=blockedPosts).order_by('postID')
+      else:
+          return HiddenPost.objects.filter(hideFrom=current_user).exclude(postID__in=blockedPosts).order_by('postID')
+
     def blockedUsers(self):
         """ Returns a list of the users blocked by the currently loggedin user. 
 
@@ -305,7 +311,6 @@ class HiddenPostListView(LoginRequiredMixin, generic.ListView):
         current_user = self.request.user
         blockedBy = BlockedUser.objects.filter(blockedUser=current_user)
         return [blocked.blockedBy for blocked in blockedBy]   
- 
 
     def get_blockedPosts_list(self):
         """ Returns a list of all UserPosts from users 
@@ -518,7 +523,8 @@ class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
             if BlockedUser.objects.filter(blockedUser=self.request.user, blockedBy=user_id).exists():
                 return UserPost.objects.none()
             else:
-                return UserPost.objects.filter(user=user_id).order_by('-dateOfPost') 
+                hiddenPosts = self.hiddenPosts()
+                return UserPost.objects.filter(user=user_id).exclude(postID__in=hiddenPosts).order_by('-dateOfPost')
         else: 
             return self.posts_filtered_by_blocked()
 
@@ -1230,12 +1236,8 @@ class HidePost(LoginRequiredMixin, View):
             return HttpResponse('Error: unable to hide this post. Please contact an administrator.')
 
 
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-
-
 class HideUserPosts(LoginRequiredMixin, View):
-    """ An AJAX handler used to add a new HidePost record to the database
+    """ An AJAX handler used to add a new HiddenPost record to the database
         for all posts by a specified user.
     """
     http_method_names = ['post']
@@ -1278,9 +1280,6 @@ class HideUserPosts(LoginRequiredMixin, View):
             return HttpResponse('true')
         except:
             return HttpResponse('Error: unable to hide this post. Please contact an administrator.')
-
-
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
 class LoginModal(View):
@@ -1411,4 +1410,43 @@ class UnhidePost(LoginRequiredMixin, View):
         except:
             return HttpResponse('Error: unable to unhide the post. Please contact an administrator.')
 
+
+class UnhideUserPosts(LoginRequiredMixin, View):
+    """ An AJAX handler used to remove all HiddenPost records from the database
+        by a specified user.
+    """
+    http_method_names = ['post']
+
+    def post(self, request):
+        """ Handles POST requests.
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor.
+        :returns: A string 'true' if the user's posts were successfully unhidden,
+                  otherwise a redirect to the error page if POST data is missing.
+        """
+        if ('user' in request.POST):
+            in_user = request.POST['user']   
+            return self.unhidePosts(in_user, request)
+        else:
+            return HttpResponseRedirect('/errorpage/')
+
+    def unhidePosts(self, in_user, request):
+        """ Returns the 'true' if the user's posts were successfully unhidden,
+            otherwise an error message.
+        """
+        try:                
+            in_user = User.objects.get(username=in_user)
+            
+            postsByUser = UserPost.objects.filter(user=in_user)
+            
+            in_hideFrom = request.user
+            postsToUnhide = HiddenPost.objects.filter(postID__in=postsByUser, hideFrom=in_hideFrom)
+
+            for post in postsToUnhide:
+                post.delete()
+
+            return HttpResponse('true')
+        except:
+            return HttpResponse('Error: unable to unhide this user\'s posts. Please contact an administrator.')
 

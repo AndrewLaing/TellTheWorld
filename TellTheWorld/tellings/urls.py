@@ -41,5 +41,6 @@ urlpatterns = [
     path('titleexists/', TitleExists.as_view(), name='titleexists'),
     path('unblockuser/', UnblockUser.as_view(), name='unblockuser'),
     path('unhidepost/', UnhidePost.as_view(), name='unhidepost'),
+    path('unhideuserposts/', UnhideUserPosts.as_view(), name='unhideuserposts'),
     path('usercomments/', UserCommentListView.as_view(), name='usercomments'),
 ]

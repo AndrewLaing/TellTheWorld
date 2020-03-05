@@ -6,31 +6,29 @@
  * Filename:     blockeduser_list.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 29/02/2020
+ * Last updated: 05/03/2020
  * Description:  Template used for creating the BlockedUsers html.
  * -------------------------------------------------------------------------------
 {% endcomment %}
 
 {% block content %}
-
-
 <div class="container-fluid main-content"> 
   <div class="container">
 
     <h2>Blocked Users</h2>
     <div class="row white-blockedusers-container">
       {% if blockeduser_list %}
-      {% for item in blockeduser_list %}
-      <div class="user-comment-container">
-        <div class="align_between">
-          <span class="user-comment-details align-panel-footer-text-left"><a class="blockeduser-link" href="{% url 'tellings:newupdates' %}?userName={{ item.blockedUser }}" onclick="return $.confirm_view_blockeduser_posts()">{{ item.blockedUser|upper }} </a></span>    
+        {% for item in blockeduser_list %}
+        <div class="user-comment-container">
+          <div class="align_between">
+            <span class="user-comment-details align-panel-footer-text-left"><a class="blockeduser-link" href="{% url 'tellings:newupdates' %}?userName={{ item.blockedUser }}" onclick="return $.confirm_view_blockeduser_posts()">{{ item.blockedUser|upper }} </a></span>    
 
-          <div class="btn-group">
-            <button type="button" class="btn btn-danger align-panel-footer-text-right " onclick="$.unblock_user('{{ item.blockedUser }}');">Unblock User</button>
-          </div>
-        </div>   
-      </div>
-      {% endfor %}
+            <div class="btn-group">
+              <button type="button" class="btn btn-danger align-panel-footer-text-right " onclick="$.unblock_user('{{ item.blockedUser }}');">Unblock User</button>
+            </div>
+          </div>   
+        </div>
+        {% endfor %}
       {% else %}
       <div class="user-comment-container">
         <p class="user-no-comments-text">YOU HAVE NOT BLOCKED ANY USERS.</p>

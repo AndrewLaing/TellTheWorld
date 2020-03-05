@@ -2,7 +2,7 @@
  * Filename:     JQScripts.js
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 24/02/2020.
+ * Last updated: 05/03/2020.
  * Description:  JQuery scripts used by the 'Tell the World' website.
  */
 
@@ -682,7 +682,7 @@ $(document).ready(function(){
           if (status === 'success') {
             if (data === 'true') {
               alert('The user\'s posts will now be hidden from you.');
-              location.reload();
+              window.location = window.location.href.split("?")[0];
             } else {
               alert(data);
             }
@@ -693,6 +693,38 @@ $(document).ready(function(){
         });     
       }
     };
+
+
+    $.confirm_unhide_all_user_posts = function() {
+      var msg = "Are you sure that you want to unhide all posts by this user?";
+      return confirm(msg);
+    };
+
+
+    $.unhide_all_user_posts = function(in_user) {      
+      if($.confirm_unhide_all_user_posts()==true) {
+        var csrftoken = getCookie('csrftoken');
+
+        $.post("/unhideuserposts/",
+        {
+          user: in_user,
+          csrfmiddlewaretoken: csrftoken,
+        },
+        function (data, status) {
+          if (status === 'success') {
+            if (data === 'true') {
+              alert('The user\'s posts will now be unhidden from you.');
+              window.location = window.location.href.split("?")[0];
+            } else {
+              alert(data);
+            }
+          }
+          else {
+            alert("Database error: please contact the administrator.");
+          }
+        });     
+      }
+    };    
 
 
     $.confirm_unhide_post = function() {
@@ -714,7 +746,7 @@ $(document).ready(function(){
           if (status === 'success') {
             if (data === 'true') {
               alert('You have successfully unhidden the post.');
-              location.reload();
+              window.location = window.location.href.split("?")[0];
             } else {
               alert(data);
             }
