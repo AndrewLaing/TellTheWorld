@@ -341,5 +341,11 @@ healthchecksdb
 
 # Virtual environment
 /TellTheWorld/ttw_env
+
+# design research files
 /TellTheWorld/research
-newEditDropdown.html
+
+# Coverage
+/TellTheWorld/.coverage
+/TellTheWorld/htmlcov
+
