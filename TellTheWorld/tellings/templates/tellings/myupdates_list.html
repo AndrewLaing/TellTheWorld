@@ -59,8 +59,7 @@
                               </li>
                               <li>
                                 <a id="delete_post_{{ item.postID }}" onclick="$.delete_post({{ item.postID }});">Delete Post</a>
-                              </li>
-                              
+                              </li>  
                             </div>
                         </div>   
                       {% endif %}
@@ -87,7 +86,6 @@
                   <span class="align-panel-footer-text-right">
                   {% for tag in item.post_tags %} 
                     <a class="tagLink" href="{% url 'tellings:myupdates' %}?tagName={{ tag }}" name="{{ tag }}">{{ tag }}</a>
-                     
                   {% endfor %}  
                   </span>          
                 </div>
@@ -111,6 +109,7 @@
                 </div>
 
               </div> {# END OF UPDATE PANEL #}
+              <br />
 
             {% endfor %}
           </div>              {# END OF PANEL GROUP #}

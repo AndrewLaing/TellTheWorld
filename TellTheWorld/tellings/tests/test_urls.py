@@ -81,9 +81,9 @@ class URLTests(SimpleTestCase):
         url = reverse('tellings:errorpage')
         self.assertEquals(resolve(url).func.view_class, ErrorPage)
 
-    def test_haspostedtoday_url_resolves(self):
-        url = reverse('tellings:haspostedtoday')
-        self.assertEquals(resolve(url).func.view_class, HasPostedToday)
+    def test_hasexceededmaxposts_url_resolves(self):
+        url = reverse('tellings:hasexceededmaxposts')
+        self.assertEquals(resolve(url).func.view_class, HasExceededMaxPosts)
 
     def test_index_url_resolves(self):
         url = reverse('tellings:index')

@@ -158,7 +158,7 @@ $(document).ready(function(){
     $.load_addUpdateModal = function() {
       $('#modal_container').empty();
   
-      $('#modal_container').load("/addupdatemodal/",function(result){
+      $('#modal_container').load("/addupdatemodal/", function(result){
         // Focus the username field when the modal is shown
         $('#addUpdateModal').on('shown.bs.modal', function () {
           $('#postTitle').focus();
@@ -185,11 +185,11 @@ $(document).ready(function(){
       }
   
       $.ajax({
-        url: "/haspostedtoday/",
+        url: "/hasexceededmaxposts/",
         type: 'get',
         success: function (data) {
           if (data === 'true') {
-            alert("Sorry. You have already posted today's update.");
+            alert("Sorry. You have already already made the maximum number of posts allowed per day!");
           } else if (data!=='false') {
             alert("Database error: please contact the administrator.");    
           } else {
@@ -338,7 +338,7 @@ $(document).ready(function(){
   
       $('#modal_container').empty();
   
-      $('#modal_container').load("/deleteaccountmodal/",function(result){
+      $('#modal_container').load("/deleteaccountmodal/", function(result){
         $('#deleteAccountModal').modal('show');
       });
     });

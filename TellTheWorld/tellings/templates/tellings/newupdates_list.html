@@ -45,19 +45,19 @@
                       {% if item.user.username == current_username %}
                         {# Edit post #}
                         <div class="btn-group">
-                            <button type="button" class="btn dropdown-toggle post-cog-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                              <img src="{% static 'tellings/imgs/settings_cog.png' %}" alt="">
-                              <span class = "caret"></span>
-                            </button>
+                          <button type="button" class="btn dropdown-toggle post-cog-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <img src="{% static 'tellings/imgs/settings_cog.png' %}" alt="">
+                            <span class = "caret"></span>
+                          </button>
 
-                            <div class="dropdown-menu dropdown-menu-right">
-                              <li>
-                                <a id="edit_post_{{ item.postID }}" onclick="$.edit_post({{ item.postID }});">Edit Post</a>
-                              </li>
-                              <li> 
-                                <a id="delete_post_{{ item.postID }}" onclick="$.delete_post({{ item.postID }});">Delete Post</a>
-                              </li>
-                            </div>
+                          <div class="dropdown-menu dropdown-menu-right">
+                            <li>
+                              <a id="edit_post_{{ item.postID }}" onclick="$.edit_post({{ item.postID }});">Edit Post</a>
+                            </li>
+                            <li> 
+                              <a id="delete_post_{{ item.postID }}" onclick="$.delete_post({{ item.postID }});">Delete Post</a>
+                            </li>
+                          </div>
                         </div>  
                       {% else %} 
                       <div class="btn-group">
@@ -85,9 +85,9 @@
 
                 {# PANEL BODY #}
                 <div id="collapse{{ item.postID }}" class="panel-collapse collapse">
-                    <div class="panel-body">
-                      <p id="text_post_{{ item.postID }}">{{ item.postText }}</p>
-                    </div>
+                  <div class="panel-body">
+                    <p id="text_post_{{ item.postID }}">{{ item.postText }}</p>
+                  </div>
                 </div>                
 
                 <div class="panel-footer align_between"> 
@@ -141,6 +141,5 @@
 
     </div>              {# END OF CONTAINER #}
   </div>                {# END OF CONTAINER-FLUID #}
-
 
 {% endblock %}

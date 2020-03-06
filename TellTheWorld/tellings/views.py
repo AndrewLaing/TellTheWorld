@@ -26,7 +26,7 @@ from datetime import timedelta, timezone
 # -----------------------------------------------------------------------------------------
 
 adminNameList = ['admin']
-
+maxPostsPerDay = 4
 
 def contains_banned_word(text):
     """ Tests if a text contains a banned word.
@@ -41,16 +41,22 @@ def contains_banned_word(text):
     return False
 
 
-def user_has_posted_today(request):
-    """ Used to determine if the user has already posted an update today.
+def has_exceeded_max_posts(request): 
+    """ Used to determine if the user has exceeded the max number of allowed posts.
     
     :param request: A dictionary-like object containing the HTTP POST parameters, 
-                    sent by a site visitor.     
-    :returns: True if the user has posted an update today, otherwise false.
+                    sent by a site visitor. Note that admins can make as many posts
+                    as they need to!
+    :returns: True if the user has exceeded the max number of allowed posts, otherwise false.
     """
+    if request.user.username in adminNameList:
+        return False
+
     current_userID = request.user.id
-    yesterday = django.utils.timezone.now() - timedelta(1)
-    return UserPost.objects.filter(user=current_userID, dateOfPost__gt=yesterday).exists()
+    startofday = django.utils.timezone.now().replace(hour=0, minute=0, second=0, microsecond=0) 
+    numberOfPostsToday = UserPost.objects.filter(user=current_userID, dateOfPost__gt=startofday).count()
+
+    return numberOfPostsToday >= maxPostsPerDay
 
 def user_login(request):
     """ Handles user authentication.
@@ -621,7 +627,6 @@ class TagListView(LoginRequiredMixin, generic.ListView):
     http_method_names = ['get', 'post']
 
 
-
 class TermsAndConditionsPage(View):
     """ Creates the Terms and Conditions page for the website."""
     http_method_names = ['get', 'post']
@@ -703,7 +708,7 @@ class AddNewUpdate(LoginRequiredMixin, View):
         :returns: A string 'true' if the title already exists in the UserPost table,
                   otherwise a redirect to the error page.
         """
-        if user_has_posted_today(request):
+        if has_exceeded_max_posts(request):
             return HttpResponseRedirect('/errorpage/')
 
         if ('postTitle' in request.POST) and ('postText' in request.POST) and ('postTags' in request.POST):
@@ -737,7 +742,7 @@ class AddNewUpdate(LoginRequiredMixin, View):
 class AddUpdateModal(LoginRequiredMixin, View):
     """ An AJAX handler used to add the login modal to pages.
     """
-    http_method_names = ['get', 'post']
+    http_method_names = ['get']
 
     def get(self, request):
         """ Handles GET requests.
@@ -746,21 +751,8 @@ class AddUpdateModal(LoginRequiredMixin, View):
                         sent by a site visitor. 
         :returns: A HTML page.
         """
-        # Ensure that the user has not posted today
-        if user_has_posted_today(request):
-            return HttpResponse('false')
-
-        return render(request, 'tellings/includes/addUpdate_modal.html')
-
-    def post(self, request):
-        """ Handles POST requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        # Ensure that the user has not posted today
-        if user_has_posted_today(request):
+        # Ensure that the user has not exceeded max allowed posts
+        if has_exceeded_max_posts(request):
             return HttpResponse('false')
 
         return render(request, 'tellings/includes/addUpdate_modal.html')
@@ -918,21 +910,12 @@ class CheckUserPassword(LoginRequiredMixin, View):
 class DeleteAccountModal(LoginRequiredMixin, View):
     """ An AJAX handler used to add the delete account modal to pages.
     """
-    http_method_names = ['get', 'post']
+    http_method_names = ['get']
 
     def get(self, request):
         """ Handles GET requests.
 
         :param request: A dictionary-like object containing all the HTTP parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        return render(request, 'tellings/includes/deleteAccount_modal.html')
-
-    def post(self, request):
-        """ Handles POST requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters 
                         sent by a site visitor. 
         :returns: A HTML page.
         """
@@ -1161,32 +1144,19 @@ class EditUserPost(LoginRequiredMixin, generic.UpdateView):
             return HttpResponse(_("YOU CANNOT EDIT OTHER USERS POSTS!!!"))   
 
 
-class HasPostedToday(LoginRequiredMixin, View):
-    """ An AJAX handler used to check whether the currently logged in
-        user has posted an update today or not."""
-    http_method_names = ['get', 'post']
+class HasExceededMaxPosts(LoginRequiredMixin, View):
+    """ An AJAX handler used to check if the currently logged in
+        user has exceeded the max number of allowed posts."""
+    http_method_names = ['get']
 
     def get(self, request):
         """ Handles GET requests.
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A string 'true' if the user has already posted an update today,
-                  otherwise 'false'.
+        :returns: True if the user has exceeded the max number of allowed posts, otherwise false.
         """
-        if user_has_posted_today(request):
-            return HttpResponse('true')
-        else:
-            return HttpResponse('false')
-
-    def post(self, request):
-        """ Handles POST requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        if user_has_posted_today(request):
+        if has_exceeded_max_posts(request): 
             return HttpResponse('true')
         else:
             return HttpResponse('false')
@@ -1285,21 +1255,12 @@ class HideUserPosts(LoginRequiredMixin, View):
 class LoginModal(View):
     """ An AJAX handler used to add the login modal to pages.
     """
-    http_method_names = ['get', 'post']
+    http_method_names = ['get']
 
     def get(self, request):
         """ Handles GET requests.
 
         :param request: A dictionary-like object containing all the HTTP parameters 
-                        sent by a site visitor. 
-        :returns: A HTML page.
-        """
-        return render(request, 'tellings/includes/login_modal.html')
-
-    def post(self, request):
-        """ Handles POST requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters 
                         sent by a site visitor. 
         :returns: A HTML page.
         """
