@@ -299,7 +299,6 @@ class AddUserCommentViewTests(SharedTestMethods):
         cls.test_invalid_commentData = { 'postID': 1, 'commentText': '' }
 
     def add_valid_postID_to_commentData(self, in_postTitle, commentData):
-        """ Note in_postTitle is used because postTitles must be unique """
         post = self.createPostRecord(userID=self.user1.id, 
                                      dateOfPost=self.test_postDate, 
                                      postTitle=in_postTitle, 
@@ -786,7 +785,6 @@ class DeleteUserCommentViewTests(SharedTestMethods):
 
 
     def createSinglePostRecord(self, in_postTitle):
-        """ Note in_postTitle is used because postTitles must be unique """
         return self.createPostRecord(userID=self.user1.id, 
                                      dateOfPost=self.test_postDate, 
                                      postTitle=in_postTitle, 
@@ -1008,7 +1006,6 @@ class EditUserCommentViewTests(SharedTestMethods):
 
 
     def createSinglePostRecord(self, in_postTitle):
-        """ Note in_postTitle is used because postTitles must be unique """
         return self.createPostRecord(userID=self.user1.id, 
                                      dateOfPost=self.test_postDate, 
                                      postTitle=in_postTitle, 
@@ -1726,66 +1723,6 @@ class TermsAndConditionsPage(SharedTestMethods):
 
     def test_POST_invalid_login(self):
         self.post_invalid_login_redirect_tests()
-
-
-class TitleExistsViewTests(SharedTestMethods):
-    """Tests for the TitleExists view."""
-
-    @classmethod
-    def setUpTestData(cls):        
-        """ Creates the test data used by the methods within this class. """
-        SV = SharedVariables
-        cls.viewname = 'tellings:titleexists'
-        cls.errorPage_viewname = SV.errorPage_viewname
-        cls.loggedout_redirect_URL = '/loginpage/?next=/titleexists/'
-
-        cls.credentials1 = SV.credentials1
-        cls.user1 = User.objects.create_user(cls.credentials1['username'], 
-                                             cls.credentials1['email'],
-                                             cls.credentials1['pwd'])
-
-        cls.test_postDate = SV.test_postDate
-        cls.test_postTitle = SV.test_postTitle
-        cls.test_postText = SV.test_postText
-
-        cls.test_notexists = { 'title': 'Not exists'}
-        cls.test_exists = { 'title': cls.test_postTitle }
-
-    def test_GET_loggedout(self):
-        self.get_loggedout_redirect_tests()
-
-    def test_GET_loggedin(self):
-        self.get_login_HTTPResponseNotAllowed_tests()
-
-    def test_POST_loggedout(self):
-        self.post_loggedout_redirect_tests()
-
-    def test_POST_no_data(self):
-        self.post_no_data_redirect_to_errorpage_tests()
-
-    def test_POST_title_not_exists(self):
-        self.client.login(username=self.credentials1['username'], 
-                          password=self.credentials1['pwd'])
-        self.createPostRecord(userID=self.user1.id, 
-                              dateOfPost=self.test_postDate, 
-                              postTitle=self.test_postTitle, 
-                              postText=self.test_postText)
-        response = self.client.post(reverse(self.viewname), 
-                                    self.test_notexists, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "false")
-
-    def test_POST_title_exists(self):
-        self.client.login(username=self.credentials1['username'], 
-                          password=self.credentials1['pwd'])
-        self.createPostRecord(userID=self.user1.id, 
-                              dateOfPost=self.test_postDate, 
-                              postTitle=self.test_postTitle, 
-                              postText=self.test_postText)
-        response = self.client.post(reverse(self.viewname), 
-                                    self.test_exists, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "true")
 
 
 class UserCommentListViewTests(SharedTestMethods):

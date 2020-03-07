@@ -125,10 +125,6 @@ class URLTests(SimpleTestCase):
         url = reverse('tellings:termsandconditions')
         self.assertEquals(resolve(url).func.view_class, TermsAndConditionsPage)
 
-    def test_titleexists_url_resolves(self):
-        url = reverse('tellings:titleexists')
-        self.assertEquals(resolve(url).func.view_class, TitleExists)
-
     def test_usercomments_url_resolves(self):
         url = reverse('tellings:usercomments')
         self.assertEquals(resolve(url).func.view_class, UserCommentListView)

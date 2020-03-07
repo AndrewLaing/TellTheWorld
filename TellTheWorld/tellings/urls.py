@@ -38,7 +38,6 @@ urlpatterns = [
     path('signup/', SignUpPage.as_view(), name='signup'),
     path('tags/', TagListView.as_view(), name='tags'),
     path('termsandconditions/', TermsAndConditionsPage.as_view(), name='termsandconditions'),
-    path('titleexists/', TitleExists.as_view(), name='titleexists'),
     path('unblockuser/', UnblockUser.as_view(), name='unblockuser'),
     path('unhidepost/', UnhidePost.as_view(), name='unhidepost'),
     path('unhideuserposts/', UnhideUserPosts.as_view(), name='unhideuserposts'),

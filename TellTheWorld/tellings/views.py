@@ -1267,45 +1267,6 @@ class LoginModal(View):
         return render(request, 'tellings/includes/login_modal.html')
 
 
-class TitleExists(LoginRequiredMixin, View):
-    """ An AJAX handler used to check if a post title already
-        exists within the UserPost table or not."""
-    http_method_names = ['post']
-
-    def post(self, request):
-        """ Handles POST requests.
-
-        :param request: A dictionary-like object containing all the HTTP parameters 
-                        sent by a site visitor. 
-        :returns: A string 'true' if the title already exists in the UserPost table,
-                  otherwise 'false'.
-        """
-        if ('title' in request.POST):
-            return self.titleExists(request)
-        else:
-            return HttpResponseRedirect('/errorpage/')
-
-    def titleExists(self, request):
-        """ Checks whether an update title already exists within the UserPost table or not.
-            This function can only be used by authenticated users.
-
-        :param request: A dictionary-like object containing all the HTTP parameters 
-                        sent by a site visitor. 
-        :returns: A string 'true' if the title already exists in the UserPost table,
-                  'censored' if the title contains a banned word,
-                  otherwise 'false'.
-        """
-        in_postTitle = request.POST['title']
-
-        if contains_banned_word(in_postTitle):
-            return HttpResponse('censored')
-
-        if UserPost.objects.filter(postTitle=in_postTitle).exists():
-            return HttpResponse('true')
-        else:
-            return HttpResponse('false')
-
-
 class UnblockUser(LoginRequiredMixin, View):
     """ An AJAX handler used to delete an BlockedUser record from the database."""
     http_method_names = ['post']

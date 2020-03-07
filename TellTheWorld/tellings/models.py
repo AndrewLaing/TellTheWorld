@@ -7,7 +7,7 @@ class UserPost(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                              db_column='user')
     dateOfPost = models.DateTimeField()
-    postTitle = models.CharField(max_length=35, unique=True)
+    postTitle = models.CharField(max_length=35)
     postText = models.CharField(max_length=255)
     dateOfEdit = models.DateTimeField(null=True, blank=True)
 

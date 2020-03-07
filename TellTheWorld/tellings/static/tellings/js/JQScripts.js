@@ -222,43 +222,6 @@ $(document).ready(function(){
       return true;
     };
   
-  
-    /**
-     * Verifies that the user has chosen a unique title
-     * for their post on the addUpdateModal when they leave the
-     * postTitle field.
-     */
-    $(document).on('change', "#postTitle", function (e) {
-      var p_postTitle = $("#postTitle").val();
-      var csrftoken = getCookie('csrftoken');
-  
-      $.post("/titleexists/",
-      {
-        title: p_postTitle,
-        csrfmiddlewaretoken: csrftoken,
-      },
-      function(data, status) {
-        if(status==='success') {
-          if(data==='true') {
-            alert('Sorry. You must choose a unique title.');
-            $("#postTitle").val("");
-            $('#postTitle').focus();
-          } else if(data==='censored') {
-            alert('Sorry, we cannot accept the title you have chosen as it contains one or more banned words. Please refer to our acceptable usage policy for guidance.');
-            $("#postTitle").val("");
-            $('#postTitle').focus();
-          } else if (data!=='false') {
-            alert("Database error: please contact the administrator.");    
-            $("#addUpdateModal").modal('toggle');  // Hide the add update modal.
-          }  
-        }
-        else {
-          alert("Database error: please contact the administrator.");
-          $("#addUpdateModal").modal('toggle');
-        }
-      });
-    }); 
-  
     
     /**
      * Hides the addUpdateModal modal.
