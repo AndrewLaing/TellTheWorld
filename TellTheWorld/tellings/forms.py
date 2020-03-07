@@ -60,7 +60,7 @@ class UserPostForm(forms.ModelForm):
     postTitle = forms.CharField(required=True,
                 max_length=UserPost._meta.get_field('postTitle').max_length, 
                 label = _('Post Title'),
-                help_text = _('A unique title post'))
+                help_text = _('The title of your post.'))
     postText =  forms.CharField(required=True,
                 max_length=UserPost._meta.get_field('postText').max_length,
                 label = _('Post Text'),
@@ -93,7 +93,6 @@ class UserPostForm(forms.ModelForm):
         error_messages = {
             'postText': {
                 'max_length': _("The text you have entered is too long."),
-                'already_exists': _("The Post title you have entered has already been used."),
             },
             'name': {
                 'max_length': _("The title of your post is too long."),
@@ -144,8 +143,3 @@ class UserPostForm(forms.ModelForm):
         with open(djangoSettings.TELLINGS_ROOT+'/static/tellings/data/tagNames.json', 'w') as f:
             json.dump(updatedTags, f)
 
-    def clean_postTitle(self):
-        postTitle = self.cleaned_data['postTitle']
-        if UserPost.objects.filter(postTitle=postTitle).exists():
-            raise forms.ValidationError("already_exists")
-        return postTitle
