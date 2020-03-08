@@ -229,8 +229,9 @@ def addComment(in_postID, in_userID, in_dateOfComment, in_commentText):
                           dateOfComment=in_dateOfComment, 
                           commentText=in_commentText)  
     comment.save()
-    
-    
+
+
+
 addComment(post1, user2, datetime(2019, 8, 2, 0,0,0).replace(tzinfo=timezone.utc), 
            'Wonderful post.')    
 addComment(post1, user3, datetime(2019, 8, 3, 0,0,0).replace(tzinfo=timezone.utc), 
@@ -293,4 +294,43 @@ addComment(post28, user6, datetime(2019, 8, 2, 0,0,0).replace(tzinfo=timezone.ut
            'Postie postie.')    
 addComment(post29, user6, datetime(2019, 8, 2, 0,0,0).replace(tzinfo=timezone.utc), 
            'How\'s it going, bestie?')
+
+
+
+from tellings.models import BlockedUser
+
+
+def addBlockedUser(in_blockedUser, in_blockedBy):
+    bu = BlockedUser(blockedUser=in_blockedUser, blockedBy=in_blockedBy)  
+    bu.save()
+
+
+addBlockedUser(user1, user21)
+addBlockedUser(user1, user2)
+addBlockedUser(user1, user7)
+addBlockedUser(user1, user6)
+
+
+
+from tellings.models import HiddenPost
+
+def addHiddenPost(in_postID, in_hideFrom):
+    hp = HiddenPost(postID=in_postID, hideFrom=in_hideFrom)  
+    hp.save()
+
+
+addHiddenPost(post10, user15)
+addHiddenPost(post11, user15)
+addHiddenPost(post14, user15)
+addHiddenPost(post15, user15)
+addHiddenPost(post10, user6)
+addHiddenPost(post10, user9)
+addHiddenPost(post10, user11)
+    
+    
+    
+    
+    
+    
+    
     

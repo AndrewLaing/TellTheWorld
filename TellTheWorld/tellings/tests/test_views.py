@@ -428,31 +428,6 @@ class AddNewUpdateViewTests(SharedTestMethods):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "censored")
 
-    def test_POST_fail_title_exists(self):
-        self.client.login(username=self.credentials1['username'], 
-                          password=self.credentials1['pwd'])
-        self.client.post(reverse(self.viewname), 
-                         self.test_postData1, follow=True)
-        self.client.logout()
-
-        self.client.login(username=self.credentials2['username'], 
-                          password=self.credentials2['pwd'])
-        response = self.client.post(reverse(self.viewname), 
-                          self.test_duplicate_title_postData, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertRedirects(response, reverse(self.errorPage_viewname))
-
-    def test_POST_fail_already_posted_today(self):
-        self.client.login(username=self.credentials1['username'], 
-                          password=self.credentials1['pwd'])
-        self.client.post(reverse(self.viewname), 
-                         self.test_postData1, follow=True)
-
-        response = self.client.post(reverse(self.viewname), 
-                         self.test_postData2, follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertRedirects(response, reverse(self.errorPage_viewname))
-
 
 class AddUpdateModalTests(SharedTestMethods):
     """ Tests for the AddUpdateModal view. """
@@ -492,7 +467,7 @@ class AddUpdateModalTests(SharedTestMethods):
         """ Tests the behaviour if the user has already posted
             an update today. """
         pass
-"""         self.createPostRecord(userID=self.user1.id, 
+        """         self.createPostRecord(userID=self.user1.id, 
                               dateOfPost=self.test_postDate, 
                               postTitle=self.test_postTitle1, 
                               postText=self.test_postText1)
@@ -500,36 +475,6 @@ class AddUpdateModalTests(SharedTestMethods):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
         response = self.client.get((reverse(self.viewname)), follow=True)
-        content = response.content.decode("utf-8")
-
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("false", content) """
-
-    def test_POST_loggedout(self):
-        self.post_loggedout_redirect_tests()
-
-    def test_POST_loggedin_hasNotExceededMaxPosts(self):
-        """ Tests the behaviour if the user has NOT already posted
-            an update today. """
-        self.client.login(username=self.credentials1['username'], 
-                          password=self.credentials1['pwd'])
-        response = self.client.post((reverse(self.viewname)), follow=True)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, self.templateURL)
-
-    def test_POST_loggedin_hasExceededMaxPosts(self):
-        """ Tests the behaviour if the user has already posted
-            an update today. """
-        pass
-"""         self.createPostRecord(userID=self.user1.id, 
-                              dateOfPost=self.test_postDate, 
-                              postTitle=self.test_postTitle1, 
-                              postText=self.test_postText1)
-
-        self.client.login(username=self.credentials1['username'], 
-                          password=self.credentials1['pwd'])
-        response = self.client.post((reverse(self.viewname)), follow=True)
         content = response.content.decode("utf-8")
 
         self.assertEqual(response.status_code, 200)
@@ -739,16 +684,6 @@ class DeleteAccountModalTests(SharedTestMethods):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
         response = self.client.get((reverse(self.viewname)), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, self.templateURL)
-
-    def test_POST_loggedout(self):
-        self.post_loggedout_redirect_tests()
-
-    def test_POST_loggedin(self):
-        self.client.login(username=self.credentials1['username'], 
-                          password=self.credentials1['pwd'])
-        response = self.client.post(reverse(self.viewname), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, self.templateURL)
 
@@ -1307,31 +1242,6 @@ class HasExceededMaxPostsTests(SharedTestMethods):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "false")
 
-    def test_GET_has_posted(self):
-        self.client.login(username=self.credentials1['username'], 
-                          password=self.credentials1['pwd'])
-        self.createPostRecord(self.user1.id, 
-                              self.test_postDate, 
-                              self.test_postTitle, 
-                              self.test_postText)
-        response = self.client.get((reverse(self.viewname)), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "true")
-
-    def test_POST_loggedout(self):
-        self.post_loggedout_redirect_tests()
-
-    def test_POST_loggedin(self):
-        self.client.login(username=self.credentials1['username'], 
-                          password=self.credentials1['pwd'])
-        self.createPostRecord(self.user1.id, 
-                              self.test_postDate, 
-                              self.test_postTitle, 
-                              self.test_postText)
-        response = self.client.post((reverse(self.viewname)), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "true")
-
 
 class IndexPageViewTests(SharedTestMethods):
     """Tests for the IndexPage view."""
@@ -1401,18 +1311,6 @@ class LoginModalTests(SharedTestMethods):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
         response = self.client.get((reverse(self.viewname)), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, self.templateURL)
-
-    def test_POST_loggedout(self):
-        response = self.client.post(reverse(self.viewname), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, self.templateURL)
-
-    def test_POST_loggedin(self):
-        self.client.login(username=self.credentials1['username'], 
-                          password=self.credentials1['pwd'])
-        response = self.client.post(reverse(self.viewname), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, self.templateURL)
 

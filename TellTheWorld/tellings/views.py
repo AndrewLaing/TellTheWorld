@@ -152,32 +152,28 @@ class AccountDeletedPage(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all HTTP POST parameters 
                         sent by a site visitor. 
-        :returns: A HTML page.
+        :returns: A HTML page if the account was deleted, otherwise
+                  a redirect to the error page.
         """
-        try:
-            u = request.user
+        current_user = request.user
+        deleted_date = django.utils.timezone.now()
+        date_joined = current_user.date_joined
+        membership_length = deleted_date - date_joined
 
-            # Create a DeletedAccount record
-            deleted_date = django.utils.timezone.now()
-            date_joined = u.date_joined
-            membership_length = deleted_date - date_joined
+        data = {
+            'deleted_reason': request.POST.get('reason', 'noreasongiven'),
+            'deleted_date': deleted_date,
+            'membership_length': membership_length.days,
+        }
 
-            data = {
-                'deleted_reason': request.POST.get('reason', 'mydefaultvalue'),
-                'deleted_date': deleted_date,
-                'membership_length': membership_length.days,
-            }
+        form = DeleteAccountForm(data)
 
-            form = DeleteAccountForm(data)
-
-            if form.is_valid():
-                form.save()
-
-            # Logout and delete the user's account
+        if form.is_valid():
+            form.save()
             logout(request)
-            u.delete()
-            return render(request, 'tellings/accountDeleted.html')
-        except:
+            current_user.delete()
+            return render(request, 'tellings/accountDeleted.html')            
+        else:
             return HttpResponseRedirect('/errorpage/')
 
 
@@ -257,6 +253,7 @@ class ChangeUserDetailsPage(LoginRequiredMixin, View):
         :returns: A HTML page.
         """
         form = ChangeUserDetailsForm(request.POST)
+
         if form.is_valid():
             return self.changeDetails(request, form)
         else:
@@ -270,11 +267,11 @@ class ChangeUserDetailsPage(LoginRequiredMixin, View):
                         sent by a site visitor.  
         :returns: A HTML page.
         """
-        u = request.user
-        u.first_name = request.POST['first_name']
-        u.last_name = request.POST['last_name']
-        u.email = request.POST['email']
-        u.save()
+        current_user = request.user
+        current_user.first_name = request.POST['first_name']
+        current_user.last_name = request.POST['last_name']
+        current_user.email = request.POST['email']
+        current_user.save()
         return render(request, 'tellings/changeUserDetails.html', 
                       {'message': _('Your details have been updated'), 'form': form})
 
@@ -423,23 +420,29 @@ class MyUpdatesListView(LoginRequiredMixin, generic.ListView):
     http_method_names = ['get', 'post']
 
     def get_queryset(self):
+        """ Returns a queryset. This will be filtered if the user passes either a tagName
+            or a username. Note that if the user tries to pass a value not in the database, then
+            an unfiltered set will be returned instead.
+
+            :returns: A queryset of the currently logged in user's UserPosts.
+        """
         user_id = self.request.user.id
         tagName_val = False
         qs = super().get_queryset()
         
         if self.request.method == 'GET' and 'tagName' in self.request.GET:
             tagName_val = self.request.GET.get('tagName', False)
-                
-        if tagName_val:  # get posts for current user filtered by tagname
-            try:
-                tagID = Tag.objects.get(tagName=tagName_val).tagID
-                tagmaps = Tagmap.objects.filter(tagID=tagID)
-                postList = [tm.postID.postID for tm in tagmaps]
-                qs = qs.filter(postID__in=postList, user=user_id).order_by('-dateOfPost') 
-            except:
-                # If the user tries to search for a non existing tag, return all posts instead
-                qs = qs.filter(user=user_id).order_by('-dateOfPost')
-        else:   # get all posts for current user
+
+            # If the user tries to search for a non existing tag, return all posts instead
+            if not Tag.objects.filter(tagName=tagName_val).exists():
+                return qs.filter(user=user_id).order_by('-dateOfPost')
+
+        if tagName_val:
+            tagID = Tag.objects.get(tagName=tagName_val).tagID
+            tagmaps = Tagmap.objects.filter(tagID=tagID)
+            postList = [tm.postID.postID for tm in tagmaps]
+            qs = qs.filter(postID__in=postList, user=user_id).order_by('-dateOfPost') 
+        else:
             qs = qs.filter(user=user_id).order_by('-dateOfPost')
 
         return qs
@@ -504,14 +507,24 @@ class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
             return UserPost.objects.exclude(postID__in=hiddenPosts).order_by('-dateOfPost')
 
     def get_queryset(self):
+        """ Returns a queryset. This will be filtered if the user passes either a tagName
+            or a username. Note that if the user tries to pass a value not in the database, then
+            an unfiltered set will be returned instead.
+
+            :returns: A queryset of UserPosts.
+        """
         tagName_val = False
         username_val = False
 
         if self.request.method == 'GET':
             if 'tagName' in self.request.GET:
                 tagName_val = self.request.GET.get('tagName', False) 
+                if not Tag.objects.filter(tagName=tagName_val).exists():
+                    return self.posts_filtered_by_blocked()
             if 'userName' in self.request.GET:
                 username_val = self.request.GET.get('userName', False)
+                if not User.objects.filter(username=username_val).exists():
+                    return self.posts_filtered_by_blocked()
                 user_id = User.objects.get(username=username_val)
                       
         if tagName_val: 
@@ -936,21 +949,19 @@ class DeleteUserComment(LoginRequiredMixin, View):
         """
         if ('commentID' in request.POST):
             commentID = request.POST.get('commentID')
+
+            if not UserComment.objects.filter(commentID=commentID).exists(): 
+                return HttpResponse(_("Something went wrong. We were unable to delete your comment."))
+
             comment_username = self.getUsernameForCommentID(commentID)
             post_username = self.getUsernameOfPostAuthor(commentID)
             
             # Comments can either be deleted by the people who made them ...
             if( comment_username == request.user.username ):
-                if self.deleteComment(commentID):
-                    return HttpResponse("true")
-                else:
-                    return HttpResponse(_("Something went wrong. We were unable to delete your comment."))
+                return self.deleteComment(commentID)
             # ... or by the author of the post being commented upon.
             elif( post_username == request.user.username ):
-                if self.deleteComment(commentID):
-                    return HttpResponse("true")
-                else:
-                    return HttpResponse(_("Something went wrong. We were unable to delete this comment."))
+                return self.deleteComment(commentID)
             else:
                 return HttpResponse(_("YOU CANNOT DELETE THIS COMMENT!!!"))
         else:
@@ -959,34 +970,25 @@ class DeleteUserComment(LoginRequiredMixin, View):
     def getUsernameForCommentID(self, in_commentID):
         """ Returns the name of the user who made the comment.
         """
-        try:
-            comment = UserComment.objects.get(commentID=in_commentID)
-            username = comment.user.username
-            return username
-        except:
-            return None
+        comment = UserComment.objects.get(commentID=in_commentID)
+        username = comment.user.username
+        return username
 
     def getUsernameOfPostAuthor(self, in_commentID):
         """ Returns the name of the user who made the post being commented upon.
         """
-        try:
-            comment = UserComment.objects.get(commentID=in_commentID)
-            in_postID = comment.postID.postID
-            post = UserPost.objects.get(postID=in_postID)
-            username = post.user.username
-            return username
-        except:
-            return None
+        comment = UserComment.objects.get(commentID=in_commentID)
+        in_postID = comment.postID.postID
+        post = UserPost.objects.get(postID=in_postID)
+        username = post.user.username
+        return username
 
     def deleteComment(self, in_commentID):
         """ Handles deleting a userComment.
         """
-        try:
-            comment = UserComment.objects.get(commentID=in_commentID)
-            comment.delete()
-            return True
-        except:
-            return False
+        comment = UserComment.objects.get(commentID=in_commentID)
+        comment.delete()
+        return HttpResponse("true")
 
 
 class DeleteUserPost(LoginRequiredMixin, View):
@@ -1003,14 +1005,17 @@ class DeleteUserPost(LoginRequiredMixin, View):
         """
         if ('postID' in request.POST):
             postID = request.POST.get('postID')
+
+            if not UserPost.objects.filter(postID=postID).exists(): 
+                return HttpResponse(_("Something went wrong. We were unable to delete your post."))
+
             username = self.getUsernameForPostID(postID)
 
             # Check that the post was made by the user deleting it
             if( username == request.user.username ):
-                if self.deletePost(postID):
-                    return HttpResponse("true")
-                else:
-                    return HttpResponse(_("Something went wrong. We were unable to delete your post."))
+                post = UserPost.objects.get(postID=postID)
+                post.delete()
+                return HttpResponse("true")
             else:
                 return HttpResponse(_("YOU CANNOT DELETE OTHER USERS POSTS!!!"))
         else:
@@ -1019,22 +1024,9 @@ class DeleteUserPost(LoginRequiredMixin, View):
     def getUsernameForPostID(self, in_postID):
         """ Returns the name of the user who made the post.
         """
-        try:
-            post = UserPost.objects.get(postID=in_postID)
-            username = post.user.username
-            return username
-        except:
-            return None
-
-    def deletePost(self, in_postID):
-        """ Handles deleting a userPost.
-        """
-        try:
-            post = UserPost.objects.get(postID=in_postID)
-            post.delete()
-            return True
-        except:
-            return False
+        post = UserPost.objects.get(postID=in_postID)
+        username = post.user.username
+        return username
         
 
 class EditUserComment(LoginRequiredMixin, generic.UpdateView):
@@ -1045,6 +1037,7 @@ class EditUserComment(LoginRequiredMixin, generic.UpdateView):
     template_name = "tellings/includes/editComment.html"    
     fields = ['postID', 'user', 'dateOfComment', 'dateOfEdit', 'commentText']  
     http_method_names = ['get', 'post']
+
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1059,6 +1052,9 @@ class EditUserComment(LoginRequiredMixin, generic.UpdateView):
         :returns: A string 'true' if the comment could be edited, otherwise an error message.
         """
         if ('commentID' in request.POST and 'commentText' in request.POST):
+            commentID = request.POST.get('commentID')
+            if not UserComment.objects.filter(commentID=commentID).exists(): 
+                return HttpResponseRedirect('/errorpage/')
             return self.updateUserCommentRecord(request)
         else:
             return HttpResponseRedirect('/errorpage/')
@@ -1077,7 +1073,7 @@ class EditUserComment(LoginRequiredMixin, generic.UpdateView):
         if contains_banned_word(in_commentText):
             return HttpResponse('censored')
 
-        userComment = get_object_or_404(UserComment, commentID=in_commentID)
+        userComment = UserComment.objects.get(commentID=in_commentID)
 
         if(userComment.user.username == request.user.username):
             try:
