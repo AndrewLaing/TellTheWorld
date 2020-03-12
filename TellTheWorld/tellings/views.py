@@ -219,14 +219,12 @@ class ChangePasswordPage(LoginRequiredMixin, View):
                         sent by a site visitor. 
         :returns: A HTML page.
         """
-        form = PasswordChangeForm(request.user, request.POST)
-
-        if form.is_valid():
-            return self.changePassword(request, form)
+        if 'old_password' in self.request.POST and 'new_password1' in self.request.POST:
+            return self.changePassword(request)
         else:
-            return render(request, 'tellings/changePassword.html', {'form': form})
+            return HttpResponseRedirect('/errorpage/')
 
-    def changePassword(self, request, form):
+    def changePassword(self, request):
         """ Handles changing the user's password.
 
         :param request: A dictionary-like object containing all HTTP POST parameters 
@@ -234,11 +232,16 @@ class ChangePasswordPage(LoginRequiredMixin, View):
         :param form: A Django form object.
         :returns: A HTML page.
         """
-        form.save()
-        user = form.save()
-        update_session_auth_hash(request, user)  # Important!
-        return render(request, 'tellings/changePassword.html', 
-                      {'message': _('Your password was successfully updated!'), 'form': form})
+        form = PasswordChangeForm(request.user, request.POST)
+
+        if form.is_valid():
+            form.save()
+            user = form.save()
+            update_session_auth_hash(request, user)  # Important!
+            return render(request, 'tellings/changePassword.html', 
+                        {'message': _('Your password was successfully updated!'), 'form': form})
+        else:
+            return render(request, 'tellings/changePassword.html', {'form': form})
 
 
 class ChangeUserDetailsPage(LoginRequiredMixin, View):
@@ -315,6 +318,15 @@ class HiddenPostListView(LoginRequiredMixin, generic.ListView):
         current_user = self.request.user
         blockedUsers = BlockedUser.objects.filter(blockedBy=current_user)
         return [blocked.blockedUser for blocked in blockedUsers]   
+
+    def hiddenUsers(self):
+        """ Returns a list of the users blocked by the currently loggedin user. 
+
+            :returns: A list of User objects.   
+        """
+        current_user = self.request.user
+        hiddenUsers = HiddenUser.objects.filter(hiddenBy=current_user)
+        return [hidden.hiddenUser for hidden in hiddenUsers]   
 
     def userBlockedBy(self):
         """ Returns a list of the users who have blocked the currently loggedin user. 
@@ -1261,54 +1273,6 @@ class HidePost(LoginRequiredMixin, View):
                 hp.save()
                 response = {'status': StatusCode.SUCCESS.value, 'message': _("The post will now be hidden from you.!")} 
 
-        return response
-
-
-class HideUserPosts(LoginRequiredMixin, View):
-    """ An AJAX handler used to add a new HiddenPost record to the database
-        for all posts by a specified user.
-    """
-    http_method_names = ['post']
-
-    def post(self, request):
-        """ Handles POST requests.
-
-        :param request: A dictionary-like object containing all HTTP POST parameters 
-                        sent by a site visitor. 
-        :returns: A HTTPResponse.
-        """
-        if ('user' in request.POST): 
-            response = self.hideUserPosts(request)
-        else:
-            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
-        
-        return HttpResponse(json.dumps(response), content_type='application/json')
-
-    def hideUserPosts(self, request):
-        """ Returns a response dictionary.
-        """
-        in_username = request.POST['user']  
-
-        if not User.objects.filter(username=in_username).exists():
-            response = {'status': StatusCode.ERROR.value, 'message': _("Error: No such user!")} 
-        else: 
-            #Admin posts/comments cannot be hidden!!!
-            if in_username in adminNameList:
-                response = {'status': StatusCode.ERROR.value, 'message': _("Error: You cannot hide posts by administrators!")} 
-            else:    
-                in_user = User.objects.get(username=in_username)
-                if not UserPost.objects.filter(user=in_user).exists():
-                    response = {'status': StatusCode.ERROR.value, 'message': _("Error: No posts exist for the specified user!")} 
-                else:
-                    postsToHide = UserPost.objects.filter(user=in_user)
-                    in_hideFrom = request.user
-                    
-                    for post in postsToHide:
-                        if not HiddenPost.objects.filter(postID=post, hideFrom=in_hideFrom).exists():
-                            hp = HiddenPost(postID=post, hideFrom=in_hideFrom)
-                            hp.save()
-                    response = {'status': StatusCode.SUCCESS.value, 'message': _("The user's posts will now be hidden from you.")} 
- 
         return response
 
 

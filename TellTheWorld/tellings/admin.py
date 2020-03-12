@@ -43,5 +43,3 @@ admin.site.register(DeletedAccount, DeletedAccountAdmin)
 admin.site.register(HiddenPost, HiddenPostAdmin)
 admin.site.register(BlockedUser, BlockedUserAdmin)
 
-
-

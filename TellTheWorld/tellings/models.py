@@ -82,6 +82,9 @@ class DeletedAccount(models.Model):
 
 
 class BlockedUser(models.Model):
+    """ When a user is blocked, the person who blocked them will no longer be able to see
+        their posts, and the blocked user will no longer be able to see posts by the person
+        who blocked them. """
     blockedUser = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
                              related_name='blockeduser_blockeduser_set',
                              db_column='blockedUser')
@@ -95,7 +98,7 @@ class BlockedUser(models.Model):
     class Meta:
         verbose_name = "BlockedUser"
         verbose_name_plural = "BlockedUsers"
-
+        
 
 class HiddenPost(models.Model):
     postID = models.ForeignKey(UserPost, on_delete=models.CASCADE, db_column='postID')

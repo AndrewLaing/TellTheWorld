@@ -27,7 +27,6 @@ urlpatterns = [
     path('errorpage/', ErrorPage.as_view(), name='errorpage'),
     path('hasexceededmaxposts/', HasExceededMaxPosts.as_view(), name='hasexceededmaxposts'),
     path('hidepost/', HidePost.as_view(), name='hidepost'),
-    path('hideuserposts/', HideUserPosts.as_view(), name='hideuserposts'),
     path('hiddenposts/', HiddenPostListView.as_view(), name='hiddenposts'),
     path('loginmodal/', LoginModal.as_view(), name='loginmodal'),
     path('loginpage/', LoginView.as_view(template_name='tellings/loginpage.html'), name='loginpage'),

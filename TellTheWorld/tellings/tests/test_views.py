@@ -252,7 +252,14 @@ class AccountDeletedPageTests(SharedTestMethods):
         cls.user1 = User.objects.create_user(cls.credentials1['username'], 
                                              cls.credentials1['email'],
                                              cls.credentials1['pwd'])
+        cls.credentials2 = SV.credentials2
+        cls.user2 = User.objects.create_user(cls.credentials2['username'], 
+                                             cls.credentials2['email'],
+                                             cls.credentials2['pwd'])
         cls.test_reasonForDeletingAccount = SV.test_reasonForDeletingAccount
+
+        max_reason_len = DeletedAccount._meta.get_field('deleted_reason').max_length
+        cls.test_invalidReason = "@" * (max_reason_len + 10)
 
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
@@ -279,6 +286,21 @@ class AccountDeletedPageTests(SharedTestMethods):
 
         self.assertEqual(response.status_code, 200)
         self.assertFalse(userStillExists)
+
+    def test_POST_invalidDeleteAccount(self):
+        test_deleteAccount = {
+            'reason': self.test_invalidReason
+        }
+
+        self.client.login(username=self.credentials2['username'], 
+                          password=self.credentials2['pwd'])
+        response = self.client.post(reverse(self.viewname), 
+                                    test_deleteAccount, follow=True)
+        userStillExists = User.objects.filter(username=self.credentials2['username']).exists()    
+
+        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, reverse(self.errorPage_viewname))
+        self.assertTrue(userStillExists)
 
 
 class AddUserCommentViewTests(SharedTestMethods):
@@ -309,7 +331,8 @@ class AddUserCommentViewTests(SharedTestMethods):
         
         cls.test_valid_commentData = { 'postID': 1, 'commentText': 'test comment' }      
         cls.test_banned_commentData = { 'postID': 1, 'commentText': cls.test_bannedText }        
-        cls.test_invalid_commentData = { 'postID': 1, 'commentText': '' }
+        cls.test_invalid_commentData1 = { 'postID': 1, 'commentText': '' }      
+        cls.test_invalid_commentData2 = { 'postID': 1999, 'commentText': '' }
 
     def add_valid_postID_to_commentData(self, in_postTitle, commentData):
         post = self.createPostRecord(userID=self.user1.id, 
@@ -347,14 +370,24 @@ class AddUserCommentViewTests(SharedTestMethods):
         self.response_contains_status_code(response, StatusCode.SUCCESS.value)
 
     def test_POST_failure(self):
-        self.test_invalid_commentData = self.add_valid_postID_to_commentData('post failure', 
-                                                                             self.test_invalid_commentData)
+        self.test_invalid_commentData1 = self.add_valid_postID_to_commentData('post failure', 
+                                                                             self.test_invalid_commentData1)
         
         self.client.login(username=self.credentials2['username'], 
                           password=self.credentials2['pwd'])
                     
         response = self.client.post(reverse(self.viewname), 
-                                    self.test_invalid_commentData, follow=True)                    
+                                    self.test_invalid_commentData1, follow=True)                    
+                          
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
+
+    def test_POST_invalid_postID(self):
+        self.client.login(username=self.credentials2['username'], 
+                          password=self.credentials2['pwd'])
+                    
+        response = self.client.post(reverse(self.viewname), 
+                                    self.test_invalid_commentData2, follow=True)                    
                           
         self.assertEqual(response.status_code, 200)
         self.response_contains_status_code(response, StatusCode.ERROR.value)
@@ -404,7 +437,14 @@ class AddNewUpdateViewTests(SharedTestMethods):
         cls.test_postData2 = { 'postTitle': SV.test_postTitle2,
                               'postText': SV.test_postText2,
                               'postTags': cls.test_postTags_json, }
+
+        max_postTitle_len = UserPost._meta.get_field('postTitle').max_length
+        invalid_postTitle = "@" * (max_postTitle_len + 10)
         
+        cls.test_invalid_postData = { 'postTitle': invalid_postTitle,
+                              'postText': SV.test_postText2,
+                              'postTags': cls.test_postTags_json, }
+
         cls.test_duplicate_title_postData = { 'postTitle': SV.test_postTitle1,
                               'postText': SV.test_postText2,
                               'postTags': cls.test_postTags_json, }
@@ -435,6 +475,14 @@ class AddNewUpdateViewTests(SharedTestMethods):
                                     self.test_postData1, follow=True)
         self.assertEqual(response.status_code, 200)
         self.response_contains_status_code(response, StatusCode.SUCCESS.value)
+
+    def test_POST_invalidData(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        response = self.client.post(reverse(self.viewname), 
+                                    self.test_invalid_postData, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
 
     def test_POST_censored(self):
         self.client.login(username=self.credentials1['username'], 
@@ -540,40 +588,36 @@ class CensorTextViewTests(SharedTestMethods):
         self.response_contains_status_code(response, StatusCode.SUCCESS.value)
 
 
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
 class ChangePasswordPageTests(SharedTestMethods):
     """Tests for the ChangePassword view."""
 
     @classmethod
     def setUpTestData(cls):        
         """ Creates the test data used by the methods within this class. """
+        SV = SharedVariables
+
         cls.viewname = 'tellings:changepassword'
         cls.loggedout_redirect_URL = '/loginpage/?next=/changepassword/'
         cls.templateURL = 'tellings/changePassword.html'
+        cls.errorPage_viewname = SV.errorPage_viewname
 
-        SV = SharedVariables
         cls.credentials1 = SV.credentials1
 
         cls.user1 = User.objects.create_user(cls.credentials1['username'], 
                                              cls.credentials1['email'],
                                              cls.credentials1['pwd'])
-        cls.change_data = {
-            'old_password': '@myp455w0rd',
+        cls.valid_data = {
+            'old_password': cls.credentials1['pwd'],
             'new_password1': 'ch@n63d70n3w',
-            'new_password1': 'ch@n63d70n3w'
+            'new_password2': 'ch@n63d70n3w'
         }
-        cls.new_credentials = {
-            'username': 'testuser1',
-            'pwd': 'ch@n63d70n3w'
-        }
-        cls.change_data_invalid1 = {
-            'old_password': '@myp455w0rd',
-            'new_password1': 'ch@n63d70n3w',
-            'new_password1': 'ch@n63wr0n6'
-        }
-        cls.change_data_invalid2 = {
+        cls.invalid_data = {
             'old_password': '@mywr0n6p455w0rd',
             'new_password1': 'ch@n63d70n3w',
-            'new_password1': 'ch@n63d70n3w'
+            'new_password2': 'ch@n63d70n3w'
         }
 
     def test_GET_loggedout(self):
@@ -584,6 +628,30 @@ class ChangePasswordPageTests(SharedTestMethods):
 
     def test_POST_loggedout(self):
         self.post_loggedout_redirect_tests()
+
+    def test_POST_no_data(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])        
+        response = self.client.post(reverse(self.viewname), follow=True)        
+        self.assertRedirects(response, reverse(self.errorPage_viewname))
+
+    def test_POST_validData(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        response = self.client.post(reverse(self.viewname), 
+                                    self.valid_data, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_POST_invalidOldPassword(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        response = self.client.post(reverse(self.viewname), 
+                                    self.invalid_data, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode("utf-8")
+        self.assertIn("Old password error", content, msg="Invalid old_password error not found.")
 
 
 class ChangeUserDetailsPageTests(SharedTestMethods):
@@ -759,7 +827,7 @@ class DeleteUserCommentViewTests(SharedTestMethods):
                           password=self.credentials2['pwd'])
         response = self.client.post(reverse(self.viewname), 
                                     test_validDelete, follow=True)
-        content = response.content.decode("utf-8")
+
         commentStillExists = UserComment.objects.filter(pk=test_commentID).exists()
 
         self.assertEqual(response.status_code, 200)
@@ -888,7 +956,7 @@ class DeleteUserPostViewTests(SharedTestMethods):
         self.response_contains_status_code(response, StatusCode.SUCCESS.value)
         self.assertFalse(postStillExists)
 
-    def test_POST_invalidDelete(self):
+    def test_POST_invalidUser(self):
         self.createPostRecord(userID=self.user1.id, 
                               dateOfPost=self.test_postDate, 
                               postTitle=self.test_postTitle1, 
@@ -909,6 +977,19 @@ class DeleteUserPostViewTests(SharedTestMethods):
         self.assertEqual(response.status_code, 200)
         self.response_contains_status_code(response, StatusCode.ERROR.value)
         self.assertTrue(postStillExists)
+
+    def test_POST_invalidPostID(self):
+        test_invalidDelete = {
+            'postID': 99999,
+        }
+
+        self.client.login(username=self.credentials2['username'], 
+                          password=self.credentials2['pwd'])
+        response = self.client.post(reverse(self.viewname), 
+                                    test_invalidDelete, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
 
 
 class EditUserCommentViewTests(SharedTestMethods):
@@ -1024,14 +1105,14 @@ class EditUserCommentViewTests(SharedTestMethods):
         self.response_contains_status_code(response, StatusCode.CENSORED.value)
         self.assertNotEqual(self.test_newCommentText, editedField)
 
-    def test_POST_invalidEdit_user(self):
+    def test_POST_invalidUser(self):
         """ Tests that a user cannot edit another user's comments.
         """
         self.createComment('post_invalidEdit_user', 'test comment')
         comment = UserComment.objects.latest('commentID')
         test_commentID = comment.commentID  
 
-        test_validEdit = {
+        test_invalidEdit = {
             'commentID': test_commentID,
             'commentText': self.test_newCommentText
         }
@@ -1039,7 +1120,7 @@ class EditUserCommentViewTests(SharedTestMethods):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
         response = self.client.post(reverse(self.viewname), 
-                                    test_validEdit, follow=True)
+                                    test_invalidEdit, follow=True)
 
         editedComment = UserComment.objects.get(pk=test_commentID)
         editedField = editedComment.commentText
@@ -1047,6 +1128,22 @@ class EditUserCommentViewTests(SharedTestMethods):
         self.assertEqual(response.status_code, 200)
         self.response_contains_status_code(response, StatusCode.ERROR.value)
         self.assertNotEqual(self.test_newCommentText, editedField)
+
+    def test_POST_invalidCommentID(self):
+        test_commentID = 9999
+
+        test_invalidEdit = {
+            'commentID': test_commentID,
+            'commentText': self.test_newCommentText
+        }
+
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        response = self.client.post(reverse(self.viewname), 
+                                    test_invalidEdit, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
 
 
 class EditUserPostViewTests(SharedTestMethods):
@@ -1147,7 +1244,7 @@ class EditUserPostViewTests(SharedTestMethods):
         self.response_contains_status_code(response, StatusCode.CENSORED.value) 
         self.assertNotEqual(self.test_bannedText, editedField)
 
-    def test_POST_invalidEdit(self):
+    def test_POST_invalidUser(self):
         self.createPostRecord(userID=self.user1.id, 
                               dateOfPost=self.test_postDate, 
                               postTitle=self.test_postTitle1,
@@ -1170,6 +1267,21 @@ class EditUserPostViewTests(SharedTestMethods):
         self.assertEqual(response.status_code, 200)
         self.response_contains_status_code(response, StatusCode.ERROR.value) 
         self.assertNotEqual(self.test_newPostText, editedField)
+
+    def test_POST_invalidPostID(self):
+        test_postID = 9999
+        test_invalidEdit = {
+            'postID': test_postID,
+            'postText': self.test_newPostText
+        }
+
+        self.client.login(username=self.credentials2['username'], 
+                          password=self.credentials2['pwd'])
+        response = self.client.post(reverse(self.viewname), 
+                                    test_invalidEdit, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value) 
 
 
 class ErrorPageViewTests(SharedTestMethods):
@@ -1515,12 +1627,15 @@ class SignUpPageTests(SharedTestMethods):
                                              cls.credentials1['pwd'])
 
         cls.invalid_credentials = SV.invalid_credentials
+        cls.test_username = 'testuser2'
         cls.registration_data = {
-            'username': 'testuser2',
+            'username': cls.test_username,
+            'email': 'test@test.com',
             'password1': '@myp455w0rd',
             'password2': '@myp455w0rd'}
         cls.registration_data_invalid = {
-            'username': 'testuser2',
+            'username': cls.test_username,
+            'email': 'test@test.com',
             'password1': '@myp455w0rd',
             'password2': '@myp455'}
 
@@ -1536,8 +1651,12 @@ class SignUpPageTests(SharedTestMethods):
         self.assertRedirects(response, reverse(self.errorPage_viewname))
 
     def test_POST_valid(self):
-        response = self.client.post(reverse(self.viewname), self.registration_data)
+        response = self.client.post(reverse(self.viewname), self.registration_data, follow=True)
+        user = User.objects.get(username=self.registration_data['username'])
+
+        self.assertEqual(int(self.client.session['_auth_user_id']), user.pk)
         self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, reverse(self.indexPage_viewname))
 
     def test_POST_invalid(self):
         response = self.client.post(reverse(self.viewname), self.registration_data_invalid)
