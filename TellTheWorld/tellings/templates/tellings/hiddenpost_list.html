@@ -6,7 +6,7 @@
  * Filename:     hiddenpost_list.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 05/03/2020
+ * Last updated: 11/03/2020
  * Description:  Template used for creating the HiddenPost html.
  * -------------------------------------------------------------------------------
 {% endcomment %}
@@ -31,7 +31,7 @@
                   {# Post title and username #}
                   <div class="panel-postTitle align-panel-footer-text-left">
                     <p><a href="{% url 'tellings:hiddenposts' %}?username={{ item.postID.user }}" name="{{ item.postID.user }}">
-                      {{ item.postID.user }} says</a>
+                      {{ item.postID.user }} says</a> ... {{ item.postID.postTitle }}
                     </p>
                   </div>
 
@@ -55,7 +55,6 @@
                       <li>
                         <a onclick="$.block_user('{{ item.postID.user }}');">Block user</a>
                       </li>
-                      
                     </div>
                   </div> 
                 </div> {# END OF Panel header #}

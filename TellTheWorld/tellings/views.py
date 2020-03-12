@@ -1,7 +1,7 @@
 # Filename:     views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last updated: 05/03/2020
+# Last updated: 11/03/2020
 # Description:  Contains the views for the website.
 
 import django.utils.timezone
@@ -20,13 +20,22 @@ from tellings.forms import *
 from tellings.page_extras import banned_words
 
 from datetime import timedelta, timezone
+import enum
 
 # #########################################################################################
-# SHARED FUNCTIONS AND VARIABLES ----------------------------------------------------------
+# SHARED ENUMS, FUNCTIONS AND VARIABLES ---------------------------------------------------
 # -----------------------------------------------------------------------------------------
 
+class StatusCode(enum.Enum):
+    """ Enum containing the status codes returned in the response dictionaries"""
+    ERROR = 0
+    SUCCESS = 1
+    CENSORED = 2
+    INVALIDPASSWORD = 3
+
+
 adminNameList = ['admin']
-maxPostsPerDay = 4
+maxPostsPerDay = 1
 
 def contains_banned_word(text):
     """ Tests if a text contains a banned word.
@@ -211,6 +220,7 @@ class ChangePasswordPage(LoginRequiredMixin, View):
         :returns: A HTML page.
         """
         form = PasswordChangeForm(request.user, request.POST)
+
         if form.is_valid():
             return self.changePassword(request, form)
         else:
@@ -610,7 +620,6 @@ class SignUpPage(View):
         """
         if ('username' in request.POST) and ('password1' in request.POST):
             return self.signUp(request)
-
         elif ('username' in request.POST) and ('pwd' in request.POST):
             return user_login(request)
         else:
@@ -718,38 +727,45 @@ class AddNewUpdate(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all HTTP POST parameters 
                         sent by a site visitor. 
-        :returns: A string 'true' if the title already exists in the UserPost table,
-                  otherwise a redirect to the error page.
+        :returns: A HTTPResponse.
         """
         if has_exceeded_max_posts(request):
-            return HttpResponseRedirect('/errorpage/')
-
-        if ('postTitle' in request.POST) and ('postText' in request.POST) and ('postTags' in request.POST):
-
-            postTitle = request.POST['postTitle']   
-            postText = request.POST['postText']   
-            postTags = request.POST['postTags']   
-
-            if contains_banned_word(postTitle):
-                return HttpResponse('censored')  
-            elif contains_banned_word(postText):
-                return HttpResponse('censored')  
-            elif contains_banned_word(postTags):
-                return HttpResponse('censored')    
-
-            # make a copy of POST to add user to as this is not supplied by the form       
-            request.POST = request.POST.copy()
-            request.POST['user'] = request.user.id
-            request.POST['dateOfPost'] = django.utils.timezone.now()
-
-            form = UserPostForm(request.POST)
-            if form.is_valid():
-                form.save()
-                return HttpResponse('true')
-            else:
-                return HttpResponseRedirect('/errorpage/')
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
+        elif ('postTitle' in request.POST) and ('postText' in request.POST) and ('postTags' in request.POST):
+            response = self.addNewUpdate(request)
         else:
-            return HttpResponseRedirect('/errorpage/')
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
+
+        return HttpResponse(json.dumps(response), content_type='application/json')
+
+    def addNewUpdate(self, request): 
+        """ Handles adding a new UserPost record to the database.
+        
+        :returns: A response dictionary.
+        """
+        user_text_input = [ request.POST['postTitle'],   
+                            request.POST['postText'],   
+                            request.POST['postTags'] ]
+
+        for user_text in user_text_input:
+            if contains_banned_word(user_text):
+                response = {'status': StatusCode.CENSORED.value, 'message': _("Sorry, we cannot accept your post as it contains one or more banned words. The update has been censored. You can either now post the censored version of the update, or rewrite it with the banned words omitted.  Please refer to our acceptable usage policy for guidance!")} 
+                return response
+
+        # make a copy of POST to add user to as this is not supplied by the form       
+        request.POST = request.POST.copy()
+        request.POST['user'] = request.user.id
+        request.POST['dateOfPost'] = django.utils.timezone.now()
+
+        form = UserPostForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            response = {'status': StatusCode.SUCCESS.value, 'message': _("Your update has been added.")} 
+        else:
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
+        
+        return response
 
 
 class AddUpdateModal(LoginRequiredMixin, View):
@@ -780,30 +796,45 @@ class AddUserComment(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all HTTP POST parameters 
                         sent by a site visitor. 
-        :returns: A string 'true' if the comment was successfully added to UserComment table,
-                  'censored' if the comment contains banned words, 'false' if the comment
-                  couldn't be added, otherwise a redirect to the error page if POST data is missing.
+        :returns: A HTTPResponse.
         """
         if ('postID' in request.POST) and ('commentText' in request.POST): 
+            response = self.addUserComment(request)
+        else:
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
+
+        return HttpResponse(json.dumps(response), content_type='application/json')
+
+    def addUserComment(self, request):
+        """ Adds a UserComment record to the database.  
+
+        :param request: A dictionary-like object containing all HTTP POST parameters 
+                        sent by a site visitor. 
+        :returns: A response dictionary. 
+        """    
+        postID = request.POST.get('postID')
+
+        if not UserPost.objects.filter(postID=postID).exists(): 
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
+        else:  
             commentText = request.POST['commentText']   
 
             if contains_banned_word(commentText):
-                return HttpResponse('censored')           
-
-            # make a copy of POST to add fields not supplied by the client                   
-            request.POST = request.POST.copy()
-            request.POST['user'] = request.user.id
-            request.POST['dateOfComment'] = django.utils.timezone.now()
-
-            form = UserCommentForm(request.POST)
-            
-            if form.is_valid():
-                form.save()
-                return HttpResponse('true')
+                response = {'status': StatusCode.CENSORED.value, 'message': _("Sorry, we cannot accept your comment as it contains one or more banned words. The comment has been censored. You can either now post the censored version of the comment, or rewrite it with the banned words omitted.  Please refer to our acceptable usage policy for guidance!")}          
             else:
-                return HttpResponse('false')
-        else:
-            return HttpResponseRedirect('/errorpage/')
+                request.POST = request.POST.copy()
+                request.POST['user'] = request.user.id
+                request.POST['dateOfComment'] = django.utils.timezone.now()
+
+                form = UserCommentForm(request.POST)
+                
+                if form.is_valid():
+                    form.save()
+                    response = {'status': StatusCode.SUCCESS.value, 'message': _("Error: Something went wrong with your request!")}
+                else:
+                    response = {'status': StatusCode.ERROR.value, 'message': _("Error: Invalid form data!")}   
+
+        return response     
 
 
 class BlockUser(LoginRequiredMixin, View):
@@ -815,38 +846,36 @@ class BlockUser(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all HTTP POST parameters 
                         sent by a site visitor. 
-        :returns: A string 'true' if the user was successfully blocked,
-                  'admin' if the user was trying to block an admin,
-                  otherwise a redirect to the error page if POST data is missing.
+        :returns: A HTTPResponse.
         """
         if ('username' in request.POST): 
-            in_username = request.POST['username']   
-
-            # Admin posts/comments cannot be blocked!!!
-            if in_username in adminNameList:
-                return HttpResponse('admin')
-
-            if request.user.username == in_username:
-                return HttpResponse('Sorry, you cannot block yourself!')
-
-            return self.blockUser(in_username, request)
+            response = self.blockUser(request)
         else:
-            return HttpResponseRedirect('/errorpage/')
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
 
-    def blockUser(self, in_username, request):
-        """ Returns the 'true' if the user was successfully blocked,
-            otherwise an error message.
+        return HttpResponse(json.dumps(response), content_type='application/json')
+
+    def blockUser(self, request):
+        """ Returns a response dictionary.
         """
-        try:
-            in_blockedUser = User.objects.get(username=in_username)
-            in_blockedBy = request.user
+        in_username = request.POST['username']   
 
-            bu = BlockedUser(blockedUser=in_blockedUser, blockedBy=in_blockedBy)
-            bu.save()
+        # Admin posts/comments cannot be blocked!!!
+        if in_username in adminNameList:
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: You cannot block administrators!")} 
+        elif request.user.username == in_username:
+            response = {'status': 0, 'message': _("Error: You cannot block yourself!")} 
+        else:
+            if not User.objects.filter(username=in_username).exists():
+                response = {'status': StatusCode.ERROR.value, 'message': _("Error: The user you are trying to block does not exist!")} 
+            else:
+                in_blockedUser = User.objects.get(username=in_username)
+                in_blockedBy = request.user
+                bu = BlockedUser(blockedUser=in_blockedUser, blockedBy=in_blockedBy)
+                bu.save()
+                response = {'status': StatusCode.SUCCESS.value, 'message': _("You have successfully blocked the user.")} 
 
-            return HttpResponse('true')
-        except:
-            return HttpResponse('Error: unable to block the user. Please contact an administrator.')
+        return response
 
 
 class CensorText(LoginRequiredMixin, View):
@@ -860,19 +889,21 @@ class CensorText(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A censored text string.
+        :returns: A HTTPResponse.
         """
         if ('textToCensor' in request.POST):
-            return self.censorText(request)
+            response = self.censorText(request)
         else:
-            return HttpResponseRedirect('/errorpage/')
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
+
+        return HttpResponse(json.dumps(response), content_type='application/json')
 
     def censorText(self, request):
-        """ Censors a text and returns it as a HttpResponse.
+        """ Censors a text and returns it in a response dictionary.
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A censored text string.
+        :returns: A response dictionary.
         """
         textToCensor = request.POST['textToCensor'] 
         textToCensor = textToCensor.lower()
@@ -881,7 +912,9 @@ class CensorText(LoginRequiredMixin, View):
             censoredText = textToCensor.replace(banned_word, "*" * len(banned_word))
             textToCensor = censoredText.replace(banned_word, "*" * len(banned_word))
 
-        return HttpResponse(censoredText)
+        response = {'status': StatusCode.SUCCESS.value, 'message': censoredText} 
+
+        return response
 
 
 class CheckUserPassword(LoginRequiredMixin, View):
@@ -895,19 +928,21 @@ class CheckUserPassword(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A string 'true' if the password is valid, otherwise 'false'.
+        :returns: A HTTPResponse.
         """
         if ('pwd' in request.POST):
-            return self.isValidPassword(request)
+            response = self.isValidPassword(request)
         else:
-            return HttpResponseRedirect('/errorpage/')
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
+
+        return HttpResponse(json.dumps(response), content_type='application/json')
 
     def isValidPassword(self, request):
         """ Checks whether the user has entered their password correctly.
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A string 'true' if the password is valid, otherwise 'false'.
+        :returns: A response dictionary.
         """
         current_password = request.user.password #user's password
         entered_password = request.POST['pwd']   #posted password
@@ -915,9 +950,11 @@ class CheckUserPassword(LoginRequiredMixin, View):
         passwords_match = check_password(entered_password, current_password)
         
         if passwords_match:
-            return HttpResponse('true')
+            response = {'status': StatusCode.SUCCESS.value, 'message': _("Valid password")} 
         else:
-            return HttpResponse('false')
+            response = {'status': StatusCode.INVALIDPASSWORD.value, 'message': _("You have entered an invalid password!")} 
+        
+        return response
 
 
 class DeleteAccountModal(LoginRequiredMixin, View):
@@ -945,27 +982,14 @@ class DeleteUserComment(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A string 'true' if the comment was deleted, otherwise an error message.
+        :returns: A HTTPResponse.
         """
         if ('commentID' in request.POST):
-            commentID = request.POST.get('commentID')
-
-            if not UserComment.objects.filter(commentID=commentID).exists(): 
-                return HttpResponse(_("Something went wrong. We were unable to delete your comment."))
-
-            comment_username = self.getUsernameForCommentID(commentID)
-            post_username = self.getUsernameOfPostAuthor(commentID)
-            
-            # Comments can either be deleted by the people who made them ...
-            if( comment_username == request.user.username ):
-                return self.deleteComment(commentID)
-            # ... or by the author of the post being commented upon.
-            elif( post_username == request.user.username ):
-                return self.deleteComment(commentID)
-            else:
-                return HttpResponse(_("YOU CANNOT DELETE THIS COMMENT!!!"))
+            response = self.deleteComment(request)
         else:
-            return HttpResponseRedirect('/errorpage/')
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
+
+        return HttpResponse(json.dumps(response), content_type='application/json')
 
     def getUsernameForCommentID(self, in_commentID):
         """ Returns the name of the user who made the comment.
@@ -983,12 +1007,33 @@ class DeleteUserComment(LoginRequiredMixin, View):
         username = post.user.username
         return username
 
-    def deleteComment(self, in_commentID):
+    def deleteComment(self, request):
         """ Handles deleting a userComment.
+
+        :returns: A response dictionary.
         """
-        comment = UserComment.objects.get(commentID=in_commentID)
-        comment.delete()
-        return HttpResponse("true")
+        in_commentID = request.POST.get('commentID')
+
+        if not UserComment.objects.filter(commentID=in_commentID).exists(): 
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
+        else:
+            comment_username = self.getUsernameForCommentID(in_commentID)
+            post_username = self.getUsernameOfPostAuthor(in_commentID)
+            
+            # Comments can either be deleted by the people who made them ...
+            if( comment_username == request.user.username ):
+                comment = UserComment.objects.get(commentID=in_commentID)
+                comment.delete()
+                response = {'status': StatusCode.SUCCESS.value, 'message': _("The comment has been deleted.")}  
+            # ... or by the author of the post being commented upon.
+            elif( post_username == request.user.username ):
+                comment = UserComment.objects.get(commentID=in_commentID)
+                comment.delete()
+                response = {'status': StatusCode.SUCCESS.value, 'message': _("The comment has been deleted.")}                 
+            else:
+                response = {'status': StatusCode.ERROR.value, 'message': _("Error: You do not have the right to delete this comment!")} 
+
+        return response
 
 
 class DeleteUserPost(LoginRequiredMixin, View):
@@ -1001,25 +1046,14 @@ class DeleteUserPost(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A string 'true' if the post was deleted, otherwise an error message.
+        :returns: A HTTPResponse.
         """
         if ('postID' in request.POST):
-            postID = request.POST.get('postID')
-
-            if not UserPost.objects.filter(postID=postID).exists(): 
-                return HttpResponse(_("Something went wrong. We were unable to delete your post."))
-
-            username = self.getUsernameForPostID(postID)
-
-            # Check that the post was made by the user deleting it
-            if( username == request.user.username ):
-                post = UserPost.objects.get(postID=postID)
-                post.delete()
-                return HttpResponse("true")
-            else:
-                return HttpResponse(_("YOU CANNOT DELETE OTHER USERS POSTS!!!"))
+            response = self.deleteUserPost(request)
         else:
-            return HttpResponseRedirect('/errorpage/')
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
+
+        return HttpResponse(json.dumps(response), content_type='application/json')
 
     def getUsernameForPostID(self, in_postID):
         """ Returns the name of the user who made the post.
@@ -1027,7 +1061,28 @@ class DeleteUserPost(LoginRequiredMixin, View):
         post = UserPost.objects.get(postID=in_postID)
         username = post.user.username
         return username
+
+    def deleteUserPost(self, request):
+        """ Handles deletiing a UserPost.
+
+        :returns: A response dictionary.
+        """
+        postID = request.POST.get('postID')
+
+        if not UserPost.objects.filter(postID=postID).exists(): 
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
+        else:
+            username = self.getUsernameForPostID(postID)
+
+            if( username == request.user.username ):
+                post = UserPost.objects.get(postID=postID)
+                post.delete()
+                response = {'status': StatusCode.SUCCESS.value, 'message': _("Your post has been deleted.")} 
+            else:
+                response = {'status': StatusCode.ERROR.value, 'message': _("Error: You cannot delete other people's posts!")} 
         
+        return response
+
 
 class EditUserComment(LoginRequiredMixin, generic.UpdateView):
     """ An AJAX handler used to add the edit user comment HTML to pages,
@@ -1049,42 +1104,43 @@ class EditUserComment(LoginRequiredMixin, generic.UpdateView):
    
         :param request: A dictionary-like object containing all HTTP POST parameters 
                         sent by a site visitor. 
-        :returns: A string 'true' if the comment could be edited, otherwise an error message.
+        :returns: A HTTPResponse.
         """
         if ('commentID' in request.POST and 'commentText' in request.POST):
-            commentID = request.POST.get('commentID')
-            if not UserComment.objects.filter(commentID=commentID).exists(): 
-                return HttpResponseRedirect('/errorpage/')
-            return self.updateUserCommentRecord(request)
+            response = self.updateUserCommentRecord(request)
         else:
-            return HttpResponseRedirect('/errorpage/')
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
+
+        return HttpResponse(json.dumps(response), content_type='application/json')
                 
     def updateUserCommentRecord(self, request):
         """ Updates a UserComment record.
            
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A string 'true' if the comment could be edited, 'censored' if the comment
-                  contains a banned word, otherwise an error message.
+        :returns: A response dictionary.
         """
-        in_commentID = request.POST.get('commentID')
-        in_commentText = request.POST.get('commentText')
+        commentID = request.POST.get('commentID')
+        if not UserComment.objects.filter(commentID=commentID).exists(): 
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
+        else:     
+            in_commentID = request.POST.get('commentID')
+            in_commentText = request.POST.get('commentText')
 
-        if contains_banned_word(in_commentText):
-            return HttpResponse('censored')
+            if contains_banned_word(in_commentText):
+                response = {'status': StatusCode.CENSORED.value, 'message': _("Sorry, we cannot accept your edit as it contains one or more banned words. The edit has been censored. You can either now post the censored version of the edit, or rewrite it with the banned words omitted. Please refer to our acceptable usage policy for guidance.")}
+            else:
+                userComment = UserComment.objects.get(commentID=in_commentID)
 
-        userComment = UserComment.objects.get(commentID=in_commentID)
-
-        if(userComment.user.username == request.user.username):
-            try:
-                # Update the record (sql injection-safe)
-                today = django.utils.timezone.now()
-                UserComment.objects.filter(commentID=in_commentID).update(commentText=in_commentText, dateOfEdit=today)
-                return HttpResponse("true")
-            except:
-                return HttpResponse(_("Unable to make changes to the comment. Please contact the site administrator."))
-        else:
-            return HttpResponse(_("YOU CANNOT EDIT OTHER USERS COMMENTS!!!"))  
+                if(userComment.user.username == request.user.username):
+                    # Update the record (sql injection-safe)
+                    today = django.utils.timezone.now()
+                    UserComment.objects.filter(commentID=in_commentID).update(commentText=in_commentText, dateOfEdit=today)
+                    response = {'status': StatusCode.SUCCESS.value, 'message': _("Your comment has been updated.")} 
+                else:
+                    response = {'status': StatusCode.ERROR.value, 'message': _("Error: You cannot edit other people's comments.")} 
+        
+        return response  
 
 
 class EditUserPost(LoginRequiredMixin, generic.UpdateView):
@@ -1106,38 +1162,42 @@ class EditUserPost(LoginRequiredMixin, generic.UpdateView):
    
         :param request: A dictionary-like object containing all HTTP POST parameters 
                         sent by a site visitor. 
-        :returns: A string 'true' if the post could be edited, otherwise an error message.
+        :returns: A HTTPResponse.
         """
         if ('postID' in request.POST and 'postText' in request.POST):
-            return self.updateUserPostRecord(request)
+            response = self.updateUserPostRecord(request)
         else:
-            return HttpResponseRedirect('/errorpage/')
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
+
+        return HttpResponse(json.dumps(response), content_type='application/json')
                 
     def updateUserPostRecord(self, request):
         """ Updates a UserPost record.
            
         :param request: A dictionary-like object containing all the HTTP parameters 
                         sent by a site visitor. 
-        :returns: A string 'true' if the post could be edited, otherwise an error message.
+        :returns: A response dictionary.
         """
         in_postID = request.POST.get('postID')
         in_postText = request.POST.get('postText')
 
-        if contains_banned_word(in_postText):
-            return HttpResponse('censored')
+        if not UserPost.objects.filter(postID=in_postID).exists(): 
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: You cannot edit a post that does not exist!")} 
+        else:               
+            if contains_banned_word(in_postText):
+                response = {'status': StatusCode.CENSORED.value, 'message': _("Sorry, we cannot accept your edit as it contains one or more banned words. The edit has been censored. You can either now post the censored version of the edit, or rewrite it with the banned words omitted. Please refer to our acceptable usage policy for guidance.")} 
+            else:
+                userPost = UserPost.objects.get(postID=in_postID)
 
-        userPost = get_object_or_404(UserPost, postID=in_postID)
-
-        if(userPost.user.username == request.user.username):
-            try:
-                # Update the record (sql injection-safe)
-                today = django.utils.timezone.now()
-                UserPost.objects.filter(postID=in_postID).update(postText=in_postText, dateOfEdit=today)
-                return HttpResponse("true")
-            except:
-                return HttpResponse(_("Unable to make changes to the post. Please contact the site administrator."))
-        else:
-            return HttpResponse(_("YOU CANNOT EDIT OTHER USERS POSTS!!!"))   
+                if(userPost.user.username == request.user.username):
+                    # Update the record (sql injection-safe)
+                    today = django.utils.timezone.now()
+                    UserPost.objects.filter(postID=in_postID).update(postText=in_postText, dateOfEdit=today)
+                    response = {'status': StatusCode.SUCCESS.value, 'message': _("Your post has been updated.")}
+                else:
+                    response = {'status': StatusCode.ERROR.value, 'message': _("Error: You cannot edit other people's posts!")} 
+        
+        return response
 
 
 class HasExceededMaxPosts(LoginRequiredMixin, View):
@@ -1153,9 +1213,11 @@ class HasExceededMaxPosts(LoginRequiredMixin, View):
         :returns: True if the user has exceeded the max number of allowed posts, otherwise false.
         """
         if has_exceeded_max_posts(request): 
-            return HttpResponse('true')
+            response = {'status': StatusCode.ERROR.value, 'message': _("Sorry, you have already already made the maximum number of posts allowed per day!")} 
         else:
-            return HttpResponse('false')
+            response = {'status': StatusCode.SUCCESS.value, 'message': _("OK.")} 
+
+        return HttpResponse(json.dumps(response), content_type='application/json')
 
 
 class HidePost(LoginRequiredMixin, View):
@@ -1167,39 +1229,39 @@ class HidePost(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all HTTP POST parameters 
                         sent by a site visitor. 
-        :returns: A string 'true' if the post was successfully hidden,
-                  'admin' if the user was trying to hide an admin post,
-                  otherwise a redirect to the error page if POST data is missing.
+        :returns: A HTTPResponse.
         """
         if ('postID' in request.POST): 
-            in_postID = request.POST['postID']   
-            return self.hidePost(in_postID, request)
+            response = self.hidePost(request)
         else:
-            return HttpResponseRedirect('/errorpage/')
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
+        
+        return HttpResponse(json.dumps(response), content_type='application/json')
 
-    def hidePost(self, in_postID, request):
-        """ Returns the 'true' if the post was successfully hidden,
-            'admin' if the user was trying to hide an admin post,
-            otherwise an error message.
+    def hidePost(self, request):
+        """ Returns a response dictionary.
         """
-        try:
-            in_post = UserPost.objects.get(postID=in_postID)
-            in_hideFrom = request.user
+        in_postID = request.POST['postID']  
+        in_post = UserPost.objects.get(postID=in_postID)
+        in_hideFrom = request.user
 
+        if not UserPost.objects.filter(postID=in_postID).exists(): 
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: The post you are trying to hide does not exist!")} 
+        else:
             # Admin posts/comments cannot be hidden!!!
             postername = in_post.user.username
+
             if postername in adminNameList:
-                return HttpResponse('admin')
+                # AJAX does not redirect pages
+                response = {'status': StatusCode.ERROR.value, 'message': _("Error: You cannot hide posts by administrators!")} 
+            elif HiddenPost.objects.filter(postID=in_post, hideFrom=in_hideFrom).exists():
+                response = {'status': StatusCode.ERROR.value, 'message': _("Error: this post has already been hidden!")} 
+            else:
+                hp = HiddenPost(postID=in_post, hideFrom=in_hideFrom)
+                hp.save()
+                response = {'status': StatusCode.SUCCESS.value, 'message': _("The post will now be hidden from you.!")} 
 
-            if HiddenPost.objects.filter(postID=in_post, hideFrom=in_hideFrom).exists():
-                return HttpResponse('Error: this post has already been hidden')
-
-            hp = HiddenPost(postID=in_post, hideFrom=in_hideFrom)
-            hp.save()
-
-            return HttpResponse('true')
-        except:
-            return HttpResponse('Error: unable to hide this post. Please contact an administrator.')
+        return response
 
 
 class HideUserPosts(LoginRequiredMixin, View):
@@ -1213,39 +1275,41 @@ class HideUserPosts(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all HTTP POST parameters 
                         sent by a site visitor. 
-        :returns: A string 'true' if the user's posts were successfully hidden,
-                  'admin' if the user was trying to hide an admin posts,
-                  otherwise a redirect to the error page if POST data is missing.
+        :returns: A HTTPResponse.
         """
         if ('user' in request.POST): 
-            in_user = request.POST['user']   
-            return self.hidePost(in_user, request)
+            response = self.hideUserPosts(request)
         else:
-            return HttpResponseRedirect('/errorpage/')
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
+        
+        return HttpResponse(json.dumps(response), content_type='application/json')
 
-    def hidePost(self, in_username, request):
-        """ Returns the 'true' if the post was successfully hidden,
-            'admin' if the user was trying to hide an admin post,
-            otherwise an error message.
+    def hideUserPosts(self, request):
+        """ Returns a response dictionary.
         """
-        try:
+        in_username = request.POST['user']  
+
+        if not User.objects.filter(username=in_username).exists():
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: No such user!")} 
+        else: 
             #Admin posts/comments cannot be hidden!!!
             if in_username in adminNameList:
-                return HttpResponse('admin')
-                
-            in_user = User.objects.get(username=in_username)
-            
-            postsToHide = UserPost.objects.filter(user=in_user)
-            in_hideFrom = request.user
-            
-            for post in postsToHide:
-                if not HiddenPost.objects.filter(postID=post, hideFrom=in_hideFrom).exists():
-                    hp = HiddenPost(postID=post, hideFrom=in_hideFrom)
-                    hp.save()
-
-            return HttpResponse('true')
-        except:
-            return HttpResponse('Error: unable to hide this post. Please contact an administrator.')
+                response = {'status': StatusCode.ERROR.value, 'message': _("Error: You cannot hide posts by administrators!")} 
+            else:    
+                in_user = User.objects.get(username=in_username)
+                if not UserPost.objects.filter(user=in_user).exists():
+                    response = {'status': StatusCode.ERROR.value, 'message': _("Error: No posts exist for the specified user!")} 
+                else:
+                    postsToHide = UserPost.objects.filter(user=in_user)
+                    in_hideFrom = request.user
+                    
+                    for post in postsToHide:
+                        if not HiddenPost.objects.filter(postID=post, hideFrom=in_hideFrom).exists():
+                            hp = HiddenPost(postID=post, hideFrom=in_hideFrom)
+                            hp.save()
+                    response = {'status': StatusCode.SUCCESS.value, 'message': _("The user's posts will now be hidden from you.")} 
+ 
+        return response
 
 
 class LoginModal(View):
@@ -1272,28 +1336,33 @@ class UnblockUser(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all HTTP POST parameters 
                         sent by a site visitor.
-        :returns: A string 'true' if the user was successfully unblocked,
-                  otherwise a redirect to the error page if POST data is missing.
+        :returns: A HTTPResponse.
         """
         if ('username' in request.POST):
-            in_username = request.POST['username']
-            return self.unblockUser(in_username, request)
+            response = self.unblockUser(request)
         else:
-            return HttpResponseRedirect('/errorpage/')
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
+        
+        return HttpResponse(json.dumps(response), content_type='application/json')
 
-    def unblockUser(self, in_username, request):
-        """ Returns the 'true' if the user was successfully unblocked,
-            otherwise an error message.
+    def unblockUser(self, request):
+        """ Returns a response dictionary.
         """
-        try:
+        in_username = request.POST['username']
+
+        if not User.objects.filter(username=in_username).exists():
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: You cannot unblock a user that does not exist!")} 
+        else:
             in_blockedUser = User.objects.get(username=in_username)
             in_blockedBy = request.user
+            if not BlockedUser.objects.filter(blockedUser=in_blockedUser, blockedBy=in_blockedBy).exists():
+                response = {'status': StatusCode.ERROR.value, 'message': _("Error: You have not blocked this user!")} 
+            else:
+                blocked = BlockedUser.objects.get(blockedUser=in_blockedUser, blockedBy=in_blockedBy)
+                blocked.delete()
+                response = {'status': StatusCode.SUCCESS.value, 'message': _("You have successfully unblocked the user.")} 
 
-            blocked = BlockedUser.objects.get(blockedUser=in_blockedUser, blockedBy=in_blockedBy)
-            blocked.delete()
-            return HttpResponse('true')
-        except:
-            return HttpResponse('Error: unable to unblock the user. Please contact an administrator.')
+        return response
 
 
 class UnhidePost(LoginRequiredMixin, View):
@@ -1305,28 +1374,33 @@ class UnhidePost(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all HTTP POST parameters 
                         sent by a site visitor.
-        :returns: A string 'true' if the post was successfully unhidden,
-                  otherwise a redirect to the error page if POST data is missing.
+        :returns: A HTTPResponse.
         """
         if ('postID' in request.POST):
-            in_postID = request.POST['postID']
-            return self.unhidePost(in_postID, request)
+            response = self.unhidePost(request)
         else:
-            return HttpResponseRedirect('/errorpage/')
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
+        
+        return HttpResponse(json.dumps(response), content_type='application/json')
 
-    def unhidePost(self, in_postID, request):
-        """ Returns the 'true' if the post was successfully unhidden,
-            otherwise an error message.
+    def unhidePost(self, request):
+        """ A response dictionary.
         """
-        try:
-            in_post = UserPost.objects.get(postID=in_postID)
-            in_hideFrom = request.user
+        in_postID = request.POST['postID']
+        in_post = UserPost.objects.get(postID=in_postID)
+        in_hideFrom = request.user
 
-            hidden = HiddenPost.objects.get(postID=in_post, hideFrom=in_hideFrom)
-            hidden.delete()
-            return HttpResponse('true')
-        except:
-            return HttpResponse('Error: unable to unhide the post. Please contact an administrator.')
+        if not UserPost.objects.filter(postID=in_postID).exists():
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: You cannot unhide a post that does not exist!")} 
+        else:
+            if not HiddenPost.objects.filter(postID=in_post, hideFrom=in_hideFrom).exists():
+                response = {'status': StatusCode.ERROR.value, 'message': _("Error: You have not hidden this post!")} 
+            else:
+                hidden = HiddenPost.objects.get(postID=in_post, hideFrom=in_hideFrom)
+                hidden.delete()
+                response = {'status': StatusCode.SUCCESS.value, 'message': _("You have successfully unhidden the post.")} 
+
+        return response
 
 
 class UnhideUserPosts(LoginRequiredMixin, View):
@@ -1340,31 +1414,37 @@ class UnhideUserPosts(LoginRequiredMixin, View):
 
         :param request: A dictionary-like object containing all HTTP POST parameters 
                         sent by a site visitor.
-        :returns: A string 'true' if the user's posts were successfully unhidden,
-                  otherwise a redirect to the error page if POST data is missing.
+        :returns: A HTTPResponse.
         """
-        if ('user' in request.POST):
-            in_user = request.POST['user']   
-            return self.unhidePosts(in_user, request)
+        if ('user' in request.POST): 
+            response = self.unhidePosts(request)
         else:
-            return HttpResponseRedirect('/errorpage/')
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
+        
+        return HttpResponse(json.dumps(response), content_type='application/json')
 
-    def unhidePosts(self, in_user, request):
-        """ Returns the 'true' if the user's posts were successfully unhidden,
-            otherwise an error message.
-        """
-        try:                
-            in_user = User.objects.get(username=in_user)
+    def unhidePosts(self, request):
+        """ Returns a response dictionary.
+        """ 
+        in_username = request.POST['user']  
+
+        if not User.objects.filter(username=in_username).exists():
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: You cannot unhide posts from a user that does not exist!")}   
+        else:
+            in_user = User.objects.get(username=in_username)
             
             postsByUser = UserPost.objects.filter(user=in_user)
             
             in_hideFrom = request.user
-            postsToUnhide = HiddenPost.objects.filter(postID__in=postsByUser, hideFrom=in_hideFrom)
+            if not HiddenPost.objects.filter(postID__in=postsByUser, hideFrom=in_hideFrom).exists():
+                response = {'status': StatusCode.ERROR.value, 'message': _("Error: You have not hidden any of this user's posts!")}   
+            else:
+                postsToUnhide = HiddenPost.objects.filter(postID__in=postsByUser, hideFrom=in_hideFrom)
 
-            for post in postsToUnhide:
-                post.delete()
+                for post in postsToUnhide:
+                    post.delete()
 
-            return HttpResponse('true')
-        except:
-            return HttpResponse('Error: unable to unhide this user\'s posts. Please contact an administrator.')
+                response = {'status': StatusCode.SUCCESS.value, 'message': _("The user's posts will now be unhidden from you.")} 
+        
+        return response
 

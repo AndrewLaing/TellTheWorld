@@ -17,6 +17,12 @@ $(document).ready(function(){
     var originalCommentText;
     var editingComment = false;
   
+    var StatusCode = {
+      ERROR: 0,
+      SUCCESS: 1,
+      CENSORED: 2,
+      INVALIDPASSWORD: 3
+    };
   
     /** -------------------------------------------------------------
      *           SHARED FUNCTIONS
@@ -188,14 +194,12 @@ $(document).ready(function(){
         url: "/hasexceededmaxposts/",
         type: 'get',
         success: function (data) {
-          if (data === 'true') {
-            alert("Sorry. You have already already made the maximum number of posts allowed per day!");
-          } else if (data!=='false') {
-            alert("Database error: please contact the administrator.");    
-          } else {
+          if (data.status == StatusCode.SUCCESS) {
             // Show the add update modal 
             $.load_addUpdateModal();
-          }   
+          } else {
+            alert(data.message);
+          }  
         },
         error: function () {
           alert('Error: please contact the site administrator.');
@@ -250,17 +254,16 @@ $(document).ready(function(){
       },
       function(data, status) {
         if (status === 'success') {
-          if(data==='true') {
-            alert('Your update has been added.');
+          if (data.status == StatusCode.SUCCESS) {
+            alert(data.message);
             location.reload();
-          } else if (data === 'censored') {
-            alert('Sorry, we cannot accept your post data as it contains one or more banned words. The update has been censored. You can either now post the censored version of the update, or rewrite it with the banned words omitted.  Please refer to our acceptable usage policy for guidance.');
-            $.censorNewUpdateModal();
-          } else if (data!=='false') {
-            $.errorAddUpdateModal("Database error: please contact the administrator.");    
-          } else {
-            $.errorAddUpdateModal('Sorry. Unable to add your update.');
-          }    
+          } 
+          else if (data.status == StatusCode.CENSORED) {
+            $.censorNewUpdateModal(data.message);
+          }
+          else {
+            $.errorAddUpdateModal(data.message);
+          }
         }
         else {
           alert("Database error: please contact the administrator.");
@@ -334,25 +337,23 @@ $(document).ready(function(){
      * Confirms that a user wishes to delete their account
      */
     $.confirm_deleteAccount = function (data) {
-      if (data === 'true') {
-        if (confirm("Are you sure you want to delete your account?")) {
-          alert("Your account will now be deleted!");
-          $("#deleteAccountModal").modal('toggle');
-          $.delete_user_account();
-          return true;
-        }
-        else {
-          alert("Operation cancelled.");
-          $("#deleteAccountModal").modal('toggle');
-          return false;
-        }
+      if (confirm("Are you sure you want to delete your account?")) {
+        alert("Your account will now be deleted!");
+        $("#deleteAccountModal").modal('toggle');
+        $.delete_user_account();
+        return true;
       }
       else {
-        alert('You have entered an incorrect password!');
+        alert("Operation cancelled.");
+        $("#deleteAccountModal").modal('toggle');
         return false;
       }
     };
-  
+
+    $.invalid_password_entered = function (data) { 
+      alert(data.message);
+      return false;
+    }
   
     /**
      * Checks that the user has entered their password correctly
@@ -379,10 +380,14 @@ $(document).ready(function(){
       },
       function (data, status) {
         if (status === 'success') {
-          if (data === 'true' || data === 'false') {
+          if (data.status == StatusCode.SUCCESS) {
             $.confirm_deleteAccount(data);
-          } else {
-            alert("Error: Cannot perform this action. please contact the administrator.");
+          } 
+          else if (data.status == StatusCode.INVALIDPASSWORD) {
+            $.invalid_password_entered(data);
+          } 
+          else {
+            alert(data.message);
             $("#deleteAccountModal").modal('toggle');
           }
         }
@@ -442,8 +447,12 @@ $(document).ready(function(){
         csrfmiddlewaretoken: csrftoken,
       },
       function(data, status) {
-        if (status === 'success') {
-          $.updateElementText(ele, data);   
+        if (status === 'success') { 
+          if (data.status == StatusCode.SUCCESS) {
+            $.updateElementText(ele, data.message);  
+          } else {
+            alert(data.message);
+          }
         }
         else {
           alert("AJAX error: please contact the administrator.");
@@ -483,7 +492,13 @@ $(document).ready(function(){
       },
       function(data, status) {
         if (status === 'success') {
-          $.updatePostTags(ele_postTags, data);               
+          if (status === 'success') { 
+            if (data.status == StatusCode.SUCCESS) {
+              $.updatePostTags(ele_postTags, data.message); 
+            } else {
+              alert(data.message);
+            }
+          }               
         }
         else {
           alert("AJAX error: please contact the administrator.");
@@ -496,7 +511,9 @@ $(document).ready(function(){
      * This censors the content of the new update modal after
      * banned words are detected in it.
      */
-    $.censorNewUpdateModal = function () {
+    $.censorNewUpdateModal = function (msg) {
+      alert(msg);
+      
       var ele_postTitle = $("#postTitle");
       var ele_postText  = $("#postText");
       var ele_postTags = $("#tagDiv");
@@ -530,13 +547,11 @@ $(document).ready(function(){
         },
         function (data, status) {
           if (status === 'success') {
-            if (data === 'true') {
-              alert('You have successfully blocked the user.');
+            if (data.status == StatusCode.SUCCESS) {
+              alert(data.message);
               location.reload();
-            } else if (data === 'admin') {
-              alert('Sorry, we cannot allow you to block posts or comments from an administrator. If you wish to complain about the posts or comments of an administrator, please send an email to manager@ttw.com. All complaints will be dealt with confidentially.');
             } else {
-              alert(data);
+              alert(data.message);
             }
           }
           else {
@@ -563,11 +578,11 @@ $(document).ready(function(){
         },
         function (data, status) {
           if (status === 'success') {
-            if (data === 'true') {
-              alert('You have successfully unblocked the user.');
+            if (data.status == StatusCode.SUCCESS) {
+              alert(data.message);
               location.reload();
             } else {
-              alert(data);
+              alert(data.message);
             }
           }
           else {
@@ -606,11 +621,11 @@ $(document).ready(function(){
         },
         function (data, status) {
           if (status === 'success') {
-            if (data === 'true') {
-              alert('The post will now be hidden from you.');
+            if (data.status == StatusCode.SUCCESS) {
+              alert(data.message);
               location.reload();
             } else {
-              alert(data);
+              alert(data.message);
             }
           }
           else {
@@ -643,11 +658,11 @@ $(document).ready(function(){
         },
         function (data, status) {
           if (status === 'success') {
-            if (data === 'true') {
-              alert('The user\'s posts will now be hidden from you.');
+            if (data.status == StatusCode.SUCCESS) {
+              alert(data.message);
               window.location = window.location.href.split("?")[0];
             } else {
-              alert(data);
+              alert(data.message);
             }
           }
           else {
@@ -675,11 +690,11 @@ $(document).ready(function(){
         },
         function (data, status) {
           if (status === 'success') {
-            if (data === 'true') {
-              alert('The user\'s posts will now be unhidden from you.');
+            if (data.status == StatusCode.SUCCESS) {
+              alert(data.message);
               window.location = window.location.href.split("?")[0];
             } else {
-              alert(data);
+              alert(data.message);
             }
           }
           else {
@@ -707,11 +722,11 @@ $(document).ready(function(){
         },
         function (data, status) {
           if (status === 'success') {
-            if (data === 'true') {
-              alert('You have successfully unhidden the post.');
+            if (data.status == StatusCode.SUCCESS) {
+              alert(data.message);
               window.location = window.location.href.split("?")[0];
             } else {
-              alert(data);
+              alert(data.message);
             }
           }
           else {
@@ -788,14 +803,16 @@ $(document).ready(function(){
         },
         function (data, status) {
           if (status === 'success') {
-            if (data === 'true') {
-              alert('Your comment has been updated.');
+            if (data.status == StatusCode.SUCCESS) {
+              alert(data.message);
               $.show_new_comment_text(textCommentID, currentText);
-            } else if (data === 'censored') {
+            } 
+            else if (data.status == StatusCode.CENSORED) {
               $.censorElementText($("#edit_comment_box"));
-              alert('Sorry, we cannot accept your edit as it contains one or more banned words. Please refer to our acceptable usage policy for guidance.');
-            } else {
-              alert(data);
+              alert(data.message);
+            } 
+            else {
+              alert(data.message);
             }
           }
           else {
@@ -887,14 +904,16 @@ $(document).ready(function(){
         },
         function (data, status) {
           if (status === 'success') {
-            if (data === 'true') {
-              alert('Your post has been updated.');
+            if (data.status == StatusCode.SUCCESS) {
+              alert(data.message);
               $.show_new_post_text(textPostID, currentText);
-            } else if (data === 'censored') {
+            } 
+            else if (data.status == StatusCode.CENSORED) {
               $.censorElementText($("#edit_post_box"));
-              alert('Sorry, we cannot accept your edit as it contains one or more banned words. The edit has been censored. You can either now post the censored version of the edit, or rewrite it with the banned words omitted. Please refer to our acceptable usage policy for guidance.');
-            } else {
-              alert(data);
+              alert(data.message);
+            } 
+            else {
+              alert(data.message);
             }
           }
           else {
@@ -967,11 +986,11 @@ $(document).ready(function(){
         },
         function (data, status) {
           if (status === 'success') {
-            if (data === 'true') {
-              alert('Your post has been deleted.');
+            if (data.status == StatusCode.SUCCESS) {
+              alert(data.message);
               location.reload();
             } else {
-              alert(data);
+              alert(data.message);
             }
           }
           else {
@@ -1101,19 +1120,30 @@ $(document).ready(function(){
     /**
       * This callback is used because of the Asychronous nature of AJAX
       */
-    $.postedCommentCallback = function (post_reply_btn, postID, response) {
+    $.unable_to_add_comment = function(post_reply_btn, message) {
+      post_reply_btn.prop('disabled', false);
+      $.censorElementText(post_reply_btn.siblings(".user-comment-input-area"));
+      alert(message);      
+      post_reply_btn.siblings(".user-comment-input-area").focus();
+      return false;
+    }  
+  
+    /**
+      * This callback is used because of the Asychronous nature of AJAX
+      */
+    $.comment_was_censored = function(post_reply_btn, message) {
+      post_reply_btn.prop('disabled', false);
+      alert(message);
+      return false;
+    }
+
+  
+    /**
+      * This callback is used because of the Asychronous nature of AJAX
+      */
+    $.postedCommentCallback = function (post_reply_btn, message) {
       // Reenable the post reply button because the comment post has been dealt with
       post_reply_btn.prop('disabled', false);
-
-      if (response == 'false') {
-        alert("Error: Unable to add your comment! Please contact the administrator!");
-        return false;
-      } else if (response == 'censored') {
-        $.censorElementText(post_reply_btn.siblings(".user-comment-input-area"));
-        alert('Sorry, we cannot accept your comment as it contains one or more banned words. The comment has been censored. You can either now post the censored version of the comment, or rewrite it with the banned words omitted.  Please refer to our acceptable usage policy for guidance.');
-        post_reply_btn.siblings(".user-comment-input-area").focus();
-        return false;
-      }
   
       // Tidy up the comment input area, then hide it
       post_reply_btn.siblings(".user-comment-input-area").val("");
@@ -1134,12 +1164,6 @@ $(document).ready(function(){
         alert("Your comment has been posted.");
       }
     };
-
-
-    $errorPostComment = function(post_reply_btn, msg) {
-      post_reply_btn.prop('disabled', false);
-      alert(msg);
-    };
   
   
     /**
@@ -1159,16 +1183,18 @@ $(document).ready(function(){
       },
       function(data, status) {
         if (status === 'success') {
-          if(data == 'true') {
-            $.postedCommentCallback(postBtnElement, in_postID, 'true');
-          } else if (data == 'censored') {
-            $.postedCommentCallback(postBtnElement, in_postID, 'censored');
-          } else {
-            $errorPostComment(postBtnElement, "Error: Unable to add your comment! Please contact the administrator!");
+          if (data.status == StatusCode.SUCCESS) {
+            $.postedCommentCallback(postBtnElement, data.message);
+          } 
+          else if (data.status == StatusCode.CENSORED) {
+            $.comment_was_censored(postBtnElement, data.message);
+          } 
+          else {
+            $.unable_to_add_comment(postBtnElement, data.message);            
           }
         }
         else {
-          $errorPostComment(postBtnElement, "Error: Unable to add your comment! Please contact the administrator!");
+          $.unable_to_add_comment(postBtnElement,  "Error: Unable to add your comment! Please contact the administrator!");
         }
       });
     };
@@ -1237,11 +1263,11 @@ $(document).ready(function(){
         },
         function (data, status) {
           if (status === 'success') {
-            if (data === 'true') {
-              alert('The comment has been deleted.');
+            if (data.status == StatusCode.SUCCESS) {
+              alert(data.message);
               $.comment_deleted(viewCommentsBtn);
             } else {
-              alert(data);
+              alert(data.message);
             }
           }
           else {
