@@ -35,7 +35,7 @@ class StatusCode(enum.Enum):
 
 
 adminNameList = ['admin']
-maxPostsPerDay = 1
+maxPostsPerDay = 4
 
 def contains_banned_word(text):
     """ Tests if a text contains a banned word.
@@ -265,28 +265,35 @@ class ChangeUserDetailsPage(LoginRequiredMixin, View):
                         sent by a site visitor. 
         :returns: A HTML page.
         """
-        form = ChangeUserDetailsForm(request.POST)
+        required_fields = ['first_name', 'last_name', 'email']
 
-        if form.is_valid():
-            return self.changeDetails(request, form)
-        else:
-            messages.error(request, _('Please correct the error below.'))
-            return render(request, 'tellings/changeUserDetails.html', {'form': form})
+        for field in required_fields:
+            if field not in self.request.POST:
+                return HttpResponseRedirect('/errorpage/')
 
-    def changeDetails(self, request, form):
+        return self.changeDetails(request)
+
+
+    def changeDetails(self, request):
         """ Handles changing the user's details.
 
         :param request: A dictionary-like object containing all HTTP POST parameters 
                         sent by a site visitor.  
         :returns: A HTML page.
         """
-        current_user = request.user
-        current_user.first_name = request.POST['first_name']
-        current_user.last_name = request.POST['last_name']
-        current_user.email = request.POST['email']
-        current_user.save()
-        return render(request, 'tellings/changeUserDetails.html', 
-                      {'message': _('Your details have been updated'), 'form': form})
+        form = ChangeUserDetailsForm(request.POST)
+
+        if form.is_valid():
+            current_user = request.user
+            current_user.first_name = request.POST['first_name']
+            current_user.last_name = request.POST['last_name']
+            current_user.email = request.POST['email']
+            current_user.save()
+            return render(request, 'tellings/changeUserDetails.html', 
+                        {'message': _('Your details have been updated'), 'form': form})
+        else:
+            messages.error(request, _('Please correct the errors below.'))
+            return render(request, 'tellings/changeUserDetails.html', {'form': form})
 
 
 class HiddenPostListView(LoginRequiredMixin, generic.ListView):
@@ -439,7 +446,7 @@ class MyUpdatesListView(LoginRequiredMixin, generic.ListView):
     model = UserPost
     template_name = "tellings/myupdates_list.html"
     paginate_by = 10
-    http_method_names = ['get', 'post']
+    http_method_names = ['get']
 
     def get_queryset(self):
         """ Returns a queryset. This will be filtered if the user passes either a tagName
@@ -452,8 +459,8 @@ class MyUpdatesListView(LoginRequiredMixin, generic.ListView):
         tagName_val = False
         qs = super().get_queryset()
         
-        if self.request.method == 'GET' and 'tagName' in self.request.GET:
-            tagName_val = self.request.GET.get('tagName', False)
+        if 'tagName' in self.request.GET:
+            tagName_val = self.request.GET.get('tagName')
 
             # If the user tries to search for a non existing tag, return all posts instead
             if not Tag.objects.filter(tagName=tagName_val).exists():
@@ -473,8 +480,8 @@ class MyUpdatesListView(LoginRequiredMixin, generic.ListView):
         context = super(MyUpdatesListView, self).get_context_data(**kwargs)  
         current_username = user_id = self.request.user.username
 
-        if self.request.method == 'GET' and 'tagName' in self.request.GET:
-            context['tagName'] = self.request.GET.get('tagName', '')
+        if 'tagName' in self.request.GET:
+            context['tagName'] = self.request.GET.get('tagName')
 
         context['current_username'] = current_username
         return context
@@ -485,7 +492,7 @@ class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
     model = UserPost
     template_name = "tellings/newupdates_list.html"
     paginate_by = 10
-    http_method_names = ['get', 'post']
+    http_method_names = ['get']
 
     def blockedUsers(self):
         """ Returns a list of the users blocked by the currently loggedin user. 
@@ -538,16 +545,15 @@ class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
         tagName_val = False
         username_val = False
 
-        if self.request.method == 'GET':
-            if 'tagName' in self.request.GET:
-                tagName_val = self.request.GET.get('tagName', False) 
-                if not Tag.objects.filter(tagName=tagName_val).exists():
-                    return self.posts_filtered_by_blocked()
-            if 'userName' in self.request.GET:
-                username_val = self.request.GET.get('userName', False)
-                if not User.objects.filter(username=username_val).exists():
-                    return self.posts_filtered_by_blocked()
-                user_id = User.objects.get(username=username_val)
+        if 'tagName' in self.request.GET:
+            tagName_val = self.request.GET.get('tagName', False) 
+            if not Tag.objects.filter(tagName=tagName_val).exists():
+                return self.posts_filtered_by_blocked()
+        if 'userName' in self.request.GET:
+            username_val = self.request.GET.get('userName', False)
+            if not User.objects.filter(username=username_val).exists():
+                return self.posts_filtered_by_blocked()
+            user_id = User.objects.get(username=username_val)
                       
         if tagName_val: 
             tagID = Tag.objects.get(tagName=tagName_val).tagID
@@ -573,11 +579,10 @@ class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
         context = super(NewUpdatesListView, self).get_context_data(**kwargs)  
         current_username = self.request.user.username
 
-        if self.request.method == 'GET':
-            if 'tagName' in self.request.GET:
-                context['tagName'] = self.request.GET.get('tagName', '')
-            if 'userName' in self.request.GET:
-                context['userName'] = self.request.GET.get('userName', '')
+        if 'tagName' in self.request.GET:
+            context['tagName'] = self.request.GET.get('tagName', '')
+        if 'userName' in self.request.GET:
+            context['userName'] = self.request.GET.get('userName', '')
 
         context['current_username'] = current_username
         return context
@@ -697,15 +702,14 @@ class UserCommentListView(LoginRequiredMixin, generic.ListView):
         postID_val = False
         new_context = False
 
-        if self.request.method == 'GET':
-            if 'postID' in self.request.GET:
-                postID_val = self.request.GET.get('postID', False) 
+        if 'postID' in self.request.GET:
+            postID_val = self.request.GET.get('postID', False) 
 
-        if postID_val:
-            current_user = self.request.user
-            blockedUsers = BlockedUser.objects.filter(blockedBy=current_user)
-            blockedList = [blocked.blockedUser for blocked in blockedUsers]
-            new_context = UserComment.objects.filter(postID=postID_val).exclude(user__in=blockedList).order_by('-dateOfComment')
+            if UserPost.objects.filter(postID=postID_val).exists():
+                current_user = self.request.user
+                blockedUsers = BlockedUser.objects.filter(blockedBy=current_user)
+                blockedList = [blocked.blockedUser for blocked in blockedUsers]
+                new_context = UserComment.objects.filter(postID=postID_val).exclude(user__in=blockedList).order_by('-dateOfComment')
 
         return new_context
 
@@ -716,12 +720,11 @@ class UserCommentListView(LoginRequiredMixin, generic.ListView):
         current_username = user_id = self.request.user.username
         context['current_username'] = current_username
 
-        if self.request.method == 'GET':
-            if 'postID' in self.request.GET:
-                postID_val = self.request.GET.get('postID', False) 
-                post = UserPost.objects.get(postID=postID_val)
-                author_of_post = post.user.username
-                context['author_of_post'] = author_of_post
+        if 'postID' in self.request.GET:
+            postID_val = self.request.GET.get('postID', False) 
+            post = UserPost.objects.get(postID=postID_val)
+            author_of_post = post.user.username
+            context['author_of_post'] = author_of_post
 
         return context
 

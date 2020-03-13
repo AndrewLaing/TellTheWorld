@@ -10,18 +10,11 @@ import django
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.urls import reverse
-from datetime import datetime, date, timezone
+from datetime import datetime, date, timezone, timedelta
 
 from tellings.models import *
+from tellings.views import maxPostsPerDay, adminNameList, StatusCode
 import enum, json
-
-
-class StatusCode(enum.Enum):
-    """ Enum containing the status codes returned from views.py in the response dictionaries"""
-    ERROR = 0
-    SUCCESS = 1
-    CENSORED = 2
-    INVALIDPASSWORD = 3
 
 
 class SharedVariables:
@@ -660,16 +653,31 @@ class ChangeUserDetailsPageTests(SharedTestMethods):
     @classmethod
     def setUpTestData(cls):        
         """ Creates the test data used by the methods within this class. """
+        SV = SharedVariables
         cls.viewname = 'tellings:changeuserdetails'
         cls.loggedout_redirect_URL = '/loginpage/?next=/changeuserdetails/' 
         cls.templateURL = 'tellings/changeUserDetails.html'
-
-        SV = SharedVariables
+        cls.errorPage_viewname = SV.errorPage_viewname
         cls.credentials1 = SV.credentials1
 
         cls.user1 = User.objects.create_user(cls.credentials1['username'], 
                                              cls.credentials1['email'],
                                              cls.credentials1['pwd'])
+
+        cls.valid_data = {
+            'first_name': 'Robert', 
+            'last_name': 'Robot', 
+            'email': 'r_robot@bot.com'
+        }
+        cls.success_message = 'Your details have been updated'
+
+        cls.invalid_data = {
+            'first_name': 'Robert', 
+            'last_name': 'Robot', 
+            'email': 'notavalidemail'
+        }
+        cls.fail_message = 'Email error: Enter a valid email address'
+
 
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
@@ -679,6 +687,32 @@ class ChangeUserDetailsPageTests(SharedTestMethods):
 
     def test_POST_loggedout(self):
         self.post_loggedout_redirect_tests()
+
+    def test_POST_no_data(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])        
+        response = self.client.post(reverse(self.viewname), follow=True)        
+        self.assertRedirects(response, reverse(self.errorPage_viewname))
+
+    def test_POST_validData(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        response = self.client.post(reverse(self.viewname), 
+                                    self.valid_data, follow=True)
+        content = response.content.decode("utf-8")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(self.success_message, content, msg="Details updated message not found.")
+
+    def test_POST_invalidData(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        response = self.client.post(reverse(self.viewname), 
+                                    self.invalid_data, follow=True)
+        content = response.content.decode("utf-8")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(self.fail_message, content, msg="Invalid details message not found.")
 
 
 class CheckUserPasswordViewTests(SharedTestMethods):
@@ -1525,17 +1559,85 @@ class MyUpdatesListViewTests(SharedTestMethods):
                                              cls.credentials1['email'],
                                              cls.credentials1['pwd'])
 
+        cls.test_postDate = SV.test_postDate
+        cls.test_postTitle1 = SV.test_postTitle1
+        cls.test_postText1 = SV.test_postText1 
+        cls.test_postTags = SV.test_postTags # ["qwertyuiop","zxcvbnm","this is a test", "still a test"] 
+
+    def create_test_records(self):
+        tag = self.createTagRecord(self.test_postTags[0])
+        for i in range(0, maxPostsPerDay):
+            post = self.createPostRecord(userID=self.user1.id, 
+                                dateOfPost=self.test_postDate, 
+                                postTitle=(self.test_postTitle1 + str(i) ), 
+                                postText=self.test_postText1)  
+            tagmap = self.createTagmapRecord(post, tag)
+
+    def create_test_record_for_yesterday(self):
+        tag = self.createTagRecord(self.test_postTags[1])
+        yesterday = django.utils.timezone.now() + timedelta(days=-1)  
+        yesterday = yesterday.replace(tzinfo=timezone.utc)
+
+        post = self.createPostRecord(userID=self.user1.id, 
+                                dateOfPost=yesterday, 
+                                postTitle=(self.test_postTitle1 + "yesterday" ), 
+                                postText=self.test_postText1)  
+        tagmap = self.createTagmapRecord(post, tag)
+
+    def test_POST_loggedin(self):
+        self.post_loggedin_not_allowed_tests()
+
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
 
     def test_GET_loggedin(self):
-        self.get_loggedin_tests()
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        self.create_test_records()
 
-    def test_POST_loggedout(self):
-        self.post_loggedout_redirect_tests()
+        response = self.client.get((reverse(self.viewname)), follow=True)
+        content = response.content.decode('utf-8')
 
-    def test_POST_loggedin(self):
-        self.post_loggedin_not_allowed_tests()
+        self.assertEqual(response.status_code, 200)
+        self.check_templates_are_included(response, self.templateURL)
+
+        for i in range(0, maxPostsPerDay):
+            toCheck = self.test_postTitle1 + str(i)
+            self.assertIn(toCheck, content, msg="%s not found in response." % toCheck)
+
+    def test_GET_filteredByTag(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        self.create_test_record_for_yesterday()
+        self.create_test_records()
+
+        viewname = reverse(self.viewname) + "?tagName=" + self.test_postTags[0]
+        response = self.client.get(viewname, follow=True)
+        content = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+
+        valid_tag = self.test_postTags[0]
+        invalid_tag = self.test_postTags[1]
+        self.assertIn(valid_tag, content, msg="Tag '%s' not found in response." % valid_tag)
+        self.assertNotIn(invalid_tag, content, msg="Tag '%s' found in response." % invalid_tag)
+
+    def test_GET_filteredByNonExistantTag(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        self.create_test_record_for_yesterday()
+        self.create_test_records()
+
+        viewname = reverse(self.viewname) + "?tagName=unusedtag"
+        response = self.client.get(viewname, follow=True)
+        content = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+
+        valid_tag = self.test_postTags[0]
+        invalid_tag = self.test_postTags[1]
+        self.assertIn(valid_tag, content, msg="Tag '%s' not found in response." % valid_tag)
+        self.assertIn(invalid_tag, content, msg="Tag '%s' found in response." % invalid_tag)
 
 
 class NewUpdatesListViewTests(SharedTestMethods):

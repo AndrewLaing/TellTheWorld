@@ -32,15 +32,11 @@ class NewUserCreationForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super(NewUserCreationForm, self).save(commit=False)
-        user.email = self.cleaned_data["email"]
+
         if commit:
             user.save()
-        return user
 
-    def clean_email(self):
-        if User.objects.filter(email=self.cleaned_data['email']).exists():
-            raise ValidationError(self.fields['email'].error_messages['exists'])
-        return self.cleaned_data['email']
+        return user
 
 
 class DeleteAccountForm(forms.ModelForm):

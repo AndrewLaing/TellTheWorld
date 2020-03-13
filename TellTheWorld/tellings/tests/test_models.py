@@ -64,6 +64,10 @@ class TagModelTests(TestCase):
         max_length = Tag._meta.get_field('tagName').max_length
         self.assertEquals(max_length, 15)
 
+    def test_property_first_char(self):
+        tag = self.createTag("Tag1")
+        self.assertEqual("T", tag.first_char)
+
 
 class TagmapModelTests(TestCase):
     """Tests for the Tagmap model."""
