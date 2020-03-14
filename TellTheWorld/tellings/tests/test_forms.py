@@ -2,7 +2,7 @@
 # Filename:     test_forms.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 13/02/2020
+# Last Updated: 14/03/2020
 # Description:  Test cases for tellings forms
 """
 
@@ -16,13 +16,22 @@ class ChangeUserDetailsFormTests(TestCase):
     """Tests for the ChangeUserDetailsForm form."""
 
     def test_pass_good_data(self):
-        valid_data = {'first_name': 'testfirst', 'last_name': 'testlast', 'email': 'testfirst@email.com'}
-        form = ChangeUserDetailsForm(data=valid_data)
+        valid_data = {'first_name': 'testfirst', 
+                      'last_name': 'testlast', 
+                      'email': 'testfirst@email.com'}
+        form = ChangeUserDetailsForm(valid_data)
+        details = form.save()
+
+        self.assertEqual(details.first_name, 'testfirst')
+        self.assertEqual(details.last_name, 'testlast')
+        self.assertEqual(details.email, 'testfirst@email.com')
         self.assertTrue(form.is_valid())
         
     def test_pass_bad_data(self):
-        invalid_data = {'first_name': 'testfirst', 'last_name': 'testlast', 'email': 'testfirst@incomplete'}
-        form = ChangeUserDetailsForm(data=invalid_data)
+        invalid_data = {'first_name': 'testfirst', 
+                        'last_name': 'testlast', 
+                        'email': 'testfirst@incomplete'}
+        form = ChangeUserDetailsForm(invalid_data)
         self.assertFalse(form.is_valid())
 
     def test_blank_data(self):
@@ -43,14 +52,19 @@ class DeleteAccountFormTests(TestCase):
         valid_data = {'deleted_date': self.test_postDate, 
                      'deleted_reason': 'somethingelse', 
                      'membership_length': 365}
-        form = DeleteAccountForm(data=valid_data)
+        form = DeleteAccountForm(valid_data)
+        deleted = form.save()
+
+        self.assertEqual(deleted.deleted_date, self.test_postDate)
+        self.assertEqual(deleted.deleted_reason, 'somethingelse')
+        self.assertEqual(deleted.membership_length, 365)
         self.assertTrue(form.is_valid())
         
     def test_pass_bad_data(self):
         invalid_data = {'deleted_date': self.test_postDate, 
                      'deleted_reason': 'somethingelse', 
                      'membership_length': -244}
-        form = DeleteAccountForm(data=invalid_data)
+        form = DeleteAccountForm(invalid_data)
         self.assertFalse(form.is_valid())
 
     def test_blank_data(self):
@@ -67,13 +81,24 @@ class NewUserCreationFormTests(TestCase):
     """Tests for the NewUserCreationForm form."""
 
     def test_pass_good_data(self):
-        valid_data = {'username': 'testuser1', 'email': 'testuser@gmail.com', 'password1': '@P455w0rd', 'password2': '@P455w0rd'}
-        form = NewUserCreationForm(data=valid_data)
+        valid_data = {'username': 'testuser1', 
+                      'email': 'testuser@gmail.com', 
+                      'password1': '@P455w0rd', 
+                      'password2': '@P455w0rd'}
+        form = NewUserCreationForm(valid_data)
+        newuser = form.save()
+
+        self.assertEqual(newuser.username, 'testuser1')
+        self.assertEqual(newuser.email, 'testuser@gmail.com')
+        self.assertNotEqual(newuser.password, '@P455w0rd') # password should be encrypted
         self.assertTrue(form.is_valid())
         
     def test_pass_bad_data(self):
-        invalid_data = {'username': 'testuser1', 'email': 'testuser@incomplete', 'password1': '@P455w0rd', 'password2': '@P455w0rd'}
-        form = ChangeUserDetailsForm(data=invalid_data)
+        invalid_data = {'username': 'testuser1', 
+                        'email': 'testuser@incomplete', 
+                        'password1': '@P455w0rd', 
+                        'password2': '@P455w0rd'}
+        form = ChangeUserDetailsForm(invalid_data)
         self.assertFalse(form.is_valid())
 
     def test_blank_data(self):
@@ -105,7 +130,13 @@ class UserCommentFormTests(TestCase):
                      'user': self.user2.id, 
                      'dateOfComment': self.test_postDate,
                      'commentText': 'Text for another post'}
-        form = UserCommentForm(data=valid_data)
+        form = UserCommentForm(valid_data)
+        comment = form.save()
+
+        self.assertEqual(comment.postID, self.testpost)
+        self.assertEqual(comment.user, self.user2)
+        self.assertEqual(comment.dateOfComment, self.test_postDate)
+        self.assertEqual(comment.commentText, 'Text for another post')
         self.assertTrue(form.is_valid())
         
     def test_pass_bad_data(self):
@@ -113,7 +144,7 @@ class UserCommentFormTests(TestCase):
                        'user': self.user2.id, 
                        'dateOfComment': 'yesterday',
                        'commentText': 'Text for another post'}
-        form = UserCommentForm(data=invalid_data)
+        form = UserCommentForm(invalid_data)
         self.assertFalse(form.is_valid())
 
     def test_blank_data(self):
@@ -145,19 +176,43 @@ class UserPostFormTests(TestCase):
 
     def test_pass_good_data(self):
         valid_data = {'user': self.user1.id, 
-                     'dateOfPost': self.test_postDate, 
-                     'postTitle': 'Another post', 
-                     'postText': 'Text for another post'}
-        form = UserPostForm(data=valid_data)
+                      'dateOfPost': self.test_postDate, 
+                      'postTitle': 'Another post', 
+                      'postText': 'Text for another post',
+                      'postTags': ['["testTag1","testTag2"]']} 
+        form = UserPostForm(valid_data)
+        userpost = form.save()
+        self.assertEqual(userpost.dateOfPost, self.test_postDate)
+        self.assertEqual(userpost.postTitle, 'Another post')
+        self.assertEqual(userpost.postText, 'Text for another post')
         self.assertTrue(form.is_valid())
         
     def test_pass_bad_data(self):
         invalid_data = {'user': self.user1.id, 
-                     'dateOfPost': 'yesterday', 
-                     'postTitle': 'Another post', 
-                     'postText': 'Text for another post'}
-        form = UserPostForm(data=invalid_data)
+                        'dateOfPost': 'yesterday', 
+                        'postTitle': 'Another post', 
+                        'postText': 'Text for another post'}
+
+        form = UserPostForm(invalid_data)
         self.assertFalse(form.is_valid())
+
+    def test_tags_added(self): 
+        # simulate a pre-existant tag
+        tag = Tag.objects.create(tagName="testTag3")
+        tag.save()
+
+        valid_data = {'user': self.user1.id, 
+                      'dateOfPost': self.test_postDate, 
+                      'postTitle': 'Another post', 
+                      'postText': 'Text for another post',
+                      'postTags': ['["testTag1","testTag2","testTag3"]']} 
+
+        form = UserPostForm(valid_data)
+        form.save()
+
+        self.assertTrue(Tag.objects.filter(tagName="testTag1").exists())
+        self.assertTrue(Tag.objects.filter(tagName="testTag2").exists())
+        self.assertTrue(Tag.objects.filter(tagName="testTag3").exists())
 
     def test_blank_data(self):
         form = UserPostForm({})

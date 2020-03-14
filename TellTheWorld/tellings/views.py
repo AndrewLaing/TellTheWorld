@@ -63,6 +63,8 @@ def has_exceeded_max_posts(request):
 
     current_userID = request.user.id
     startofday = django.utils.timezone.now().replace(hour=0, minute=0, second=0, microsecond=0) 
+    startofday = startofday.replace(tzinfo=timezone.utc)
+
     numberOfPostsToday = UserPost.objects.filter(user=current_userID, dateOfPost__gt=startofday).count()
 
     return numberOfPostsToday >= maxPostsPerDay
@@ -165,7 +167,9 @@ class AccountDeletedPage(LoginRequiredMixin, View):
                   a redirect to the error page.
         """
         current_user = request.user
-        deleted_date = django.utils.timezone.now()
+        now = django.utils.timezone.now()
+        now = now.replace(tzinfo=timezone.utc)
+        deleted_date = now
         date_joined = current_user.date_joined
         membership_length = deleted_date - date_joined
 
@@ -770,7 +774,9 @@ class AddNewUpdate(LoginRequiredMixin, View):
         # make a copy of POST to add user to as this is not supplied by the form       
         request.POST = request.POST.copy()
         request.POST['user'] = request.user.id
-        request.POST['dateOfPost'] = django.utils.timezone.now()
+        now = django.utils.timezone.now()
+        now = now.replace(tzinfo=timezone.utc)
+        request.POST['dateOfPost'] = now
 
         form = UserPostForm(request.POST)
 
@@ -839,7 +845,9 @@ class AddUserComment(LoginRequiredMixin, View):
             else:
                 request.POST = request.POST.copy()
                 request.POST['user'] = request.user.id
-                request.POST['dateOfComment'] = django.utils.timezone.now()
+                now = django.utils.timezone.now()
+                now = now.replace(tzinfo=timezone.utc)
+                request.POST['dateOfComment'] = now
 
                 form = UserCommentForm(request.POST)
                 
@@ -1149,8 +1157,9 @@ class EditUserComment(LoginRequiredMixin, generic.UpdateView):
 
                 if(userComment.user.username == request.user.username):
                     # Update the record (sql injection-safe)
-                    today = django.utils.timezone.now()
-                    UserComment.objects.filter(commentID=in_commentID).update(commentText=in_commentText, dateOfEdit=today)
+                    now = django.utils.timezone.now()
+                    now = now.replace(tzinfo=timezone.utc)
+                    UserComment.objects.filter(commentID=in_commentID).update(commentText=in_commentText, dateOfEdit=now)
                     response = {'status': StatusCode.SUCCESS.value, 'message': _("Your comment has been updated.")} 
                 else:
                     response = {'status': StatusCode.ERROR.value, 'message': _("Error: You cannot edit other people's comments.")} 
@@ -1206,8 +1215,9 @@ class EditUserPost(LoginRequiredMixin, generic.UpdateView):
 
                 if(userPost.user.username == request.user.username):
                     # Update the record (sql injection-safe)
-                    today = django.utils.timezone.now()
-                    UserPost.objects.filter(postID=in_postID).update(postText=in_postText, dateOfEdit=today)
+                    now = django.utils.timezone.now()
+                    now = now.replace(tzinfo=timezone.utc)
+                    UserPost.objects.filter(postID=in_postID).update(postText=in_postText, dateOfEdit=now)
                     response = {'status': StatusCode.SUCCESS.value, 'message': _("Your post has been updated.")}
                 else:
                     response = {'status': StatusCode.ERROR.value, 'message': _("Error: You cannot edit other people's posts!")} 

@@ -23,7 +23,6 @@ class ChangeUserDetailsForm(forms.ModelForm):
 class NewUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True,
             label = _('Email Address'),
-            error_messages={'exists': _('Sorry. An account attached to this email address already exists.')},
             help_text = _('A valid email address'))
 
     class Meta:
@@ -51,21 +50,16 @@ class UserCommentForm(forms.ModelForm):
         fields = ('postID', 'user', 'dateOfComment', 'dateOfEdit', 'commentText') 
 
 
-class UserPostForm(forms.ModelForm):
-    
+class UserPostForm(forms.ModelForm): 
     postTitle = forms.CharField(required=True,
-                max_length=UserPost._meta.get_field('postTitle').max_length, 
-                label = _('Post Title'),
-                help_text = _('The title of your post.'))
+                max_length=UserPost._meta.get_field('postTitle').max_length)
     postText =  forms.CharField(required=True,
-                max_length=UserPost._meta.get_field('postText').max_length,
-                label = _('Post Text'),
-                help_text = _('Your post text.'))
+                max_length=UserPost._meta.get_field('postText').max_length)
 
 
     def __init__(self, *args, **kwargs):
         self.tagList = False
-        
+
         # pop post tags because this is not used to create a postRecord
         if len(args) > 0:
             if 'postTags' in args[0]:
@@ -74,26 +68,10 @@ class UserPostForm(forms.ModelForm):
 
         super(UserPostForm, self).__init__(*args, **kwargs)
 
-
     class Meta:
         model = UserPost
         fields = ['user', 'dateOfPost','postTitle', 'postText']  
-        labels = {
-            'postText': _('Post Text'),
-            'postTitle': _('Post Title')
-        }
-        help_texts = {
-            'postText': _('The text for your post'),
-            'postTitle': _('A unique post title')
-        }
-        error_messages = {
-            'postText': {
-                'max_length': _("The text you have entered is too long."),
-            },
-            'name': {
-                'max_length': _("The title of your post is too long."),
-            },
-        }        
+     
 
     def save(self, commit=True):
         """ Used to save the UserPost record and create its Tagmap records.
@@ -103,30 +81,24 @@ class UserPostForm(forms.ModelForm):
         if commit:
             post.save()
 
-        postID = post.postID
-
-        # add the Tag and Tagmap records attached to the post
         if self.tagList:
-            self.add_tag_and_tagmap_records(postID) 
+            self.add_tag_and_tagmap_records(post) 
 
         return post
         
-    def add_tag_and_tagmap_records(self, postID):
+    def add_tag_and_tagmap_records(self, post):
         """ Used to add any new tags created with the post,
             and create Tagmaps for the post.
         """
         for tagName in self.tagList:
-            tagRecords = Tag.objects.filter(tagName=tagName)
-
-            if len(tagRecords) > 0:
-                tagID = tagRecords[0].tagID
+            if Tag.objects.filter(tagName=tagName).exists():
+                tag = Tag.objects.get(tagName=tagName)
             else:
                 tag = Tag(tagName=tagName)
                 tag.save()
-                tagID = tag.tagID
 
-            if not Tagmap.objects.filter(postID_id=postID, tagID_id=tagID).exists():
-                tm = Tagmap(postID_id=postID, tagID_id=tagID)
+            if not Tagmap.objects.filter(postID=post, tagID=tag).exists():
+                tm = Tagmap(postID=post, tagID=tag)
                 tm.save()  
         
         # Update the tagNames.json file used for tag completion

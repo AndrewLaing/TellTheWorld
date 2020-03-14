@@ -13,6 +13,11 @@ from django.urls import reverse
 from datetime import timezone
 from tellings.models import *
 
+class BlockedUserModelTests(TestCase):
+    """Tests for the BlockedUser model."""
+    pass
+
+
 class DeletedAccountModelTests(TestCase):
     """Tests for the DeletedAccount model."""
 
@@ -34,17 +39,15 @@ class DeletedAccountModelTests(TestCase):
     def test_deleted_reason_max_length(self):
         max_length = DeletedAccount._meta.get_field('deleted_reason').max_length
         self.assertEquals(max_length, 15)
-                
+
+
+class HiddenPostModelTests(TestCase):
+    """Tests for the HiddenPost model."""
+    pass
+
 
 class TagModelTests(TestCase):
     """Tests for the Tag model."""
-
-    @classmethod
-    def setUpTestData(cls):
-        pass
-
-    def setUp(self):
-        pass
 
     def createTag(self, tagName='MyTag'):
         return Tag.objects.create(tagName=tagName)
@@ -79,9 +82,6 @@ class TagmapModelTests(TestCase):
         test_postDate = django.utils.timezone.now()
         cls.test_postDate = test_postDate.replace(tzinfo=timezone.utc)
         cls.testpost = UserPost(cls.user2.id, test_postDate, 'postTitle 3', 'postText 3')
-
-    def setUp(self):
-        pass    
     
     def createTagmap(self, postID=1, tagID=1):
         return Tagmap(postID_id=postID, tagID_id=tagID)
@@ -105,10 +105,6 @@ class UserCommentModelTests(TestCase):
         cls.user2 = User.objects.create_user('testuser2', 'testUser2@email.com', '@myp455w0rd')
         cls.testpost = UserPost.objects.create(user_id=cls.user2.id, dateOfPost=cls.test_postDate, 
                                                postTitle='postTitle 1', postText='postText 1') 
-
-    def setUp(self):
-        pass
-
 
     def createComment(self, postID, userID, dateOfComment, commentText):
     
@@ -140,9 +136,6 @@ class UserPostModelTests(TestCase):
         test_postDate = django.utils.timezone.now()
         cls.test_postDate = test_postDate.replace(tzinfo=timezone.utc)
         cls.user1 = User.objects.create_user('testuser1', 'testUser1@email.com', '@myp455w0rd')
-
-    def setUp(self):
-        pass
 
     def createPost(self, userID, dateOfPost, postTitle, postText):
         return UserPost.objects.create(user_id=userID, dateOfPost=dateOfPost, 
