@@ -472,8 +472,8 @@ class MyUpdatesListView(LoginRequiredMixin, generic.ListView):
 
         if tagName_val:
             tag = Tag.objects.get(tagName=tagName_val)
-            tagmaps = Tagmap.objects.filter(tag=tag)
-            postList = [tm.post for tm in tagmaps]
+            tagmaps = Tagmap.objects.filter(tagID=tag)
+            postList = [tm.postID.postID for tm in tagmaps]
             qs = qs.filter(postID__in=postList, user=user_id).order_by('-dateOfPost') 
         else:
             qs = qs.filter(user=user_id).order_by('-dateOfPost')
@@ -561,8 +561,8 @@ class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
                       
         if tagName_val: 
             tag = Tag.objects.get(tagName=tagName_val)
-            tagmaps = Tagmap.objects.filter(tag=tag)
-            postList = [tm.post.postID for tm in tagmaps]  
+            tagmaps = Tagmap.objects.filter(tagID=tag)
+            postList = [tm.postID.postID for tm in tagmaps]  
             filteredPosts = self.posts_filtered_by_blocked()  
 
             if username_val:
@@ -1283,7 +1283,7 @@ class HidePost(LoginRequiredMixin, View):
             else:
                 hp = HiddenPost(postID=in_post, hideFrom=in_hideFrom)
                 hp.save()
-                response = {'status': StatusCode.SUCCESS.value, 'message': _("The post will now be hidden from you.!")} 
+                response = {'status': StatusCode.SUCCESS.value, 'message': _("The post will now be hidden from you!")} 
 
         return response
 

@@ -75,7 +75,7 @@ class SharedTestMethods(TestCase):
 
     def createTagmapRecord(self, in_post, in_tag):
         """ Creates a new Tagmap record """
-        return Tagmap.objects.create(post=in_post, tag=in_tag)
+        return Tagmap.objects.create(postID=in_post, tagID=in_tag)
 
     def get_loggedin_tests(self): 
         """ Logs into an account, GETs a page, and tests that the page

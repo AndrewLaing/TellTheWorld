@@ -128,10 +128,10 @@ class TagmapModelTests(TestCase):
         cls.testpost = UserPost(cls.user2.id, test_postDate, 'postTitle 3', 'postText 3')
     
     def createTagmap(self, in_post, in_tag):
-        return Tagmap(post=in_post, tag=in_tag)
+        return Tagmap(postID=in_post, tagID=in_tag)
 
     def test_tagmap_creation(self):
-        tagmap = self.createTagmap(self.testtag, self.testpost)
+        tagmap = self.createTagmap(self.testpost, self.testtag)
         self.assertTrue(isinstance(tagmap, Tagmap))
 
     def test_verbose_name_plural(self):
