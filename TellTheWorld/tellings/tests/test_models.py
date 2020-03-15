@@ -2,7 +2,7 @@
 # Filename:     test_models.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 28/01/2020
+# Last Updated: 15/03/2020
 # Description:  Test cases for tellings models.
 """
 
@@ -13,9 +13,31 @@ from django.urls import reverse
 from datetime import timezone
 from tellings.models import *
 
+
 class BlockedUserModelTests(TestCase):
     """Tests for the BlockedUser model."""
-    pass
+
+    @classmethod
+    def setUpTestData(cls):
+        test_postDate = django.utils.timezone.now()
+        cls.test_postDate = test_postDate.replace(tzinfo=timezone.utc)
+        cls.user1 = User.objects.create_user('testuser1', 'testUser1@email.com', '@myp455w0rd')
+        cls.user2 = User.objects.create_user('testuser2', 'testUser2@email.com', '@myp455w0rd')
+
+
+    def createBlockedUser(self, in_blockedUser, in_blockedBy):
+        return BlockedUser.objects.create(blockedUser=in_blockedUser, blockedBy=in_blockedBy)
+
+    def test_blockedUser_creation(self):
+        blocked = self.createBlockedUser(self.user1, self.user2)
+        self.assertTrue(isinstance(blocked, BlockedUser))
+
+    def test_verbose_name_plural(self):
+        self.assertEqual(str(BlockedUser._meta.verbose_name_plural), "BlockedUsers")
+
+    def test_string_representation(self):
+        blocked = self.createBlockedUser(self.user1, self.user2)
+        self.assertEqual(str(blocked), self.user1.username)
 
 
 class DeletedAccountModelTests(TestCase):
@@ -43,7 +65,29 @@ class DeletedAccountModelTests(TestCase):
 
 class HiddenPostModelTests(TestCase):
     """Tests for the HiddenPost model."""
-    pass
+
+    @classmethod
+    def setUpTestData(cls):
+        test_postDate = django.utils.timezone.now()
+        cls.test_postDate = test_postDate.replace(tzinfo=timezone.utc)
+        cls.user1 = User.objects.create_user('testuser1', 'testUser1@email.com', '@myp455w0rd')
+        cls.user2 = User.objects.create_user('testuser2', 'testUser2@email.com', '@myp455w0rd')
+        cls.testpost = UserPost.objects.create(user_id=cls.user2.id, dateOfPost=cls.test_postDate, 
+                                               postTitle='postTitle 1', postText='postText 1') 
+
+    def createHiddenPost(self, in_postID, in_hideFrom):
+        return HiddenPost.objects.create(postID=in_postID, hideFrom=in_hideFrom)
+
+    def test_hiddenPost_creation(self):
+        hiddenPost = self.createHiddenPost(self.testpost, self.user1)
+        self.assertTrue(isinstance(hiddenPost, HiddenPost))
+
+    def test_verbose_name_plural(self):
+        self.assertEqual(str(HiddenPost._meta.verbose_name_plural), "HiddenPosts")
+
+    def test_string_representation(self):
+        hiddenPost = self.createHiddenPost(self.testpost, self.user1)
+        self.assertEqual(str(hiddenPost), self.testpost.postTitle)
 
 
 class TagModelTests(TestCase):
