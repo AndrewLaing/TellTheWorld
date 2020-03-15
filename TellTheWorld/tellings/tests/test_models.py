@@ -127,11 +127,11 @@ class TagmapModelTests(TestCase):
         cls.test_postDate = test_postDate.replace(tzinfo=timezone.utc)
         cls.testpost = UserPost(cls.user2.id, test_postDate, 'postTitle 3', 'postText 3')
     
-    def createTagmap(self, postID=1, tagID=1):
-        return Tagmap(postID_id=postID, tagID_id=tagID)
+    def createTagmap(self, in_post, in_tag):
+        return Tagmap(post=in_post, tag=in_tag)
 
     def test_tagmap_creation(self):
-        tagmap = self.createTagmap(self.testtag.tagID, self.testpost.postID)
+        tagmap = self.createTagmap(self.testtag, self.testpost)
         self.assertTrue(isinstance(tagmap, Tagmap))
 
     def test_verbose_name_plural(self):

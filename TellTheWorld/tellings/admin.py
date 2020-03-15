@@ -11,8 +11,8 @@ class TagAdmin(admin.ModelAdmin):
 
 
 class TagmapAdmin(admin.ModelAdmin):
-    fields = ['postID','tagID']
-    list_display = ('postID', 'tagID')
+    fields = ['post','tag']
+    list_display = ('post', 'tag')
 
 
 class UserCommentAdmin(admin.ModelAdmin):

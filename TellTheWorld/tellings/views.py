@@ -1,7 +1,7 @@
 # Filename:     views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last updated: 11/03/2020
+# Last updated: 15/03/2020
 # Description:  Contains the views for the website.
 
 import django.utils.timezone
@@ -317,9 +317,9 @@ class HiddenPostListView(LoginRequiredMixin, generic.ListView):
       if self.request.method == 'GET' and 'username' in self.request.GET:
           username_val = self.request.GET.get('username')
           userToBlock = get_object_or_404(User, username=username_val)
-          return HiddenPost.objects.filter(postID__user=userToBlock, hideFrom=current_user).exclude(postID__in=blockedPosts).order_by('postID')
+          return HiddenPost.objects.filter(postID__user=userToBlock, hideFrom=current_user).exclude(postID__in=blockedPosts).order_by('-postID__dateOfPost')
       else:
-          return HiddenPost.objects.filter(hideFrom=current_user).exclude(postID__in=blockedPosts).order_by('postID')
+          return HiddenPost.objects.filter(hideFrom=current_user).exclude(postID__in=blockedPosts).order_by('-postID__dateOfPost')
 
     def blockedUsers(self):
         """ Returns a list of the users blocked by the currently loggedin user. 
@@ -471,9 +471,9 @@ class MyUpdatesListView(LoginRequiredMixin, generic.ListView):
                 return qs.filter(user=user_id).order_by('-dateOfPost')
 
         if tagName_val:
-            tagID = Tag.objects.get(tagName=tagName_val).tagID
-            tagmaps = Tagmap.objects.filter(tagID=tagID)
-            postList = [tm.postID.postID for tm in tagmaps]
+            tag = Tag.objects.get(tagName=tagName_val)
+            tagmaps = Tagmap.objects.filter(tag=tag)
+            postList = [tm.post for tm in tagmaps]
             qs = qs.filter(postID__in=postList, user=user_id).order_by('-dateOfPost') 
         else:
             qs = qs.filter(user=user_id).order_by('-dateOfPost')
@@ -560,9 +560,9 @@ class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
             user_id = User.objects.get(username=username_val)
                       
         if tagName_val: 
-            tagID = Tag.objects.get(tagName=tagName_val).tagID
-            tagmaps = Tagmap.objects.filter(tagID=tagID)
-            postList = [tm.postID.postID for tm in tagmaps]  
+            tag = Tag.objects.get(tagName=tagName_val)
+            tagmaps = Tagmap.objects.filter(tag=tag)
+            postList = [tm.post.postID for tm in tagmaps]  
             filteredPosts = self.posts_filtered_by_blocked()  
 
             if username_val:
@@ -721,7 +721,7 @@ class UserCommentListView(LoginRequiredMixin, generic.ListView):
         """ Adds the current logged in user's name to the context data, to allow
             comment editing/deleting only on their own posts. """
         context = super(UserCommentListView, self).get_context_data(**kwargs)  
-        current_username = user_id = self.request.user.username
+        current_username = self.request.user.username
         context['current_username'] = current_username
 
         if 'postID' in self.request.GET:
@@ -1025,8 +1025,7 @@ class DeleteUserComment(LoginRequiredMixin, View):
         """ Returns the name of the user who made the post being commented upon.
         """
         comment = UserComment.objects.get(commentID=in_commentID)
-        in_postID = comment.postID.postID
-        post = UserPost.objects.get(postID=in_postID)
+        post = comment.postID
         username = post.user.username
         return username
 

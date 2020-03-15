@@ -97,8 +97,8 @@ class UserPostForm(forms.ModelForm):
                 tag = Tag(tagName=tagName)
                 tag.save()
 
-            if not Tagmap.objects.filter(postID=post, tagID=tag).exists():
-                tm = Tagmap(postID=post, tagID=tag)
+            if not Tagmap.objects.filter(post=post, tag=tag).exists():
+                tm = Tagmap(post=post, tag=tag)
                 tm.save()  
         
         # Update the tagNames.json file used for tag completion
