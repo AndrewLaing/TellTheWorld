@@ -7,6 +7,7 @@
 """
 
 import django
+from django.http import HttpRequest
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.urls import reverse
@@ -14,6 +15,7 @@ from datetime import datetime, date, timezone, timedelta
 
 from tellings.models import *
 from tellings.views import maxPostsPerDay, adminNameList, StatusCode
+from tellings.views import contains_banned_word, has_exceeded_max_posts, user_login
 import enum, json
 
 
@@ -65,9 +67,46 @@ class SharedTestMethods(TestCase):
         self.assertTemplateUsed(response, 'tellings/includes/footerContents.html')
 
     def createPostRecord(self, userID, dateOfPost, postTitle, postText):
-        """ Creates a new UserPost record """
+        """ Creates a new UserPost record. """
         return UserPost.objects.create(user_id=userID, dateOfPost=dateOfPost, 
                      postTitle=postTitle, postText=postText)
+
+    def create_maxPostsPerDay_UserPosts(self, userList):
+        """ Creates the maximum amount of UserPost objects allowed per day for each
+            user in the user list supplied. """
+        tag = self.createTagRecord(self.test_postTags[0])
+        posts = []
+
+        for user in userList:
+            for i in range(0, maxPostsPerDay):
+                post = self.createPostRecord(userID=user.id, 
+                                    dateOfPost=self.test_postDate, 
+                                    postTitle=(self.test_postTitle1 + str(i) ), 
+                                    postText=self.test_postText1) 
+                posts.append(post)
+                tagmap = self.createTagmapRecord(post, tag) 
+
+                post.save()
+                tagmap.save()
+
+        return posts
+
+    def create_UserPost_for_yesterday(self):
+        """ Creates and returns a UserPost object for yesterday. """
+        tag = self.createTagRecord(self.test_postTags[1])
+        yesterday = django.utils.timezone.now() + timedelta(days=-1)  
+        yesterday = yesterday.replace(tzinfo=timezone.utc)
+
+        post = self.createPostRecord(userID=self.user1.id, 
+                                dateOfPost=yesterday, 
+                                postTitle=(self.test_postTitle1 + "yesterday" ), 
+                                postText=self.test_postText1) 
+        tagmap = self.createTagmapRecord(post, tag)
+
+        post.save()
+        tagmap.save()
+
+        return post
 
     def createTagRecord(self, tagName='Tag1'):
         """ Creates a new Tag record """
@@ -420,7 +459,11 @@ class AddNewUpdateViewTests(SharedTestMethods):
                                              cls.credentials2['email'],
                                              cls.credentials2['pwd'])
 
-        cls.test_postTags_json = json.dumps(SV.test_postTags)
+        cls.test_postDate = SV.test_postDate
+        cls.test_postTitle1 = SV.test_postTitle1
+        cls.test_postText1 = SV.test_postText1   
+        cls.test_postTags = SV.test_postTags
+        cls.test_postTags_json = json.dumps(cls.test_postTags)
         cls.test_bannedText = SV.test_bannedText 
 
         cls.test_postData1 = { 'postTitle': SV.test_postTitle1,
@@ -469,6 +512,17 @@ class AddNewUpdateViewTests(SharedTestMethods):
         self.assertEqual(response.status_code, 200)
         self.response_contains_status_code(response, StatusCode.SUCCESS.value)
 
+    def test_POST_exceed_MaxPosts(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+
+        self.create_maxPostsPerDay_UserPosts([self.user1])
+
+        response = self.client.post(reverse(self.viewname), 
+                                    self.test_postData1, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
+
     def test_POST_invalidData(self):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
@@ -506,6 +560,7 @@ class AddUpdateModalTests(SharedTestMethods):
         cls.test_postTitle1 = SV.test_postTitle1
         cls.test_postText1 = SV.test_postText1                                             
         cls.test_newPostText = SV.test_postText2
+        cls.test_postTags = SV.test_postTags
 
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
@@ -520,22 +575,17 @@ class AddUpdateModalTests(SharedTestMethods):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, self.templateURL)
 
-    def test_GET_loggedin_hasExceededMaxPosts(self):
-        """ Tests the behaviour if the user has already posted
-            an update today. """
-        pass
-        """         self.createPostRecord(userID=self.user1.id, 
-                              dateOfPost=self.test_postDate, 
-                              postTitle=self.test_postTitle1, 
-                              postText=self.test_postText1)
-
+    def test_GET_exceed_MaxPosts(self):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
-        response = self.client.get((reverse(self.viewname)), follow=True)
+
+        self.create_maxPostsPerDay_UserPosts([self.user1])
+
+        response = self.client.get(reverse(self.viewname),  follow=True)
         content = response.content.decode("utf-8")
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("false", content) """
+        self.assertIn(content, 'false')
 
 
 class CensorTextViewTests(SharedTestMethods):
@@ -1375,18 +1425,32 @@ class HasExceededMaxPostsTests(SharedTestMethods):
                                              cls.credentials1['pwd'])
         
         cls.test_postDate = SV.test_postDate
-        cls.test_postTitle = SV.test_postTitle
-        cls.test_postText = SV.test_postText
+        cls.test_postTitle1 = SV.test_postTitle1
+        cls.test_postText1 = SV.test_postText1   
+        cls.test_postTags = SV.test_postTags
+
 
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
 
-    def test_GET_has_not_posted(self):
+    def test_GET_has_not_exceeded_maxposts(self):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
         response = self.client.get((reverse(self.viewname)), follow=True)
         self.assertEqual(response.status_code, 200)
         self.response_contains_status_code(response, StatusCode.SUCCESS.value)
+
+    def test_GET_exceed_MaxPosts(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+
+        self.create_maxPostsPerDay_UserPosts([self.user1])
+
+        response = self.client.get(reverse(self.viewname),  follow=True)
+        content = response.content.decode("utf-8")
+
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
 
 
 class IndexPageViewTests(SharedTestMethods):
@@ -1564,26 +1628,6 @@ class MyUpdatesListViewTests(SharedTestMethods):
         cls.test_postText1 = SV.test_postText1 
         cls.test_postTags = SV.test_postTags # ["qwertyuiop","zxcvbnm","this is a test", "still a test"] 
 
-    def create_test_records(self):
-        tag = self.createTagRecord(self.test_postTags[0])
-        for i in range(0, maxPostsPerDay):
-            post = self.createPostRecord(userID=self.user1.id, 
-                                dateOfPost=self.test_postDate, 
-                                postTitle=(self.test_postTitle1 + str(i) ), 
-                                postText=self.test_postText1)  
-            tagmap = self.createTagmapRecord(post, tag)
-
-    def create_test_record_for_yesterday(self):
-        tag = self.createTagRecord(self.test_postTags[1])
-        yesterday = django.utils.timezone.now() + timedelta(days=-1)  
-        yesterday = yesterday.replace(tzinfo=timezone.utc)
-
-        post = self.createPostRecord(userID=self.user1.id, 
-                                dateOfPost=yesterday, 
-                                postTitle=(self.test_postTitle1 + "yesterday" ), 
-                                postText=self.test_postText1)  
-        tagmap = self.createTagmapRecord(post, tag)
-
     def test_POST_loggedin(self):
         self.post_loggedin_not_allowed_tests()
 
@@ -1593,7 +1637,7 @@ class MyUpdatesListViewTests(SharedTestMethods):
     def test_GET_loggedin(self):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
-        self.create_test_records()
+        self.create_maxPostsPerDay_UserPosts([self.user1])
 
         response = self.client.get((reverse(self.viewname)), follow=True)
         content = response.content.decode('utf-8')
@@ -1608,8 +1652,8 @@ class MyUpdatesListViewTests(SharedTestMethods):
     def test_GET_filteredByTag(self):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
-        self.create_test_record_for_yesterday()
-        self.create_test_records()
+        self.create_UserPost_for_yesterday()
+        self.create_maxPostsPerDay_UserPosts([self.user1])
 
         viewname = reverse(self.viewname) + "?tagName=" + self.test_postTags[0]
         response = self.client.get(viewname, follow=True)
@@ -1625,8 +1669,8 @@ class MyUpdatesListViewTests(SharedTestMethods):
     def test_GET_filteredByNonExistantTag(self):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
-        self.create_test_record_for_yesterday()
-        self.create_test_records()
+        self.create_UserPost_for_yesterday()
+        self.create_maxPostsPerDay_UserPosts([self.user1])
 
         viewname = reverse(self.viewname) + "?tagName=unusedtag"
         response = self.client.get(viewname, follow=True)
@@ -1652,22 +1696,197 @@ class NewUpdatesListViewTests(SharedTestMethods):
 
         SV = SharedVariables
         cls.credentials1 = SV.credentials1
-
         cls.user1 = User.objects.create_user(cls.credentials1['username'], 
                                              cls.credentials1['email'],
                                              cls.credentials1['pwd'])
 
+        cls.credentials2 = SV.credentials2
+        cls.user2 = User.objects.create_user(cls.credentials2['username'], 
+                                             cls.credentials2['email'],
+                                             cls.credentials2['pwd'])
+
+        cls.test_postDate = SV.test_postDate
+        cls.test_postTitle1 = SV.test_postTitle1
+        cls.test_postText1 = SV.test_postText1 
+        cls.test_postTags = SV.test_postTags # ["qwertyuiop","zxcvbnm","this is a test", "still a test"] 
+        cls.no_results_msg = "No results found"
+
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
-
-    def test_GET_loggedin(self):
-        self.get_loggedin_tests()
 
     def test_POST_loggedout(self):
         self.post_loggedout_redirect_tests()
 
-    def test_POST_loggedin(self):
-        self.post_loggedin_not_allowed_tests()
+    def test_GET_loggedin(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        self.create_maxPostsPerDay_UserPosts([self.user1])
+
+        response = self.client.get((reverse(self.viewname)), follow=True)
+        content = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+        self.check_templates_are_included(response, self.templateURL)
+
+        for i in range(0, maxPostsPerDay):
+            toCheck = self.test_postTitle1 + str(i)
+            self.assertIn(toCheck, content, msg="%s not found in response." % toCheck)
+
+    def test_GET_filteredByTag(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        self.create_UserPost_for_yesterday()
+        self.create_maxPostsPerDay_UserPosts([self.user1])
+
+        viewname = reverse(self.viewname) + "?tagName=" + self.test_postTags[0]
+        response = self.client.get(viewname, follow=True)
+        content = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+
+        valid_tag = self.test_postTags[0]
+        invalid_tag = self.test_postTags[1]
+        self.assertIn(valid_tag, content, msg="Tag '%s' not found in response." % valid_tag)
+        self.assertNotIn(invalid_tag, content, msg="Tag '%s' found in response." % invalid_tag)
+
+    def test_GET_filteredByNonExistantTag(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        self.create_UserPost_for_yesterday()
+        self.create_maxPostsPerDay_UserPosts([self.user1])
+
+        viewname = reverse(self.viewname) + "?tagName=unusedtag"
+        response = self.client.get(viewname, follow=True)
+        content = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+
+        valid_tag = self.test_postTags[0]
+        invalid_tag = self.test_postTags[1]
+        self.assertIn(valid_tag, content, msg="Tag '%s' not found in response." % valid_tag)
+        self.assertIn(invalid_tag, content, msg="Tag '%s' found in response." % invalid_tag)
+
+    def test_GET_filteredByUsername(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        self.create_maxPostsPerDay_UserPosts([self.user1, self.user2])
+        
+        blocked = BlockedUser.objects.create(blockedUser=self.user2, blockedBy=self.user1)
+        blocked.save()
+        
+        uname = self.user2.username
+        viewname = reverse(self.viewname) + "?userName=" + uname
+        response = self.client.get(viewname, follow=True)
+        content = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+
+        valid_user = self.user2.username
+        invalid_user = self.user1.username
+
+        self.assertIn(valid_user, content, msg="Posts by valid user '%s' not found in response." % valid_user)
+        self.assertNotIn(invalid_user, content, msg="Posts by BlockedUser '%s' found in response." % invalid_user)
+
+    def test_GET_postsByBlockingUser(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        self.create_UserPost_for_yesterday()
+        self.create_maxPostsPerDay_UserPosts([self.user1])
+
+        blocked = BlockedUser.objects.create(blockedUser=self.user1, blockedBy=self.user2)
+        blocked.save()
+
+        blocked_username = self.user2.username
+
+        viewname = reverse(self.viewname) + "?userName=" + blocked_username
+        response = self.client.get(viewname, follow=True)
+        content = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertIn(self.no_results_msg, content, msg="Message '%s' not found in response." % self.no_results_msg)
+
+    def test_GET_filteredByNonExistantUsername(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        self.create_UserPost_for_yesterday()
+        self.create_maxPostsPerDay_UserPosts([self.user1])
+
+        valid_username = self.user1.username
+        invalid_username = "notarealuser"
+
+        viewname = reverse(self.viewname) + "?userName=" + invalid_username
+        response = self.client.get(viewname, follow=True)
+        content = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertIn(valid_username, content, msg="Posts by '%s' not found in response." % valid_username)
+        self.assertNotIn(invalid_username, content, msg="Invalid username '%s' found in response." % invalid_username)
+
+    def test_GET_filteredByTagAndUsername(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        self.create_UserPost_for_yesterday()
+        self.create_maxPostsPerDay_UserPosts([self.user1, self.user2])
+        
+        uname = self.user2.username
+        viewname = reverse(self.viewname) + "?userName=" + uname + "&tagName=" + self.test_postTags[0]
+        response = self.client.get(viewname, follow=True)
+        content = response.content.decode('utf-8')
+
+        valid_user = self.user2.username
+        invalid_user = self.user1.username
+        valid_tag = self.test_postTags[0]
+        invalid_tag = self.test_postTags[1]
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(valid_tag, content, msg="Tag '%s' not found in response." % valid_tag)
+        self.assertNotIn(invalid_tag, content, msg="Tag '%s' found in response." % invalid_tag)
+        self.assertIn(valid_user, content, msg="Posts by valid user '%s' not found in response." % valid_user)
+        self.assertNotIn(invalid_user, content, msg="Posts by BlockedUser '%s' found in response." % invalid_user)
+
+    def test_GET_blockedUserNotPresent(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        self.create_UserPost_for_yesterday()
+        self.create_maxPostsPerDay_UserPosts([self.user1, self.user2])
+
+        blocked = BlockedUser.objects.create(blockedUser=self.user2, blockedBy=self.user1)
+        blocked.save()
+
+        response = self.client.get(reverse(self.viewname), follow=True)
+        content = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+
+        valid_user = self.user1.username
+        invalid_user = self.user2.username
+
+        self.assertIn(valid_user, content, msg="Posts by valid user '%s' not found in response." % valid_user)
+        self.assertNotIn(invalid_user, content, msg="Posts by BlockedUser '%s' found in response." % invalid_user)
+
+    def test_GET_hiddenPostNotPresent(self):
+        self.client.login(username=self.credentials2['username'], 
+                          password=self.credentials2['pwd'])
+        toHide = self.create_UserPost_for_yesterday()
+        toShow = self.create_maxPostsPerDay_UserPosts([self.user1, self.user2])
+
+        hiddenPost = HiddenPost.objects.create(postID=toHide, hideFrom=self.user2)
+        hiddenPost.save()
+
+        response = self.client.get(reverse(self.viewname), follow=True)
+        content = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+
+        hiddenTitle = toHide.postTitle
+        self.assertNotIn(hiddenTitle, content, msg="HiddenPost '%s' found in response." % hiddenTitle)
+
+        # Ensure that non-hidden posts are still present
+        for post in toShow:
+            postTitle = post.postTitle
+            self.assertIn(postTitle, content, msg="Post '%s' not found in response." % postTitle)
 
 
 class PrivacyPolicyPageViewTests(SharedTestMethods):
@@ -1876,3 +2095,67 @@ class UserCommentListViewTests(SharedTestMethods):
 
     def test_POST_loggedin(self):
         self.post_loggedin_not_allowed_tests()
+
+
+
+class ViewsSharedFunctionsTests(SharedTestMethods):
+    """Tests for the share functions in views.py """
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        SV = SharedVariables
+        cls.indexPage_viewname = SV.indexPage_viewname
+        cls.credentials1 = SV.credentials1
+        cls.user1 = User.objects.create_user(cls.credentials1['username'], 
+                                             cls.credentials1['email'],
+                                             cls.credentials1['pwd'])
+        cls.user1.save()
+        cls.test_postDate = SV.test_postDate
+        cls.test_postTitle1 = SV.test_postTitle1
+        cls.test_postText1 = SV.test_postText1   
+        cls.test_postTags = SV.test_postTags
+
+        cls.test_bannedText = "fucking admins"
+        cls.test_censoredText = "****ing admins"
+        cls.test_cleanText = "fluffy little bunnies"
+
+
+    def test_contains_banned_word(self):
+        toCensor = contains_banned_word(self.test_bannedText)
+        clean = contains_banned_word(self.test_cleanText)
+        self.assertTrue(toCensor)
+        self.assertFalse(clean)
+
+    def test_has_exceeded_max_posts_false(self): 
+        test_request = HttpRequest()
+        test_request.method = 'GET'
+        test_request.user = self.user1
+        self.create_UserPost_for_yesterday()
+        has_exceeded = has_exceeded_max_posts(test_request)
+
+        self.assertFalse(has_exceeded)
+
+    def test_has_exceeded_max_posts_true(self): 
+        test_request = HttpRequest()
+        test_request.method = 'GET'
+        test_request.user = self.user1
+        self.create_maxPostsPerDay_UserPosts([self.user1])
+        has_exceeded = has_exceeded_max_posts(test_request)
+
+        self.assertTrue(has_exceeded)
+
+    def test_has_exceeded_max_posts_false_for_Admin(self): 
+        admin_username = adminNameList[0]        
+        my_admin = User.objects.create_superuser(admin_username, 'myemail@test.com', "4un1qu3p4ssw0rd")
+        my_admin.save()
+
+        test_request = HttpRequest()
+        test_request.method = 'GET'
+        test_request.user = my_admin
+
+        self.create_maxPostsPerDay_UserPosts([my_admin])
+        has_exceeded = has_exceeded_max_posts(test_request)
+
+        self.assertFalse(has_exceeded)
+

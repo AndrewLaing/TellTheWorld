@@ -553,12 +553,18 @@ class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
             tagName_val = self.request.GET.get('tagName', False) 
             if not Tag.objects.filter(tagName=tagName_val).exists():
                 return self.posts_filtered_by_blocked()
+
         if 'userName' in self.request.GET:
             username_val = self.request.GET.get('userName', False)
             if not User.objects.filter(username=username_val).exists():
                 return self.posts_filtered_by_blocked()
+
             user_id = User.objects.get(username=username_val)
-                      
+
+            # Ensure the user is not trying to access posts by a user blocking them
+            if BlockedUser.objects.filter(blockedUser=self.request.user, blockedBy=user_id).exists():
+                return UserPost.objects.none()
+
         if tagName_val: 
             tag = Tag.objects.get(tagName=tagName_val)
             tagmaps = Tagmap.objects.filter(tagID=tag)
@@ -570,12 +576,8 @@ class NewUpdatesListView(LoginRequiredMixin, generic.ListView):
             else:
                 return filteredPosts.filter(postID__in=postList).order_by('-dateOfPost') 
         elif username_val:
-            # Ensure the user is not trying to access posts by a user blocking them
-            if BlockedUser.objects.filter(blockedUser=self.request.user, blockedBy=user_id).exists():
-                return UserPost.objects.none()
-            else:
-                hiddenPosts = self.hiddenPosts()
-                return UserPost.objects.filter(user=user_id).exclude(postID__in=hiddenPosts).order_by('-dateOfPost')
+            hiddenPosts = self.hiddenPosts()
+            return UserPost.objects.filter(user=user_id).exclude(postID__in=hiddenPosts).order_by('-dateOfPost')
         else: 
             return self.posts_filtered_by_blocked()
 
