@@ -728,9 +728,11 @@ class UserCommentListView(LoginRequiredMixin, generic.ListView):
 
         if 'postID' in self.request.GET:
             postID_val = self.request.GET.get('postID', False) 
-            post = UserPost.objects.get(postID=postID_val)
-            author_of_post = post.user.username
-            context['author_of_post'] = author_of_post
+            
+            if UserPost.objects.filter(postID=postID_val).exists():
+                post = UserPost.objects.get(postID=postID_val)
+                author_of_post = post.user.username
+                context['author_of_post'] = author_of_post
 
         return context
 
@@ -889,7 +891,7 @@ class BlockUser(LoginRequiredMixin, View):
         if in_username in adminNameList:
             response = {'status': StatusCode.ERROR.value, 'message': _("Error: You cannot block administrators!")} 
         elif request.user.username == in_username:
-            response = {'status': 0, 'message': _("Error: You cannot block yourself!")} 
+            response = {'status': StatusCode.ERROR.value, 'message': _("Error: You cannot block yourself!")} 
         else:
             if not User.objects.filter(username=in_username).exists():
                 response = {'status': StatusCode.ERROR.value, 'message': _("Error: The user you are trying to block does not exist!")} 
@@ -1268,13 +1270,12 @@ class HidePost(LoginRequiredMixin, View):
         """ Returns a response dictionary.
         """
         in_postID = request.POST['postID']  
-        in_post = UserPost.objects.get(postID=in_postID)
-        in_hideFrom = request.user
 
         if not UserPost.objects.filter(postID=in_postID).exists(): 
             response = {'status': StatusCode.ERROR.value, 'message': _("Error: The post you are trying to hide does not exist!")} 
         else:
-            # Admin posts/comments cannot be hidden!!!
+            in_post = UserPost.objects.get(postID=in_postID)
+            in_hideFrom = request.user
             postername = in_post.user.username
 
             if postername in adminNameList:
@@ -1365,12 +1366,13 @@ class UnhidePost(LoginRequiredMixin, View):
         """ A response dictionary.
         """
         in_postID = request.POST['postID']
-        in_post = UserPost.objects.get(postID=in_postID)
-        in_hideFrom = request.user
 
         if not UserPost.objects.filter(postID=in_postID).exists():
             response = {'status': StatusCode.ERROR.value, 'message': _("Error: You cannot unhide a post that does not exist!")} 
         else:
+            in_post = UserPost.objects.get(postID=in_postID)
+            in_hideFrom = request.user
+
             if not HiddenPost.objects.filter(postID=in_post, hideFrom=in_hideFrom).exists():
                 response = {'status': StatusCode.ERROR.value, 'message': _("Error: You have not hidden this post!")} 
             else:
@@ -1410,10 +1412,9 @@ class UnhideUserPosts(LoginRequiredMixin, View):
             response = {'status': StatusCode.ERROR.value, 'message': _("Error: You cannot unhide posts from a user that does not exist!")}   
         else:
             in_user = User.objects.get(username=in_username)
-            
             postsByUser = UserPost.objects.filter(user=in_user)
-            
             in_hideFrom = request.user
+
             if not HiddenPost.objects.filter(postID__in=postsByUser, hideFrom=in_hideFrom).exists():
                 response = {'status': StatusCode.ERROR.value, 'message': _("Error: You have not hidden any of this user's posts!")}   
             else:

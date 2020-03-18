@@ -71,14 +71,13 @@ class SharedTestMethods(TestCase):
         return UserPost.objects.create(user_id=userID, dateOfPost=dateOfPost, 
                      postTitle=postTitle, postText=postText)
 
-    def create_maxPostsPerDay_UserPosts(self, userList):
-        """ Creates the maximum amount of UserPost objects allowed per day for each
-            user in the user list supplied. """
+    def create_n_UserPosts(self, n, userList):
+        """ Creates n UserPost objects for each user in the user list supplied. """
         tag = self.createTagRecord(self.test_postTags[0])
         posts = []
 
         for user in userList:
-            for i in range(0, maxPostsPerDay):
+            for i in range(0, n):
                 post = self.createPostRecord(userID=user.id, 
                                     dateOfPost=self.test_postDate, 
                                     postTitle=(self.test_postTitle1 + str(i) ), 
@@ -214,10 +213,6 @@ class AboutPageViewTests(SharedTestMethods):
 
     def test_GET_loggedout(self):
         self.get_loggedout_tests()
-
-    def test_POST_no_data(self):
-        response = self.client.post(reverse(self.viewname), follow=True)
-        self.assertEqual(response.status_code, 200)
 
     def test_POST_missing_data(self):
         self.post_missing_data_tests()
@@ -516,7 +511,7 @@ class AddNewUpdateViewTests(SharedTestMethods):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
 
-        self.create_maxPostsPerDay_UserPosts([self.user1])
+        self.create_n_UserPosts(maxPostsPerDay, [self.user1])
 
         response = self.client.post(reverse(self.viewname), 
                                     self.test_postData1, follow=True)
@@ -579,13 +574,149 @@ class AddUpdateModalTests(SharedTestMethods):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
 
-        self.create_maxPostsPerDay_UserPosts([self.user1])
+        self.create_n_UserPosts(maxPostsPerDay, [self.user1])
 
         response = self.client.get(reverse(self.viewname),  follow=True)
         content = response.content.decode("utf-8")
 
         self.assertEqual(response.status_code, 200)
         self.assertIn(content, 'false')
+
+
+class BlockedUserListViewTests(SharedTestMethods):
+    """Tests for the BlockedUserListView."""
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:blockedusers'
+        cls.loggedout_redirect_URL = '/loginpage/?next=/blockedusers/'
+        cls.templateURL = "tellings/blockeduser_list.html"
+
+        SV = SharedVariables    
+        cls.credentials1 = SV.credentials1
+        cls.user1 = User.objects.create_user(cls.credentials1['username'], 
+                                             cls.credentials1['email'],
+                                             cls.credentials1['pwd'])
+        cls.credentials2 = SV.credentials2
+        cls.user2 = User.objects.create_user(cls.credentials2['username'], 
+                                             cls.credentials2['email'],
+                                             cls.credentials2['pwd'])
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_redirect_tests()
+
+    def test_GET_loggedin(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        blocked = BlockedUser.objects.create(blockedUser=self.user2, blockedBy=self.user1)
+        blocked_username = self.user2.username
+        blocked.save()
+        response = self.client.get((reverse(self.viewname)), follow=True)
+        content = response.content.decode("utf-8")
+
+        self.assertIn(blocked_username, content, msg="Blocked user '%s' not found." % blocked_username)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, self.templateURL)
+
+    def test_POST_loggedout(self):
+        self.post_loggedout_redirect_tests()
+
+
+class BlockUserTests(SharedTestMethods):
+    """Tests for the BlockUser view."""
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:blockuser'
+        cls.loggedout_redirect_URL = '/loginpage/?next=/blockuser/'
+
+        SV = SharedVariables
+        cls.credentials1 = SV.credentials1
+        cls.user1 = User.objects.create_user(cls.credentials1['username'], 
+                                             cls.credentials1['email'],
+                                             cls.credentials1['pwd'])
+                                             
+        cls.credentials2 = SV.credentials2
+        cls.user2 = User.objects.create_user(cls.credentials2['username'], 
+                                             cls.credentials2['email'],
+                                             cls.credentials2['pwd'])
+        
+        cls.valid_data = {
+            'username': cls.credentials2['username']
+        }        
+        cls.invalid_data1 = {
+            'username': "nonexistantuser"
+        }       
+        cls.invalid_data2 = {
+            'username': cls.credentials1['username']
+        }       
+        cls.invalid_data3 = {
+            'username': adminNameList[0] 
+        }
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_redirect_tests()
+
+    def test_GET_loggedin(self):
+        self.get_login_HTTPResponseNotAllowed_tests()
+        
+    def test_POST_loggedout(self):
+        self.post_loggedout_redirect_tests()
+
+    def test_POST_no_data(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        response = self.client.post(reverse(self.viewname), follow=True)        
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
+
+    def test_POST_validData(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        response = self.client.post(reverse(self.viewname), 
+                                    self.valid_data, follow=True)
+        isblocked = BlockedUser.objects.filter(blockedUser=self.user2, blockedBy=self.user1).exists()
+
+        self.assertTrue(isblocked)
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.SUCCESS.value)
+
+    def test_POST_invalidData(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        response = self.client.post(reverse(self.viewname), 
+                                    self.invalid_data, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
+
+    def test_POST_invalidData(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        response = self.client.post(reverse(self.viewname), 
+                                    self.invalid_data1, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
+
+    def test_POST_cannot_block_self(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        response = self.client.post(reverse(self.viewname), 
+                                    self.invalid_data2, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
+
+    def test_POST_cannot_block_admin(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        response = self.client.post(reverse(self.viewname), 
+                                    self.invalid_data3, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
 
 
 class CensorTextViewTests(SharedTestMethods):
@@ -629,9 +760,6 @@ class CensorTextViewTests(SharedTestMethods):
                                     
         self.assertEqual(response.status_code, 200)      
         self.response_contains_status_code(response, StatusCode.SUCCESS.value)
-
-
-# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
 class ChangePasswordPageTests(SharedTestMethods):
@@ -878,7 +1006,6 @@ class DeleteUserCommentViewTests(SharedTestMethods):
                                      dateOfPost=self.test_postDate, 
                                      postTitle=in_postTitle, 
                                      postText=self.test_postText1)   
-
     
     def createComment(self, postTitle, commentText):
         post = self.createSinglePostRecord(postTitle)
@@ -1444,10 +1571,109 @@ class HasExceededMaxPostsTests(SharedTestMethods):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
 
-        self.create_maxPostsPerDay_UserPosts([self.user1])
+        self.create_n_UserPosts(maxPostsPerDay, [self.user1])
 
         response = self.client.get(reverse(self.viewname),  follow=True)
         content = response.content.decode("utf-8")
+
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
+
+
+class HidePostTests(SharedTestMethods):
+    """Tests for the HidePost view."""
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:hidepost'
+        cls.loggedout_redirect_URL = '/loginpage/?next=/hidepost/'
+
+        SV = SharedVariables
+        cls.credentials1 = SV.credentials1
+        cls.user1 = User.objects.create_user(cls.credentials1['username'], 
+                                             cls.credentials1['email'],
+                                             cls.credentials1['pwd'])
+                                             
+        cls.credentials2 = SV.credentials2
+        cls.user2 = User.objects.create_user(cls.credentials2['username'], 
+                                             cls.credentials2['email'],
+                                             cls.credentials2['pwd'])
+                                             
+        admin_username = adminNameList[0]        
+        cls.admin_user = User.objects.create_superuser(admin_username, 'myemail@test.com', "4un1qu3p4ssw0rd")                                     
+
+        cls.test_postDate = SV.test_postDate
+        cls.test_postTitle1 = SV.test_postTitle1
+        cls.test_postText1 = SV.test_postText1   
+        cls.test_postTags = SV.test_postTags
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_redirect_tests()
+
+    def test_GET_loggedin(self):
+        self.get_login_HTTPResponseNotAllowed_tests()
+        
+    def test_POST_loggedout(self):
+        self.post_loggedout_redirect_tests()
+
+    def test_POST_no_data(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        response = self.client.post(reverse(self.viewname), follow=True)        
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
+
+    def test_POST_validData(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        posts = self.create_n_UserPosts(maxPostsPerDay, [self.user2])
+        toHide = posts[0]
+        valid_data = {'postID': toHide.postID}
+
+        response = self.client.post(reverse(self.viewname), 
+                                    valid_data, follow=True)
+        ishidden = HiddenPost.objects.filter(postID=toHide, hideFrom=self.user1).exists()
+
+        self.assertTrue(ishidden)
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.SUCCESS.value)
+
+    def test_POST_nonexistant_postID(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        
+        invalid_data = {'postID': 9999}
+        response = self.client.post(reverse(self.viewname), 
+                                    invalid_data, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
+
+    def test_POST_cannot_hide_admin_posts(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        posts = self.create_n_UserPosts(3, [self.admin_user])
+        toHide = posts[0]
+        valid_data = {'postID': toHide.postID}
+
+        response = self.client.post(reverse(self.viewname), 
+                                    valid_data, follow=True)
+        ishidden = HiddenPost.objects.filter(postID=toHide, hideFrom=self.user1).exists()
+
+        self.assertFalse(ishidden)
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
+
+    def test_POST_cannot_hide_hidden_posts(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        posts = self.create_n_UserPosts(3, [self.user2])
+        toHide = posts[0]
+        valid_data = {'postID': toHide.postID}
+
+        self.client.post(reverse(self.viewname), valid_data, follow=True)
+        response = self.client.post(reverse(self.viewname), 
+                                    valid_data, follow=True)
 
         self.assertEqual(response.status_code, 200)
         self.response_contains_status_code(response, StatusCode.ERROR.value)
@@ -1637,7 +1863,7 @@ class MyUpdatesListViewTests(SharedTestMethods):
     def test_GET_loggedin(self):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
-        self.create_maxPostsPerDay_UserPosts([self.user1])
+        self.create_n_UserPosts(maxPostsPerDay, [self.user1])
 
         response = self.client.get((reverse(self.viewname)), follow=True)
         content = response.content.decode('utf-8')
@@ -1653,7 +1879,7 @@ class MyUpdatesListViewTests(SharedTestMethods):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
         self.create_UserPost_for_yesterday()
-        self.create_maxPostsPerDay_UserPosts([self.user1])
+        self.create_n_UserPosts(2, [self.user1])
 
         viewname = reverse(self.viewname) + "?tagName=" + self.test_postTags[0]
         response = self.client.get(viewname, follow=True)
@@ -1670,7 +1896,7 @@ class MyUpdatesListViewTests(SharedTestMethods):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
         self.create_UserPost_for_yesterday()
-        self.create_maxPostsPerDay_UserPosts([self.user1])
+        self.create_n_UserPosts(2, [self.user1])
 
         viewname = reverse(self.viewname) + "?tagName=unusedtag"
         response = self.client.get(viewname, follow=True)
@@ -1720,7 +1946,7 @@ class NewUpdatesListViewTests(SharedTestMethods):
     def test_GET_loggedin(self):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
-        self.create_maxPostsPerDay_UserPosts([self.user1])
+        self.create_n_UserPosts(maxPostsPerDay, [self.user1])
 
         response = self.client.get((reverse(self.viewname)), follow=True)
         content = response.content.decode('utf-8')
@@ -1736,7 +1962,7 @@ class NewUpdatesListViewTests(SharedTestMethods):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
         self.create_UserPost_for_yesterday()
-        self.create_maxPostsPerDay_UserPosts([self.user1])
+        self.create_n_UserPosts(2, [self.user1])
 
         viewname = reverse(self.viewname) + "?tagName=" + self.test_postTags[0]
         response = self.client.get(viewname, follow=True)
@@ -1753,7 +1979,7 @@ class NewUpdatesListViewTests(SharedTestMethods):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
         self.create_UserPost_for_yesterday()
-        self.create_maxPostsPerDay_UserPosts([self.user1])
+        self.create_n_UserPosts(2, [self.user1])
 
         viewname = reverse(self.viewname) + "?tagName=unusedtag"
         response = self.client.get(viewname, follow=True)
@@ -1769,7 +1995,7 @@ class NewUpdatesListViewTests(SharedTestMethods):
     def test_GET_filteredByUsername(self):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
-        self.create_maxPostsPerDay_UserPosts([self.user1, self.user2])
+        self.create_n_UserPosts(2, [self.user1, self.user2])
         
         blocked = BlockedUser.objects.create(blockedUser=self.user2, blockedBy=self.user1)
         blocked.save()
@@ -1791,7 +2017,7 @@ class NewUpdatesListViewTests(SharedTestMethods):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
         self.create_UserPost_for_yesterday()
-        self.create_maxPostsPerDay_UserPosts([self.user1])
+        self.create_n_UserPosts(2, [self.user1])
 
         blocked = BlockedUser.objects.create(blockedUser=self.user1, blockedBy=self.user2)
         blocked.save()
@@ -1810,7 +2036,7 @@ class NewUpdatesListViewTests(SharedTestMethods):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
         self.create_UserPost_for_yesterday()
-        self.create_maxPostsPerDay_UserPosts([self.user1])
+        self.create_n_UserPosts(2, [self.user1])
 
         valid_username = self.user1.username
         invalid_username = "notarealuser"
@@ -1828,7 +2054,7 @@ class NewUpdatesListViewTests(SharedTestMethods):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
         self.create_UserPost_for_yesterday()
-        self.create_maxPostsPerDay_UserPosts([self.user1, self.user2])
+        self.create_n_UserPosts(2, [self.user1, self.user2])
         
         uname = self.user2.username
         viewname = reverse(self.viewname) + "?userName=" + uname + "&tagName=" + self.test_postTags[0]
@@ -1850,7 +2076,7 @@ class NewUpdatesListViewTests(SharedTestMethods):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
         self.create_UserPost_for_yesterday()
-        self.create_maxPostsPerDay_UserPosts([self.user1, self.user2])
+        self.create_n_UserPosts(2, [self.user1, self.user2])
 
         blocked = BlockedUser.objects.create(blockedUser=self.user2, blockedBy=self.user1)
         blocked.save()
@@ -1870,7 +2096,7 @@ class NewUpdatesListViewTests(SharedTestMethods):
         self.client.login(username=self.credentials2['username'], 
                           password=self.credentials2['pwd'])
         toHide = self.create_UserPost_for_yesterday()
-        toShow = self.create_maxPostsPerDay_UserPosts([self.user1, self.user2])
+        toShow = self.create_n_UserPosts(2, [self.user1, self.user2])
 
         hiddenPost = HiddenPost.objects.create(postID=toHide, hideFrom=self.user2)
         hiddenPost.save()
@@ -2063,6 +2289,254 @@ class TermsAndConditionsPage(SharedTestMethods):
         self.post_invalid_login_redirect_tests()
 
 
+class UnblockUserTests(SharedTestMethods):
+    """Tests for the UnblockUser view."""
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:unblockuser'
+        cls.loggedout_redirect_URL = '/loginpage/?next=/unblockuser/'
+
+        SV = SharedVariables
+        cls.credentials1 = SV.credentials1
+        cls.user1 = User.objects.create_user(cls.credentials1['username'], 
+                                             cls.credentials1['email'],
+                                             cls.credentials1['pwd'])
+                                             
+        cls.credentials2 = SV.credentials2
+        cls.user2 = User.objects.create_user(cls.credentials2['username'], 
+                                             cls.credentials2['email'],
+                                             cls.credentials2['pwd'])
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_redirect_tests()
+
+    def test_GET_loggedin(self):
+        self.get_login_HTTPResponseNotAllowed_tests()
+        
+    def test_POST_loggedout(self):
+        self.post_loggedout_redirect_tests()
+
+    def test_POST_no_data(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        response = self.client.post(reverse(self.viewname), follow=True)        
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
+
+    def test_POST_validData(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        
+        blocked = BlockedUser.objects.create(blockedUser=self.user2, blockedBy=self.user1)
+        blocked.save()
+
+        valid_data = {'username': self.credentials2["username"]}
+
+        response = self.client.post(reverse(self.viewname), 
+                                    valid_data, follow=True)
+        isblocked = BlockedUser.objects.filter(blockedUser=self.user2, blockedBy=self.user1).exists()
+
+        self.assertFalse(isblocked)
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.SUCCESS.value)
+
+    def test_POST_userNotBlocked(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+
+        valid_data = {'username': self.credentials2["username"]}
+
+        response = self.client.post(reverse(self.viewname), 
+                                    valid_data, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
+
+    def test_POST_nonexistant_username(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+
+        valid_data = {'username': "nonexistantuser"}
+
+        response = self.client.post(reverse(self.viewname), 
+                                    valid_data, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
+
+
+class UnhidePostTests(SharedTestMethods):
+    """Tests for the UnhidePost view."""
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:unhidepost'
+        cls.loggedout_redirect_URL = '/loginpage/?next=/unhidepost/'
+
+        SV = SharedVariables
+        cls.credentials1 = SV.credentials1
+        cls.user1 = User.objects.create_user(cls.credentials1['username'], 
+                                             cls.credentials1['email'],
+                                             cls.credentials1['pwd'])
+                                             
+        cls.credentials2 = SV.credentials2
+        cls.user2 = User.objects.create_user(cls.credentials2['username'], 
+                                             cls.credentials2['email'],
+                                             cls.credentials2['pwd'])
+                                             
+        cls.test_postDate = SV.test_postDate
+        cls.test_postTitle1 = SV.test_postTitle1
+        cls.test_postText1 = SV.test_postText1   
+        cls.test_postTags = SV.test_postTags
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_redirect_tests()
+
+    def test_GET_loggedin(self):
+        self.get_login_HTTPResponseNotAllowed_tests()
+        
+    def test_POST_loggedout(self):
+        self.post_loggedout_redirect_tests()
+
+    def test_POST_no_data(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        response = self.client.post(reverse(self.viewname), follow=True)        
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
+
+    def test_POST_validData(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+
+        posts = self.create_n_UserPosts(2, [self.user2])
+        toHide = posts[0]
+        hiddenPost = HiddenPost.objects.create(postID=toHide, hideFrom=self.user1)
+        hiddenPost.save()
+        valid_data = {'postID': toHide.postID}
+
+        response = self.client.post(reverse(self.viewname), 
+                                    valid_data, follow=True)
+        ishidden = HiddenPost.objects.filter(postID=toHide, hideFrom=self.user1).exists()
+
+        self.assertFalse(ishidden)
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.SUCCESS.value)
+
+    def test_POST_nonexistant_postID(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        
+        invalid_data = {'postID': 9999}
+        response = self.client.post(reverse(self.viewname), 
+                                    invalid_data, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
+
+    def test_POST_nonhidden_post(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        
+        posts = self.create_n_UserPosts(2, [self.user2])
+        toUnhide = posts[0]
+
+        invalid_data = {'postID': toUnhide.postID}
+
+        response = self.client.post(reverse(self.viewname), 
+                                    invalid_data, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
+
+
+class UnhideUserPostsTests(SharedTestMethods):
+    """Tests for the UnhideUserPosts view."""
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:unhideuserposts'
+        cls.loggedout_redirect_URL = '/loginpage/?next=/unhideuserposts/'
+
+        SV = SharedVariables
+        cls.credentials1 = SV.credentials1
+        cls.user1 = User.objects.create_user(cls.credentials1['username'], 
+                                             cls.credentials1['email'],
+                                             cls.credentials1['pwd'])
+                                             
+        cls.credentials2 = SV.credentials2
+        cls.user2 = User.objects.create_user(cls.credentials2['username'], 
+                                             cls.credentials2['email'],
+                                             cls.credentials2['pwd'])
+                                             
+        cls.test_postDate = SV.test_postDate
+        cls.test_postTitle1 = SV.test_postTitle1
+        cls.test_postText1 = SV.test_postText1   
+        cls.test_postTags = SV.test_postTags
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_redirect_tests()
+
+    def test_GET_loggedin(self):
+        self.get_login_HTTPResponseNotAllowed_tests()
+        
+    def test_POST_loggedout(self):
+        self.post_loggedout_redirect_tests()
+
+    def test_POST_no_data(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        response = self.client.post(reverse(self.viewname), follow=True)        
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
+
+    def test_POST_validData(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+
+        posts = self.create_n_UserPosts(3, [self.user2])
+        for post in posts:
+            hiddenPost = HiddenPost.objects.create(postID=post, hideFrom=self.user1)
+            hiddenPost.save()
+            
+        valid_data = {'user': self.user2.username}
+
+        response = self.client.post(reverse(self.viewname), 
+                                    valid_data, follow=True)
+                                    
+        for post in posts:
+            ishidden = HiddenPost.objects.filter(postID=post, hideFrom=self.user1).exists()
+            self.assertFalse(ishidden)
+            
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.SUCCESS.value)
+
+    def test_POST_nonexistant_username(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+            
+        invalid_data = {'user': "nonexistantusername"}
+
+        response = self.client.post(reverse(self.viewname), 
+                                    invalid_data, follow=True)
+            
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
+
+    def test_POST_no_hiddenposts(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+            
+        invalid_data = {'user': self.user2.username}
+
+        response = self.client.post(reverse(self.viewname), 
+                                    invalid_data, follow=True)
+            
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value)
+
+
 class UserCommentListViewTests(SharedTestMethods):
     """Tests for the UserCommentList view."""
 
@@ -2140,7 +2614,7 @@ class ViewsSharedFunctionsTests(SharedTestMethods):
         test_request = HttpRequest()
         test_request.method = 'GET'
         test_request.user = self.user1
-        self.create_maxPostsPerDay_UserPosts([self.user1])
+        self.create_n_UserPosts(maxPostsPerDay, [self.user1])
         has_exceeded = has_exceeded_max_posts(test_request)
 
         self.assertTrue(has_exceeded)
@@ -2153,8 +2627,9 @@ class ViewsSharedFunctionsTests(SharedTestMethods):
         test_request = HttpRequest()
         test_request.method = 'GET'
         test_request.user = my_admin
-
-        self.create_maxPostsPerDay_UserPosts([my_admin])
+        
+        number_of_posts = maxPostsPerDay + 1
+        self.create_n_UserPosts(number_of_posts, [my_admin])
         has_exceeded = has_exceeded_max_posts(test_request)
 
         self.assertFalse(has_exceeded)
