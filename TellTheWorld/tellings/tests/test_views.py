@@ -2,7 +2,7 @@
 # Filename:     test_views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 28/01/2020
+# Last Updated: 19/03/2020
 # Description:  Test cases for tellings views
 """
 
@@ -11,11 +11,11 @@ from django.http import HttpRequest
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.urls import reverse
-from datetime import datetime, date, timezone, timedelta
+from datetime import date, timezone, timedelta
 
 from tellings.models import *
 from tellings.views import maxPostsPerDay, adminNameList, StatusCode
-from tellings.views import contains_banned_word, has_exceeded_max_posts, user_login
+from tellings.views import contains_banned_word, has_exceeded_max_posts
 import enum, json
 
 
@@ -40,16 +40,6 @@ class SharedVariables:
     }
     partial_credentials = {'username': 'testuser1'}
 
-    today = date.today()
-    test_postDate = django.utils.timezone.now()
-    test_postDate = test_postDate.replace(tzinfo=timezone.utc)
-    test_postTitle = 'PT_title'
-    test_postText = 'PT_text'        
-    test_postTitle1 = 'PT_title_1'
-    test_postTitle2 = 'PT_title_2'
-    test_postText1 = 'PT_text_1'
-    test_postText2 = 'PT_text_2'
-    test_postTags = ["qwertyuiop","zxcvbnm","this is a test", "still a test"]
     test_reasonForDeletingAccount = "somethingelse"
     test_bannedText = "fucking admins"
     test_censoredText = "****ing admins"
@@ -58,6 +48,17 @@ class SharedVariables:
 
 class SharedTestMethods(TestCase):
     """ Shared helper functions used by the classes in this file """
+    today = date.today()
+    test_postDate = django.utils.timezone.now()
+    test_postDate = test_postDate.replace(tzinfo=timezone.utc)
+    test_postTitle = 'PT_title'
+    test_postText = 'PT_text'        
+    test_postTitle1 = 'PT_title_1'     
+    test_postTitle2 = 'PT_title_2'
+    test_postText1 = 'PT_text_1'
+    test_postText2 = 'PT_text_2'
+    test_postTags = ["qwertyuiop","zxcvbnm","this is a test", "still a test"]
+
     def check_templates_are_included(self, response, template):
         """ Checks that the page and default templates are included
             on the tested page """
@@ -350,10 +351,7 @@ class AddUserCommentViewTests(SharedTestMethods):
         cls.user2 = User.objects.create_user(cls.credentials2['username'], 
                                              cls.credentials2['email'],
                                              cls.credentials2['pwd'])
-
-        cls.test_postDate = SV.test_postDate
-        cls.test_postTitle1 = SV.test_postTitle1
-        cls.test_postText1 = SV.test_postText1   
+  
         cls.test_bannedText = SV.test_bannedText 
         
         cls.test_valid_commentData = { 'postID': 1, 'commentText': 'test comment' }      
@@ -361,13 +359,9 @@ class AddUserCommentViewTests(SharedTestMethods):
         cls.test_invalid_commentData1 = { 'postID': 1, 'commentText': '' }      
         cls.test_invalid_commentData2 = { 'postID': 1999, 'commentText': '' }
 
-    def add_valid_postID_to_commentData(self, in_postTitle, commentData):
-        post = self.createPostRecord(userID=self.user1.id, 
-                                     dateOfPost=self.test_postDate, 
-                                     postTitle=in_postTitle, 
-                                     postText=self.test_postText1)   
-        post = UserPost.objects.latest('postID')
-        test_postID = post.postID
+    def add_valid_postID_to_commentData(self, commentData):
+        posts = self.create_n_UserPosts(1, [self.user1])
+        test_postID = posts[0].postID
         commentData['postID'] = test_postID
         return commentData
 
@@ -384,8 +378,7 @@ class AddUserCommentViewTests(SharedTestMethods):
         self.response_contains_status_code(response, StatusCode.ERROR.value) 
 
     def test_POST_success(self):
-        self.test_valid_commentData = self.add_valid_postID_to_commentData('post success', 
-                                                                           self.test_valid_commentData)
+        self.test_valid_commentData = self.add_valid_postID_to_commentData(self.test_valid_commentData)
         
         self.client.login(username=self.credentials2['username'], 
                           password=self.credentials2['pwd'])
@@ -397,8 +390,7 @@ class AddUserCommentViewTests(SharedTestMethods):
         self.response_contains_status_code(response, StatusCode.SUCCESS.value)
 
     def test_POST_failure(self):
-        self.test_invalid_commentData1 = self.add_valid_postID_to_commentData('post failure', 
-                                                                             self.test_invalid_commentData1)
+        self.test_invalid_commentData1 = self.add_valid_postID_to_commentData(self.test_invalid_commentData1)
         
         self.client.login(username=self.credentials2['username'], 
                           password=self.credentials2['pwd'])
@@ -420,8 +412,7 @@ class AddUserCommentViewTests(SharedTestMethods):
         self.response_contains_status_code(response, StatusCode.ERROR.value)
 
     def test_POST_censored(self):
-        self.test_banned_commentData = self.add_valid_postID_to_commentData('post censored',
-                                                                            self.test_banned_commentData)
+        self.test_banned_commentData = self.add_valid_postID_to_commentData(self.test_banned_commentData)
         
         self.client.login(username=self.credentials2['username'], 
                           password=self.credentials2['pwd'])
@@ -454,33 +445,29 @@ class AddNewUpdateViewTests(SharedTestMethods):
                                              cls.credentials2['email'],
                                              cls.credentials2['pwd'])
 
-        cls.test_postDate = SV.test_postDate
-        cls.test_postTitle1 = SV.test_postTitle1
-        cls.test_postText1 = SV.test_postText1   
-        cls.test_postTags = SV.test_postTags
         cls.test_postTags_json = json.dumps(cls.test_postTags)
         cls.test_bannedText = SV.test_bannedText 
 
-        cls.test_postData1 = { 'postTitle': SV.test_postTitle1,
-                              'postText': SV.test_postText1,
+        cls.test_postData1 = { 'postTitle': cls.test_postTitle1,
+                              'postText': cls.test_postText1,
                               'postTags': cls.test_postTags_json, }
 
-        cls.test_postData2 = { 'postTitle': SV.test_postTitle2,
-                              'postText': SV.test_postText2,
+        cls.test_postData2 = { 'postTitle': cls.test_postTitle2,
+                              'postText': cls.test_postText2,
                               'postTags': cls.test_postTags_json, }
 
         max_postTitle_len = UserPost._meta.get_field('postTitle').max_length
         invalid_postTitle = "@" * (max_postTitle_len + 10)
         
         cls.test_invalid_postData = { 'postTitle': invalid_postTitle,
-                              'postText': SV.test_postText2,
+                              'postText': cls.test_postText2,
                               'postTags': cls.test_postTags_json, }
 
-        cls.test_duplicate_title_postData = { 'postTitle': SV.test_postTitle1,
-                              'postText': SV.test_postText2,
+        cls.test_duplicate_title_postData = { 'postTitle': cls.test_postTitle1,
+                              'postText': cls.test_postText2,
                               'postTags': cls.test_postTags_json, }
         
-        cls.test_banned_postData = { 'postTitle': SV.test_postTitle1,
+        cls.test_banned_postData = { 'postTitle': cls.test_postTitle1,
                               'postText': SV.test_bannedText,
                               'postTags': cls.test_postTags_json, }
 
@@ -550,12 +537,6 @@ class AddUpdateModalTests(SharedTestMethods):
         cls.user1 = User.objects.create_user(cls.credentials1['username'], 
                                              cls.credentials1['email'],
                                              cls.credentials1['pwd'])                                           
-
-        cls.test_postDate = SV.test_postDate
-        cls.test_postTitle1 = SV.test_postTitle1
-        cls.test_postText1 = SV.test_postText1                                             
-        cls.test_newPostText = SV.test_postText2
-        cls.test_postTags = SV.test_postTags
 
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
@@ -994,22 +975,11 @@ class DeleteUserCommentViewTests(SharedTestMethods):
         cls.credentials3 = SV.credentials3
         cls.user3 = User.objects.create_user(cls.credentials3['username'], 
                                              cls.credentials3['email'],
-                                             cls.credentials3['pwd'])
-
-        cls.test_postDate = SV.test_postDate
-        cls.test_postTitle1 = SV.test_postTitle1
-        cls.test_postText1 = SV.test_postText1      
-
-
-    def createSinglePostRecord(self, in_postTitle):
-        return self.createPostRecord(userID=self.user1.id, 
-                                     dateOfPost=self.test_postDate, 
-                                     postTitle=in_postTitle, 
-                                     postText=self.test_postText1)   
-    
+                                             cls.credentials3['pwd'])   
+     
     def createComment(self, postTitle, commentText):
-        post = self.createSinglePostRecord(postTitle)
-        return UserComment.objects.create(postID=post, user=self.user2, 
+        posts = self.create_n_UserPosts(1, [self.user1])
+        return UserComment.objects.create(postID=posts[0], user=self.user2, 
                      dateOfComment=self.test_postDate, commentText=commentText)    
 
     def test_GET_loggedin(self):
@@ -1128,10 +1098,6 @@ class DeleteUserPostViewTests(SharedTestMethods):
         cls.user2 = User.objects.create_user(cls.credentials2['username'], 
                                              cls.credentials2['email'],
                                              cls.credentials2['pwd'])
-        
-        cls.test_postDate = SV.test_postDate
-        cls.test_postTitle1 = SV.test_postTitle1
-        cls.test_postText1 = SV.test_postText1
                                 
     def test_GET_loggedin(self):
         self.get_login_HTTPResponseNotAllowed_tests()
@@ -1146,12 +1112,8 @@ class DeleteUserPostViewTests(SharedTestMethods):
         self.response_contains_status_code(response, StatusCode.ERROR.value)
 
     def test_POST_validDelete(self):
-        self.createPostRecord(userID=self.user1.id, 
-                              dateOfPost=self.test_postDate, 
-                              postTitle=self.test_postTitle1, 
-                              postText=self.test_postText1)
-        post = UserPost.objects.latest('postID')
-        test_postID = post.postID
+        posts = self.create_n_UserPosts(1, [self.user1])
+        test_postID = posts[0].postID
         test_validDelete = {
             'postID': test_postID,
         }
@@ -1168,12 +1130,8 @@ class DeleteUserPostViewTests(SharedTestMethods):
         self.assertFalse(postStillExists)
 
     def test_POST_invalidUser(self):
-        self.createPostRecord(userID=self.user1.id, 
-                              dateOfPost=self.test_postDate, 
-                              postTitle=self.test_postTitle1, 
-                              postText=self.test_postText1)
-        post = UserPost.objects.latest('postID')
-        test_postID = post.postID
+        posts = self.create_n_UserPosts(1, [self.user1])
+        test_postID = posts[0].postID
         test_invalidDelete = {
             'postID': test_postID,
         }
@@ -1225,28 +1183,17 @@ class EditUserCommentViewTests(SharedTestMethods):
                                              cls.credentials2['email'],
                                              cls.credentials2['pwd'])
 
-        cls.test_postDate = SV.test_postDate
-        cls.test_postTitle1 = SV.test_postTitle1
-        cls.test_postText1 = SV.test_postText1 
         cls.test_bannedText = SV.test_bannedText  
         
         cls.test_newCommentText = 'Edited comment'   
 
-
-    def createSinglePostRecord(self, in_postTitle):
-        return self.createPostRecord(userID=self.user1.id, 
-                                     dateOfPost=self.test_postDate, 
-                                     postTitle=in_postTitle, 
-                                     postText=self.test_postText1)   
-
-    def createComment(self, postTitle, commentText):
-        post = self.createSinglePostRecord(postTitle)
-        return UserComment.objects.create(postID=post, user=self.user2, 
+    def createComment(self, commentText):
+        posts = self.create_n_UserPosts(1, [self.user1])
+        return UserComment.objects.create(postID=posts[0], user=self.user2, 
                      dateOfComment=self.test_postDate, commentText=commentText)   
 
     def getTestURL(self, commentText): 
-        self.createComment(commentText, 'test comment')
-        comment = UserComment.objects.latest('commentID')
+        comment = self.createComment(commentText)
         test_commentID = comment.commentID   
         return reverse(self.viewname) + str(test_commentID)  
 
@@ -1275,8 +1222,7 @@ class EditUserCommentViewTests(SharedTestMethods):
         self.response_contains_status_code(response, StatusCode.ERROR.value)
 
     def test_POST_validEdit(self):
-        self.createComment('post_validEdit', 'test comment')
-        comment = UserComment.objects.latest('commentID')
+        comment = self.createComment('test comment')
         test_commentID = comment.commentID  
 
         test_validEdit = {
@@ -1296,8 +1242,7 @@ class EditUserCommentViewTests(SharedTestMethods):
         self.assertEqual(self.test_newCommentText, editedField)
 
     def test_POST_censored(self):
-        self.createComment('post_validEdit', 'test comment')
-        comment = UserComment.objects.latest('commentID')
+        comment = self.createComment('test comment')
         test_commentID = comment.commentID  
 
         test_validEdit = {
@@ -1319,8 +1264,7 @@ class EditUserCommentViewTests(SharedTestMethods):
     def test_POST_invalidUser(self):
         """ Tests that a user cannot edit another user's comments.
         """
-        self.createComment('post_invalidEdit_user', 'test comment')
-        comment = UserComment.objects.latest('commentID')
+        comment = self.createComment('test comment')
         test_commentID = comment.commentID  
 
         test_invalidEdit = {
@@ -1379,11 +1323,8 @@ class EditUserPostViewTests(SharedTestMethods):
         cls.user2 = User.objects.create_user(cls.credentials2['username'], 
                                              cls.credentials2['email'],
                                              cls.credentials2['pwd'])                                             
-
-        cls.test_postDate = SV.test_postDate
-        cls.test_postTitle1 = SV.test_postTitle1
-        cls.test_postText1 = SV.test_postText1                                             
-        cls.test_newPostText = SV.test_postText2
+                                          
+        cls.test_newPostText = cls.test_postText2
         cls.test_bannedText = SV.test_bannedText
 
     def test_GET_loggedout(self):
@@ -1392,10 +1333,7 @@ class EditUserPostViewTests(SharedTestMethods):
     def test_GET_loggedin(self):
         self.client.login(username=self.credentials1['username'], 
                           password=self.credentials1['pwd'])
-        self.createPostRecord(userID=self.user1.id, 
-                              dateOfPost=self.test_postDate, 
-                              postTitle=self.test_postTitle1, 
-                              postText=self.test_postText1)
+        self.create_n_UserPosts(1, [self.user1])
         response = self.client.get(self.testGETURL)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, self.templateURL)
@@ -1410,12 +1348,8 @@ class EditUserPostViewTests(SharedTestMethods):
         self.response_contains_status_code(response, StatusCode.ERROR.value)    
 
     def test_POST_validEdit(self):
-        self.createPostRecord(userID=self.user1.id, 
-                              dateOfPost=self.test_postDate, 
-                              postTitle=self.test_postTitle1, 
-                              postText=self.test_postText1)
-        post = UserPost.objects.latest('postID')
-        test_postID = post.postID
+        posts = self.create_n_UserPosts(1, [self.user1])
+        test_postID = posts[0].postID
         test_validEdit = {
             'postID': test_postID,
             'postText': self.test_newPostText
@@ -1433,12 +1367,8 @@ class EditUserPostViewTests(SharedTestMethods):
         self.assertEqual(self.test_newPostText, editedField)   
 
     def test_POST_censored(self):
-        self.createPostRecord(userID=self.user1.id, 
-                              dateOfPost=self.test_postDate, 
-                              postTitle=self.test_postTitle1, 
-                              postText=self.test_postText1)
-        post = UserPost.objects.latest('postID')
-        test_postID = post.postID
+        posts = self.create_n_UserPosts(1, [self.user1])
+        test_postID = posts[0].postID
         test_validEdit = {
             'postID': test_postID,
             'postText': self.test_bannedText
@@ -1456,12 +1386,8 @@ class EditUserPostViewTests(SharedTestMethods):
         self.assertNotEqual(self.test_bannedText, editedField)
 
     def test_POST_invalidUser(self):
-        self.createPostRecord(userID=self.user1.id, 
-                              dateOfPost=self.test_postDate, 
-                              postTitle=self.test_postTitle1,
-                              postText=self.test_postText1)
-        post = UserPost.objects.latest('postID')
-        test_postID = post.postID
+        posts = self.create_n_UserPosts(1, [self.user1])
+        test_postID = posts[0].postID
         test_invalidEdit = {
             'postID': test_postID,
             'postText': self.test_newPostText
@@ -1550,12 +1476,6 @@ class HasExceededMaxPostsTests(SharedTestMethods):
         cls.user1 = User.objects.create_user(cls.credentials1['username'], 
                                              cls.credentials1['email'],
                                              cls.credentials1['pwd'])
-        
-        cls.test_postDate = SV.test_postDate
-        cls.test_postTitle1 = SV.test_postTitle1
-        cls.test_postText1 = SV.test_postText1   
-        cls.test_postTags = SV.test_postTags
-
 
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
@@ -1580,6 +1500,123 @@ class HasExceededMaxPostsTests(SharedTestMethods):
         self.response_contains_status_code(response, StatusCode.ERROR.value)
 
 
+class HiddenPostListViewTests(SharedTestMethods):
+    """Tests for the HiddenPostListView view."""
+
+    @classmethod
+    def setUpTestData(cls):        
+        """ Creates the test data used by the methods within this class. """
+        cls.viewname = 'tellings:hiddenposts'
+        cls.loggedout_redirect_URL = '/loginpage/?next=/hiddenposts/'
+        cls.templateURL = "tellings/hiddenpost_list.html"
+
+        SV = SharedVariables
+        cls.credentials1 = SV.credentials1
+        cls.user1 = User.objects.create_user(cls.credentials1['username'], 
+                                             cls.credentials1['email'],
+                                             cls.credentials1['pwd'])
+
+        cls.credentials2 = SV.credentials2
+        cls.user2 = User.objects.create_user(cls.credentials2['username'], 
+                                             cls.credentials2['email'],
+                                             cls.credentials2['pwd'])
+
+        cls.no_results_msg = "You have not hidden any posts"
+
+    def test_GET_loggedout(self):
+        self.get_loggedout_redirect_tests()
+
+    def test_POST_loggedin(self):
+        self.post_loggedin_not_allowed_tests()
+
+    def test_GET_no_hiddenPosts(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+
+        self.create_n_UserPosts(2, [self.user2])
+
+        response = self.client.get((reverse(self.viewname)), follow=True)
+        content = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+        self.check_templates_are_included(response, self.templateURL)        
+        self.assertIn(self.no_results_msg, content, msg="Message '%s' not found in response." % self.no_results_msg)
+
+    def test_GET_with_hiddenPosts(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+
+        posts = self.create_n_UserPosts(3, [self.user2])
+        toHide = posts[0]
+        hiddenPost = HiddenPost.objects.create(postID=toHide, hideFrom=self.user1)
+        hiddenPost.save()
+        hiddenPostTitle = toHide.postTitle
+
+        response = self.client.get((reverse(self.viewname)), follow=True)
+        content = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+        self.check_templates_are_included(response, self.templateURL)        
+        self.assertIn(hiddenPostTitle, content, msg="Post title '%s' not found in response." % hiddenPostTitle)
+
+    def test_GET_invalid_username(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+
+        posts = self.create_n_UserPosts(3, [self.user2])
+        toHide = posts[0]
+        hiddenPost = HiddenPost.objects.create(postID=toHide, hideFrom=self.user1)
+        hiddenPost.save()
+        hiddenPostTitle = toHide.postTitle
+
+        viewname = reverse(self.viewname) + "?username=nonexistantuser"
+        response = self.client.get(viewname, follow=True)
+        content = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+        self.check_templates_are_included(response, self.templateURL)        
+        self.assertIn(hiddenPostTitle, content, msg="Post title '%s' not found in response." % hiddenPostTitle)
+
+    def test_GET_valid_username(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+
+        posts = self.create_n_UserPosts(3, [self.user2])
+        toHide = posts[0]
+        hiddenPost = HiddenPost.objects.create(postID=toHide, hideFrom=self.user1)
+        hiddenPost.save()
+        hiddenPostTitle = toHide.postTitle
+
+        username = self.user2.username
+        viewname = reverse(self.viewname) + "?username=" + username
+
+        response = self.client.get(viewname, follow=True)
+        content = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+        self.check_templates_are_included(response, self.templateURL)        
+        self.assertIn(hiddenPostTitle, content, msg="Post title '%s' not found in response." % hiddenPostTitle)
+
+    def test_GET_with_hiddenPosts_by_blockedUser(self):
+        """ Hidden posts by blocked users are not shown!!! """
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+
+        posts = self.create_n_UserPosts(3, [self.user2])
+        toHide = posts[0]
+        hiddenPost = HiddenPost.objects.create(postID=toHide, hideFrom=self.user1)
+        hiddenPost.save()
+        blocked = BlockedUser.objects.create(blockedUser=self.user2, blockedBy=self.user1)
+        blocked.save()
+
+        response = self.client.get((reverse(self.viewname)), follow=True)
+        content = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+        self.check_templates_are_included(response, self.templateURL)        
+        self.assertIn(self.no_results_msg, content, msg="Message '%s' not found in response." % self.no_results_msg)
+
+
 class HidePostTests(SharedTestMethods):
     """Tests for the HidePost view."""
 
@@ -1602,11 +1639,6 @@ class HidePostTests(SharedTestMethods):
                                              
         admin_username = adminNameList[0]        
         cls.admin_user = User.objects.create_superuser(admin_username, 'myemail@test.com', "4un1qu3p4ssw0rd")                                     
-
-        cls.test_postDate = SV.test_postDate
-        cls.test_postTitle1 = SV.test_postTitle1
-        cls.test_postText1 = SV.test_postText1   
-        cls.test_postTags = SV.test_postTags
 
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
@@ -1849,11 +1881,6 @@ class MyUpdatesListViewTests(SharedTestMethods):
                                              cls.credentials1['email'],
                                              cls.credentials1['pwd'])
 
-        cls.test_postDate = SV.test_postDate
-        cls.test_postTitle1 = SV.test_postTitle1
-        cls.test_postText1 = SV.test_postText1 
-        cls.test_postTags = SV.test_postTags # ["qwertyuiop","zxcvbnm","this is a test", "still a test"] 
-
     def test_POST_loggedin(self):
         self.post_loggedin_not_allowed_tests()
 
@@ -1931,10 +1958,6 @@ class NewUpdatesListViewTests(SharedTestMethods):
                                              cls.credentials2['email'],
                                              cls.credentials2['pwd'])
 
-        cls.test_postDate = SV.test_postDate
-        cls.test_postTitle1 = SV.test_postTitle1
-        cls.test_postText1 = SV.test_postText1 
-        cls.test_postTags = SV.test_postTags # ["qwertyuiop","zxcvbnm","this is a test", "still a test"] 
         cls.no_results_msg = "No results found"
 
     def test_GET_loggedout(self):
@@ -2385,11 +2408,6 @@ class UnhidePostTests(SharedTestMethods):
         cls.user2 = User.objects.create_user(cls.credentials2['username'], 
                                              cls.credentials2['email'],
                                              cls.credentials2['pwd'])
-                                             
-        cls.test_postDate = SV.test_postDate
-        cls.test_postTitle1 = SV.test_postTitle1
-        cls.test_postText1 = SV.test_postText1   
-        cls.test_postTags = SV.test_postTags
 
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
@@ -2470,11 +2488,6 @@ class UnhideUserPostsTests(SharedTestMethods):
         cls.user2 = User.objects.create_user(cls.credentials2['username'], 
                                              cls.credentials2['email'],
                                              cls.credentials2['pwd'])
-                                             
-        cls.test_postDate = SV.test_postDate
-        cls.test_postTitle1 = SV.test_postTitle1
-        cls.test_postText1 = SV.test_postText1   
-        cls.test_postTags = SV.test_postTags
 
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
@@ -2538,38 +2551,73 @@ class UnhideUserPostsTests(SharedTestMethods):
 
 
 class UserCommentListViewTests(SharedTestMethods):
-    """Tests for the UserCommentList view."""
+    """Tests for the UserCommentListView."""
 
     @classmethod
     def setUpTestData(cls):        
         """ Creates the test data used by the methods within this class. """
         cls.viewname = 'tellings:usercomments'
         cls.loggedout_redirect_URL = '/loginpage/?next=/usercomments/'
-        cls.templateURL = 'tellings/usercomment_list.html'
-
+        cls.templateURL = "tellings/usercomment_list.html"
+        cls.no_results_msg = "Be the first person to make a comment on this post"
+        
         SV = SharedVariables
         cls.credentials1 = SV.credentials1
-
         cls.user1 = User.objects.create_user(cls.credentials1['username'], 
                                              cls.credentials1['email'],
                                              cls.credentials1['pwd'])
-
-    def test_GET_loggedout(self):
-        self.get_loggedout_redirect_tests()
-
-    def test_GET_loggedin(self):
-        self.client.login(username=self.credentials1['username'], 
-                          password=self.credentials1['pwd'])
-        response = self.client.get((reverse(self.viewname)), follow=True)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, self.templateURL)
-
-    def test_POST_loggedout(self):
-        self.post_loggedout_redirect_tests()
+        cls.commentText = "test comment"
 
     def test_POST_loggedin(self):
         self.post_loggedin_not_allowed_tests()
+        
+    def test_GET_loggedout(self):
+        self.get_loggedout_redirect_tests()
 
+    def test_GET_nonexistant_postID(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+        
+        viewname = reverse(self.viewname) + "?postID=9999"
+        response = self.client.get(viewname, follow=True)
+        content = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(self.no_results_msg, content, msg="Message '%s' not found in response." % self.no_results_msg)
+
+    def test_GET_valid_nocomments(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+
+        post = self.create_UserPost_for_yesterday()
+        postID = post.postID
+
+        viewname = reverse(self.viewname) + "?postID=" + str(postID)
+        response = self.client.get(viewname, follow=True)
+        content = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, self.templateURL)
+        self.assertIn(self.no_results_msg, content, msg="Message '%s' not found in response." % self.no_results_msg)
+
+    def test_GET_valid_with_comments(self):
+        self.client.login(username=self.credentials1['username'], 
+                          password=self.credentials1['pwd'])
+
+        post = self.create_UserPost_for_yesterday()
+        postID = post.postID
+        UserComment.objects.create(postID=post, 
+                                   user=self.user1, 
+                                   dateOfComment=self.test_postDate, 
+                                   commentText=self.commentText) 
+
+        viewname = reverse(self.viewname) + "?postID=" + str(postID)
+        response = self.client.get(viewname, follow=True)
+        content = response.content.decode('utf-8')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, self.templateURL)
+        self.assertIn(self.commentText, content, msg="Comment '%s' not found in response." % self.commentText)
 
 
 class ViewsSharedFunctionsTests(SharedTestMethods):
@@ -2585,15 +2633,9 @@ class ViewsSharedFunctionsTests(SharedTestMethods):
                                              cls.credentials1['email'],
                                              cls.credentials1['pwd'])
         cls.user1.save()
-        cls.test_postDate = SV.test_postDate
-        cls.test_postTitle1 = SV.test_postTitle1
-        cls.test_postText1 = SV.test_postText1   
-        cls.test_postTags = SV.test_postTags
-
         cls.test_bannedText = "fucking admins"
         cls.test_censoredText = "****ing admins"
         cls.test_cleanText = "fluffy little bunnies"
-
 
     def test_contains_banned_word(self):
         toCensor = contains_banned_word(self.test_bannedText)

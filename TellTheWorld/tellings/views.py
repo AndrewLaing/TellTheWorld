@@ -12,7 +12,7 @@ from django.contrib.auth.hashers import check_password
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from django.utils.translation import gettext as _
 from django.views import View, generic 
 
@@ -316,8 +316,11 @@ class HiddenPostListView(LoginRequiredMixin, generic.ListView):
 
       if self.request.method == 'GET' and 'username' in self.request.GET:
           username_val = self.request.GET.get('username')
-          userToBlock = get_object_or_404(User, username=username_val)
-          return HiddenPost.objects.filter(postID__user=userToBlock, hideFrom=current_user).exclude(postID__in=blockedPosts).order_by('-postID__dateOfPost')
+          if User.objects.filter(username=username_val).exists():
+              userToBlock = User.objects.get(username=username_val)
+              return HiddenPost.objects.filter(postID__user=userToBlock, hideFrom=current_user).exclude(postID__in=blockedPosts).order_by('-postID__dateOfPost')
+          else:
+              return HiddenPost.objects.filter(hideFrom=current_user).exclude(postID__in=blockedPosts).order_by('-postID__dateOfPost')
       else:
           return HiddenPost.objects.filter(hideFrom=current_user).exclude(postID__in=blockedPosts).order_by('-postID__dateOfPost')
 
@@ -328,16 +331,7 @@ class HiddenPostListView(LoginRequiredMixin, generic.ListView):
         """
         current_user = self.request.user
         blockedUsers = BlockedUser.objects.filter(blockedBy=current_user)
-        return [blocked.blockedUser for blocked in blockedUsers]   
-
-    def hiddenUsers(self):
-        """ Returns a list of the users blocked by the currently loggedin user. 
-
-            :returns: A list of User objects.   
-        """
-        current_user = self.request.user
-        hiddenUsers = HiddenUser.objects.filter(hiddenBy=current_user)
-        return [hidden.hiddenUser for hidden in hiddenUsers]   
+        return [blocked.blockedUser for blocked in blockedUsers]    
 
     def userBlockedBy(self):
         """ Returns a list of the users who have blocked the currently loggedin user. 
@@ -1147,6 +1141,7 @@ class EditUserComment(LoginRequiredMixin, generic.UpdateView):
         :returns: A response dictionary.
         """
         commentID = request.POST.get('commentID')
+
         if not UserComment.objects.filter(commentID=commentID).exists(): 
             response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
         else:     
@@ -1334,6 +1329,7 @@ class UnblockUser(LoginRequiredMixin, View):
         else:
             in_blockedUser = User.objects.get(username=in_username)
             in_blockedBy = request.user
+            
             if not BlockedUser.objects.filter(blockedUser=in_blockedUser, blockedBy=in_blockedBy).exists():
                 response = {'status': StatusCode.ERROR.value, 'message': _("Error: You have not blocked this user!")} 
             else:

@@ -2,7 +2,7 @@
 # Filename:     test_files_exist.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 16/01/2020
+# Last Updated: 19/03/2020
 # Description:  Tests that files used by the site are accessible.
 """
 
@@ -27,7 +27,8 @@ class tellingsFilesExistTests(TestCase):
                                'models.py',
                                'page_extras.py',
                                'urls.py',
-                               'views.py' ]
+                               'views.py',
+                               'templatetags\my_tags.py' ]
 
     def test_file_exists(self):
         for filename in self.tellings_files:
