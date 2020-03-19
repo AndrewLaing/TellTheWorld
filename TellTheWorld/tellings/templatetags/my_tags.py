@@ -10,7 +10,7 @@ def param_replace(context, **kwargs):
     request's parameters, only with the specified GET parameters added or changed.
 
     It also removes any empty parameters to keep things neat,
-    so you can remove a parm by setting it to ``""``.
+    so you can remove a param by setting it to ``""``.
 
     For example, if you're on the page ``/things/?with_frosting=true&page=5``,
     then
