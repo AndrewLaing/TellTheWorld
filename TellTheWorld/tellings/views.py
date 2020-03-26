@@ -1,7 +1,7 @@
 # Filename:     views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last updated: 15/03/2020
+# Last updated: 26/03/2020
 # Description:  Contains the views for the website.
 
 import django.utils.timezone
@@ -851,7 +851,7 @@ class AddUserComment(LoginRequiredMixin, View):
                 
                 if form.is_valid():
                     form.save()
-                    response = {'status': StatusCode.SUCCESS.value, 'message': _("Error: Something went wrong with your request!")}
+                    response = {'status': StatusCode.SUCCESS.value, 'message': _("Your comment has been posted.")}
                 else:
                     response = {'status': StatusCode.ERROR.value, 'message': _("Error: Invalid form data!")}   
 

@@ -2,14 +2,14 @@
  * Filename:     JQScripts.js
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 05/03/2020.
+ * Last updated: 26/03/2020.
  * Description:  JQuery scripts used by the 'Tell the World' website.
  */
 
 $(document).ready(function(){
 
     /** -------------------------------------------------------------
-     *           VARIABLES USED FOR EDITING POSTS AND COMMENTS
+     *           VARIABLES USED WITHIN THIS FILE
      *  -------------------------------------------------------------
      */
     var originalPostText;
@@ -23,6 +23,38 @@ $(document).ready(function(){
       CENSORED: 2,
       INVALIDPASSWORD: 3
     };
+
+    var messages = {
+      accountDeleted: "Your account will now be deleted!",
+      ajaxResponseError: "Error: Something went wrong whilst trying to process your request. Please contact the site's administrator.",
+      completeAllFields: "Please complete ALL of the required data fields!",
+      enterReplyFieldEmpty: "The 'Enter your reply' field cannot be left empty!",
+      methodNotAllowedOnPage: "Sorry, you cannot perform the action on this page!",
+      operationCancelled: "Operation cancelled.",
+      unsavedChanges: "You must first save all changes before performing this action",
+      userLoggedOut: "You are now logged out.",
+      confirmBlockUser: "Are you sure that you want to block this user? Blocking users means that you will no longer be able to see their posts or comments, and that they will no longer be able to see your posts/comments.",
+      confirmUnblockUser: "Are you sure you want to unblock this user?",
+      confirmShowBlockedContent: "Proceeding further will show you content from a user that you have blocked. If you do not wish to see this content, press CANCEL.",
+      confirmDeleteComment: "Are you sure you want to delete this comment?",
+      confirmDeletePost: "Are you sure you want to delete this post?",
+      confirmDeleteAccount: "Are you sure you want to delete your account?",
+      confirmHidePost: "Are you sure that you want to hide this post?",
+      confirmLogout: "Are you sure you want to log out of your account?",
+      confirmUnhidePost: "Are you sure that you want to unhide this post?",
+      confirmUnhideAllPosts: "Are you sure that you want to unhide all posts by this user?",
+      confirmSaveChanges: "Are you sure you want to save these changes?"
+    };
+
+    var btnTexts = {
+      hideReply: "Hide reply",
+      reply: "Reply",
+      hideComments: "Hide comments",
+      viewComments: "View all comments",
+      hideUpdate: "Hide Update",
+      viewUpdate: "View Update"
+    };
+  
   
     /** -------------------------------------------------------------
      *           SHARED FUNCTIONS
@@ -133,7 +165,7 @@ $(document).ready(function(){
       var passwordLen = $("#pwd").val().length;  
       
       if(usernameLen===0 || passwordLen===0) {
-        alert("Error - both fields must be completed!");
+        alert(messages.completeAllFields);
         return false;
       }
       $('#loginModal').modal('hide');
@@ -185,7 +217,7 @@ $(document).ready(function(){
   
       for (i = 0; i < methodNotAllowedHere.length; i++) {
         if(currentPathname.includes(methodNotAllowedHere[i])) {
-          alert("Sorry you are unable to add updates from this page!");
+          alert(messages.methodNotAllowedOnPage);
           return false;
         }     
       }
@@ -202,7 +234,7 @@ $(document).ready(function(){
           }  
         },
         error: function () {
-          alert('Error: please contact the site administrator.');
+          alert(messages.ajaxResponseError);
         }
       });
     }); 
@@ -218,7 +250,7 @@ $(document).ready(function(){
       var postTagsLen = $("#tagDiv").val().length;  
       
       if(postTitleLen==0 || postTextLen==0 || postTagsLen==0 ) {
-        alert("Please complete ALL of the data fields!");
+        alert(messages.completeAllFields);
         return false;
       }
 
@@ -230,9 +262,9 @@ $(document).ready(function(){
     /**
      * Hides the addUpdateModal modal.
      */
-    $.errorAddUpdateModal = function(msg) {
+    $.errorAddUpdateModal = function(message) {
       $('#addUpdateModal').modal('show');
-      alert(msg);        
+      alert(message);        
     };
   
   
@@ -266,7 +298,7 @@ $(document).ready(function(){
           }
         }
         else {
-          alert("Database error: please contact the administrator.");
+          alert(messages.ajaxResponseError);
           $("#postTitle").val("");
         }
       });
@@ -297,7 +329,7 @@ $(document).ready(function(){
   
       for (i = 0; i < methodNotAllowedHere.length; i++) {
         if(currentPathname.includes(methodNotAllowedHere[i])) {
-          alert("Sorry you are unable to delete your account from this page!");
+          alert(messages.methodNotAllowedOnPage);
           return false;
         }     
       }
@@ -337,14 +369,14 @@ $(document).ready(function(){
      * Confirms that a user wishes to delete their account
      */
     $.confirm_deleteAccount = function (data) {
-      if (confirm("Are you sure you want to delete your account?")) {
-        alert("Your account will now be deleted!");
+      if (confirm(messages.confirmDeleteAccount)) {
+        alert(messages.accountDeleted);
         $("#deleteAccountModal").modal('toggle');
         $.delete_user_account();
         return true;
       }
       else {
-        alert("Operation cancelled.");
+        alert(messages.operationCancelled);
         $("#deleteAccountModal").modal('toggle');
         return false;
       }
@@ -392,7 +424,7 @@ $(document).ready(function(){
           }
         }
         else {
-          alert("Error: Cannot perform this action. please contact the administrator.");
+          alert(messages.ajaxResponseError);
           $("#deleteAccountModal").modal('toggle');
         }
       });
@@ -408,10 +440,10 @@ $(document).ready(function(){
      * Confirm that the user wishes to log out.
      */
     $.confirm_logout = function() {
-      var r = confirm("Are you sure you want to log out of your account?");
+      var r = confirm(messages.confirmLogout);
   
       if (r == true) {
-        alert("You are now logged out.");
+        alert(messages.userLoggedOut);
       } else {
         return false;
       } 
@@ -455,7 +487,7 @@ $(document).ready(function(){
           }
         }
         else {
-          alert("AJAX error: please contact the administrator.");
+          alert(messages.ajaxResponseError);
         }
       });
     };
@@ -501,7 +533,7 @@ $(document).ready(function(){
           }               
         }
         else {
-          alert("AJAX error: please contact the administrator.");
+          alert(messages.ajaxResponseError);
         }
       });
     };
@@ -511,8 +543,8 @@ $(document).ready(function(){
      * This censors the content of the new update modal after
      * banned words are detected in it.
      */
-    $.censorNewUpdateModal = function (msg) {
-      alert(msg);
+    $.censorNewUpdateModal = function (message) {
+      alert(message);
       
       var ele_postTitle = $("#postTitle");
       var ele_postText  = $("#postText");
@@ -526,14 +558,12 @@ $(document).ready(function(){
 
 
     $.confirm_block_user = function(username) {
-      var msg = "Are you sure that you want to block '" + username + "'?"
-      msg = msg + " Blocking posts by this user means that you will no longer be able to see their posts or comments, and that they will no longer be able to see your posts/comments."
-      return confirm(msg);
+      return confirm(message.confirmBlockUser);
     };
 
     $.block_user = function(in_username) {
       if(editingPost || editingComment) {
-        alert("Cannot block a user whilst there are still unsaved changes on this page.");
+        alert(messages.unsavedChanges);
         return;
       } 
 
@@ -555,7 +585,7 @@ $(document).ready(function(){
             }
           }
           else {
-            alert("Database error: please contact the administrator.");
+            alert(messages.ajaxResponseError);
           }
         });     
       }
@@ -563,8 +593,7 @@ $(document).ready(function(){
 
 
     $.confirm_unblock_user = function(username) {
-      var msg = "Are you sure that you want to unblock '" + username + "'?"
-      return confirm(msg);
+      return confirm(messages.confirmUnblockUser);
     };
 
     $.unblock_user = function(in_username) {
@@ -586,7 +615,7 @@ $(document).ready(function(){
             }
           }
           else {
-            alert("Database error: please contact the administrator.");
+            alert(messages.ajaxResponseError);
           }
         });     
       }
@@ -594,20 +623,18 @@ $(document).ready(function(){
 
 
     $.confirm_view_blockeduser_posts = function(username) {
-      var msg = "Proceeding further will show you content from a user that you have blocked. If you do not wish to see this content, press CANCEL."
-      return confirm(msg);
+      return confirm(messages.confirmShowBlockedContent);
     };
 
 
     $.confirm_hide_post = function() {
-      var msg = "Are you sure that you want to hide this post?";
-      return confirm(msg);
+      return confirm(messages.confirmHidePost);
     };
 
 
     $.hide_post = function(in_postID) {
       if(editingPost || editingComment) {
-        alert("Cannot hide this post whilst there are still unsaved changes on this page.");
+        alert(messages.unsavedChanges);
         return;
       }
       
@@ -629,7 +656,7 @@ $(document).ready(function(){
             }
           }
           else {
-            alert("Database error: please contact the administrator.");
+            alert(messages.ajaxResponseError);
           }
         });     
       }
@@ -637,8 +664,7 @@ $(document).ready(function(){
 
 
     $.confirm_unhide_all_user_posts = function() {
-      var msg = "Are you sure that you want to unhide all posts by this user?";
-      return confirm(msg);
+      return confirm(messages.confirmUnhideAllPosts);
     };
 
 
@@ -661,7 +687,7 @@ $(document).ready(function(){
             }
           }
           else {
-            alert("Database error: please contact the administrator.");
+            alert(messages.ajaxResponseError);
           }
         });     
       }
@@ -669,8 +695,7 @@ $(document).ready(function(){
 
 
     $.confirm_unhide_post = function() {
-      var msg = "Are you sure that you want to unhide this post?"
-      return confirm(msg);
+      return confirm(messages.confirmUnhidePost);
     };
 
 
@@ -693,7 +718,7 @@ $(document).ready(function(){
             }
           }
           else {
-            alert("Database error: please contact the administrator.");
+            alert(messages.ajaxResponseError);
           }
         });     
       }
@@ -710,7 +735,7 @@ $(document).ready(function(){
      * Confirms that the user wishes to edit their comment.
      */
     $.confirm_edit_comment = function() {
-      return confirm("Are you sure you want to save your changes?");
+      return confirm(messages.confirmSaveChanges);
     };
   
   
@@ -720,7 +745,7 @@ $(document).ready(function(){
     $.edit_comment = function (in_commentID) {
       // Only allow the user to edit one comment at a time
       if ( editingComment || editingPost ) {
-        alert("You have unsaved changes!");
+        alert(messages.unsavedChanges);
         return false;
       }
       
@@ -779,7 +804,7 @@ $(document).ready(function(){
             }
           }
           else {
-            alert("Database error: please contact the administrator.");
+            alert(messages.ajaxResponseError);
           }
         });
       }
@@ -806,7 +831,7 @@ $(document).ready(function(){
      * Confirms that the user wishes to edit their post.
      */
     $.confirm_edit_post = function() {
-      return confirm("Are you sure you want to save your changes?");
+      return confirm(messages.confirmSaveChanges);
     };
   
   
@@ -816,7 +841,7 @@ $(document).ready(function(){
     $.edit_post = function (in_postID) {
       // Only allow the user to edit one thing at a time.
       if (editingPost || editingComment ) {
-        alert("You have unsaved changes!");
+        alert(messages.unsavedChanges);
         return false;
       }
       
@@ -828,9 +853,8 @@ $(document).ready(function(){
       // If the collapse is not showing, show it
       var collapsePostID = "#collapse" + in_postID;
       $(collapsePostID).collapse("show");
-      $(collapsePostID).siblings('.panel-header').children('.align-panel-text-right').children('.collapse_btn').text("Hide Update");
+      $(collapsePostID).siblings('.panel-header').children('.align-panel-text-right').children('.collapse_btn').text(btnTexts.hideUpdate);
 
-  
       // Load the page element and insert it into the panel
       url = '/edituserpost/' + in_postID;
       $(textPostID).load(url);
@@ -880,7 +904,7 @@ $(document).ready(function(){
             }
           }
           else {
-            alert("Database error: please contact the administrator.");
+            alert(messages.ajaxResponseError);
           }
         });
       }
@@ -903,16 +927,16 @@ $(document).ready(function(){
      */
     $('.collapse_btn').on('click', function(event) {
       if(editingComment || editingPost) {
-        alert("You still have unsaved changes!");
+        alert(messages.unsavedChanges);
         event.stopPropagation();
         return;
       }
       
       /* Toggle the text shown on the update collapse button */
-      if ( $(this).text() == "View Update")  {
-        $(this).text("Hide Update");
+      if ( $(this).text() == btnTexts.viewUpdate)  {
+        $(this).text(btnTexts.hideUpdate);
       } else {
-        $(this).text("View Update");
+        $(this).text(btnTexts.viewUpdate);
       }
     });
   
@@ -926,7 +950,7 @@ $(document).ready(function(){
      * Confirms that the user wishes to delete their post.
      */
     $.confirm_delete_post = function() {
-      return confirm("Are you sure you want to delete this post?");
+      return confirm(messages.confirmDeletePost);
     };
   
   
@@ -935,7 +959,7 @@ $(document).ready(function(){
      */
     $.delete_post = function (in_postID) {
       if(editingPost || editingComment) {
-        alert("Cannot delete this post whilst there are still unsaved changes on this page.");
+        alert(messages.unsavedChanges);
         return;
       } 
 
@@ -957,7 +981,7 @@ $(document).ready(function(){
             }
           }
           else {
-            alert("Database error: please contact the administrator.");
+            alert(messages.ajaxResponseError);
           }
         });
       }
@@ -986,8 +1010,8 @@ $(document).ready(function(){
       $(this).siblings('.comment-panel').children('.user-reply-section').hide();
       $(this).siblings('.comment-panel').children('.user-comment-section').hide();
       
-      $(this).siblings('.comment-panel').children('.reply_btn').text("Reply");
-      $(this).siblings('.comment-panel').children('.view_comments_btn').text("View all comments");
+      $(this).siblings('.comment-panel').children('.reply_btn').text(btnTexts.reply);
+      $(this).siblings('.comment-panel').children('.view_comments_btn').text(btnTexts.viewComments);
     });
   
       
@@ -997,10 +1021,10 @@ $(document).ready(function(){
     $('.reply_btn').on('click', function () {
       $(this).siblings('.user-reply-section').children('.user-comment-input-area').val("");
       /* Toggle the text shown on the reply button */
-      if ( $(this).text() == "Reply")  {
-        $(this).text("Hide reply");
+      if ( $(this).text() == btnTexts.reply)  {
+        $(this).text(btnTexts.hideReply);
       } else {
-        $(this).text("Reply");
+        $(this).text(btnTexts.reply);
       }
       $(this).siblings('.user-reply-section').slideToggle();
       $(this).siblings('.user-reply-section').children('.user-comment-input-area').focus();
@@ -1013,13 +1037,13 @@ $(document).ready(function(){
       * user comments where necessary.
       */
     $('.view_comments_btn').on('click', function () {
-      if ( $(this).text() == "View all comments")  {
+      if ( $(this).text() == btnTexts.viewComments)  {
         var postID = $(this).parent().attr('id');
         postID = postID.replace('comments','');
         $.fetchComments($(this), postID);
-        $(this).text("Hide comments");
+        $(this).text(btnTexts.hideComments);
       } else {
-        $(this).text("View all comments");
+        $(this).text(btnTexts.viewComments);
         editingComment = false;
       }
       $(this).siblings('.user-comment-section').slideToggle();
@@ -1075,7 +1099,7 @@ $(document).ready(function(){
       */
     $('.cancel_reply_btn').on('click', function () {
       $(this).siblings(".user-comment-input-area").val("");
-      $(this).parent().parent().children('.reply_btn').text("Reply");
+      $(this).parent().parent().children('.reply_btn').text(btnTexts.reply);
       $(this).parent().slideToggle();
     });
   
@@ -1110,7 +1134,7 @@ $(document).ready(function(){
   
       // Tidy up the comment input area, then hide it
       post_reply_btn.siblings(".user-comment-input-area").val("");
-      post_reply_btn.parent().parent().children('.reply_btn').text("Reply");
+      post_reply_btn.parent().parent().children('.reply_btn').text(btnTexts.reply);
       post_reply_btn.parent().slideToggle();
   
       var commentSection = post_reply_btn.parent().siblings('.user-comment-section');
@@ -1118,13 +1142,13 @@ $(document).ready(function(){
       if(commentSection.is(":visible")){
         // If the comment section is visible trigger the viewcomments button
         // to update it, showing the newly posted comment
-        alert("Your comment has been posted.");
+        alert(message);
 
         $comments_btn = commentSection.siblings('.view_comments_btn');
         $comments_btn.trigger('click'); // hide comments
         $comments_btn.trigger('click'); // show comments
       } else {
-        alert("Your comment has been posted.");
+        alert(message);
       }
     };
   
@@ -1157,7 +1181,7 @@ $(document).ready(function(){
           }
         }
         else {
-          $.unable_to_add_comment(postBtnElement,  "Error: Unable to add your comment! Please contact the administrator!");
+          $.unable_to_add_comment(postBtnElement,  messages.ajaxResponseError);
         }
       });
     };
@@ -1174,7 +1198,7 @@ $(document).ready(function(){
       
       // No empty comments are allowed
       if (commentLength == 0) {
-        alert("The 'Enter your reply' field cannot be left empty!");
+        alert(messages.enterReplyFieldEmpty);
         $(this).siblings(".user-comment-input-area").focus();
         return false;
       };
@@ -1193,7 +1217,7 @@ $(document).ready(function(){
      * Confirms that the user wishes to delete their comment.
      */
     $.confirm_delete_comment = function() {
-      return confirm("Are you sure you want to delete this comment?");
+      return confirm(messages.confirmDeleteComment);
     };
   
   
@@ -1210,7 +1234,7 @@ $(document).ready(function(){
      */
     $.delete_comment = function (in_commentID) {
       if(editingPost || editingComment) {
-        alert("Cannot delete this comment whilst there are still unsaved changes on this page.");
+        alert(message.unsavedChanges);
         return;
       } 
 
@@ -1234,7 +1258,7 @@ $(document).ready(function(){
             }
           }
           else {
-            alert("Database error: please contact the administrator.");
+            alert(messages.ajaxResponseError);
           }
         });
       }

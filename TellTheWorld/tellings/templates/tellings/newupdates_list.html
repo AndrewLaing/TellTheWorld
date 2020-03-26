@@ -18,7 +18,7 @@
       <h2>New updates</h2>
         {% if userpost_list %}
         {% load static %}
-        {% regroup userpost_list by dateOfPost|date:"M. d Y" as ordered_post_list  %}
+        {% regroup userpost_list by dateOfPost|date:"M. jS Y" as ordered_post_list  %}
 
         {% for mypost in ordered_post_list %}
         <div class="row">
