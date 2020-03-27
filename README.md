@@ -1,4 +1,6 @@
 # TellTheWorld
 Django website project
 
-A simple CRUD site where people can post messages and comment on other peoples messages.
+1: A simple CRUD site where people can post messages and comment on other peoples messages.
+
+![alt text](ttw_1.jpg)
