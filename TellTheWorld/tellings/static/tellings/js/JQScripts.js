@@ -753,14 +753,13 @@ $(document).ready(function(){
       
       var textCommentID = "#text_comment_" + in_commentID;
       originalCommentText = $(textCommentID).html();  // Store the current comment text
-      
+
       // Load the page element and insert it into the panel
       url = '/editusercomment/' + in_commentID;
-      $(textCommentID).load(url);
-    
-      // Focus on the input and position cursor at end of text to edit
-      $("#edit_comment_box").focus().val(originalCommentText);
-      return true;
+      $(textCommentID).load(url, function() {
+        // Focus on the input and position cursor at end of text to edit
+        $("#edit_comment_box").focus().val(originalCommentText);
+      });
     };
   
   
@@ -857,11 +856,11 @@ $(document).ready(function(){
 
       // Load the page element and insert it into the panel
       url = '/edituserpost/' + in_postID;
-      $(textPostID).load(url);
-    
-      // Focus on the input and position cursor at end of text to edit
-      $("#edit_post_box").focus().val(originalPostText);
-      return true;
+      
+      $(textPostID).load(url, function() {
+        // Focus on the input and position cursor at end of text to edit
+        $("#edit_post_box").focus().val(originalPostText);
+      });
     };
   
   

@@ -21,13 +21,17 @@ class ChangeUserDetailsForm(forms.ModelForm):
 
 
 class NewUserCreationForm(UserCreationForm):
-    email = forms.EmailField(required=True,
+    first_name = forms.CharField(max_length=30, required=False, help_text='Optional.')
+    last_name = forms.CharField(max_length=30, required=False, help_text='Optional.')
+    email = forms.EmailField(
+            max_length=254,
+            required=True,
             label = _('Email Address'),
-            help_text = _('A valid email address'))
+            help_text = _('Required. A valid email address'))
 
     class Meta:
         model = User
-        fields = ("username", "email", "password1", "password2")        
+        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2', )      
 
     def save(self, commit=True):
         user = super(NewUserCreationForm, self).save(commit=False)

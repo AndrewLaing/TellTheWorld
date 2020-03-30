@@ -635,7 +635,7 @@ class SignUpPage(View):
                         sent by a site visitor. 
         :returns: A HTML page.
         """
-        if ('username' in request.POST) and ('password1' in request.POST):
+        if ('username' in request.POST) and ('password1' in request.POST) and ('email' in request.POST):
             return self.signUp(request)
         elif ('username' in request.POST) and ('pwd' in request.POST):
             return user_login(request)
@@ -651,7 +651,10 @@ class SignUpPage(View):
         """
         form = NewUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
+            form.save()
+            username = form.cleaned_data.get('username')
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=username, password=raw_password)
             login(request, user)
             return HttpResponseRedirect('/')
         else:

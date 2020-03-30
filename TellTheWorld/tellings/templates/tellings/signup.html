@@ -23,13 +23,10 @@
               <br />
               <label class="control-label" for="id_{{ field.name }}">{{ field.label }}</label>
                 <div>
-
-                  {% if field.name == "username" %}
-                    <input type="text" class="form-control input-lg"
-                  {% elif field.name == "email" %}
-                    <input type="text" class="form-control input-lg"
-                  {% else %}
+                  {% if field.name == "password1" or field.name == "password2" %}
                     <input type="password" class="form-control input-lg"
+                  {% else %}
+                    <input type="text" class="form-control input-lg"
                   {% endif %}
 
                     name="{{ field.name }}"
