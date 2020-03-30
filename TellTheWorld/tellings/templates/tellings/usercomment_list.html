@@ -14,7 +14,7 @@
 
        <div class="user-comment-container">
          <div class="align_between"> 
-           <span class="user-comment-details align-panel-footer-text-left"><a href="#">{{ item.user }}</a>{{ item.dateOfComment }}</span>    
+           <span class="user-comment-details align-panel-footer-text-left"><a href="{% url 'tellings:newupdates' %}?userName={{ item.user }}">{{ item.user }}</a>{{ item.dateOfComment }}</span>    
            
       {% if current_username and author_of_post %}
         {% if item.user.username == current_username or current_username == author_of_post %}
