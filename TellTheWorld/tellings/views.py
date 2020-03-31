@@ -771,6 +771,9 @@ class AddNewUpdate(LoginRequiredMixin, View):
             if contains_banned_word(user_text):
                 response = {'status': StatusCode.CENSORED.value, 'message': _("Sorry, we cannot accept your post as it contains one or more banned words. The update has been censored. You can either now post the censored version of the update, or rewrite it with the banned words omitted.  Please refer to our acceptable usage policy for guidance!")} 
                 return response
+            elif(len(user_text)==0):
+                response = {'status': StatusCode.ERROR.value, 'message': _("Please complete all of the required fields!")} 
+                return response
 
         # make a copy of POST to add user to as this is not supplied by the form       
         request.POST = request.POST.copy()
@@ -843,6 +846,8 @@ class AddUserComment(LoginRequiredMixin, View):
 
             if contains_banned_word(commentText):
                 response = {'status': StatusCode.CENSORED.value, 'message': _("Sorry, we cannot accept your comment as it contains one or more banned words. The comment has been censored. You can either now post the censored version of the comment, or rewrite it with the banned words omitted.  Please refer to our acceptable usage policy for guidance!")}          
+            elif(len(commentText)==0):
+                response = {'status': StatusCode.ERROR.value, 'message': _("Please complete all of the required fields!")} 
             else:
                 request.POST = request.POST.copy()
                 request.POST['user'] = request.user.id
@@ -1153,6 +1158,8 @@ class EditUserComment(LoginRequiredMixin, generic.UpdateView):
 
             if contains_banned_word(in_commentText):
                 response = {'status': StatusCode.CENSORED.value, 'message': _("Sorry, we cannot accept your edit as it contains one or more banned words. The edit has been censored. You can either now post the censored version of the edit, or rewrite it with the banned words omitted. Please refer to our acceptable usage policy for guidance.")}
+            elif(len(in_commentID)==0 or len(in_commentText)==0):
+                response = {'status': StatusCode.ERROR.value, 'message': _("Please complete all of the required fields!")} 
             else:
                 userComment = UserComment.objects.get(commentID=in_commentID)
 
@@ -1189,7 +1196,7 @@ class EditUserPost(LoginRequiredMixin, generic.UpdateView):
                         sent by a site visitor. 
         :returns: A HTTPResponse.
         """
-        if ('postID' in request.POST and 'postText' in request.POST):
+        if ('postID' in request.POST and 'postText' in request.POST and 'postTitle' in request.POST):
             response = self.updateUserPostRecord(request)
         else:
             response = {'status': StatusCode.ERROR.value, 'message': _("Error: Something went wrong with your request!")} 
@@ -1205,11 +1212,14 @@ class EditUserPost(LoginRequiredMixin, generic.UpdateView):
         """
         in_postID = request.POST.get('postID')
         in_postText = request.POST.get('postText')
+        in_postTitle = request.POST.get('postTitle')
 
         if not UserPost.objects.filter(postID=in_postID).exists(): 
             response = {'status': StatusCode.ERROR.value, 'message': _("Error: You cannot edit a post that does not exist!")} 
+        elif(len(in_postID)==0 or len(in_postText)==0 or len(in_postTitle)==0):
+            response = {'status': StatusCode.ERROR.value, 'message': _("Please complete all of the required fields!")} 
         else:               
-            if contains_banned_word(in_postText):
+            if contains_banned_word(in_postText) or contains_banned_word(in_postTitle):
                 response = {'status': StatusCode.CENSORED.value, 'message': _("Sorry, we cannot accept your edit as it contains one or more banned words. The edit has been censored. You can either now post the censored version of the edit, or rewrite it with the banned words omitted. Please refer to our acceptable usage policy for guidance.")} 
             else:
                 userPost = UserPost.objects.get(postID=in_postID)
@@ -1218,7 +1228,7 @@ class EditUserPost(LoginRequiredMixin, generic.UpdateView):
                     # Update the record (sql injection-safe)
                     now = django.utils.timezone.now()
                     now = now.replace(tzinfo=timezone.utc)
-                    UserPost.objects.filter(postID=in_postID).update(postText=in_postText, dateOfEdit=now)
+                    UserPost.objects.filter(postID=in_postID).update(postText=in_postText, postTitle=in_postTitle, dateOfEdit=now)
                     response = {'status': StatusCode.SUCCESS.value, 'message': _("Your post has been updated.")}
                 else:
                     response = {'status': StatusCode.ERROR.value, 'message': _("Error: You cannot edit other people's posts!")} 

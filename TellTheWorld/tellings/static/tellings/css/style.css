@@ -182,9 +182,14 @@ body {
   padding: .5em 0em 0em 1em;
 }
 
+.panel-header {
+  padding-top: 5px;
+}
+
 .align-panel-text-right {
   text-align: right;
   padding-right: 0em;
+  padding-bottom: 5px;
 }
 
 .align-panel-footer-text-left {

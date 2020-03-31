@@ -356,7 +356,7 @@ class AddUserCommentViewTests(SharedTestMethods):
         self.assertEqual(response.status_code, 200)
         self.response_contains_status_code(response, StatusCode.SUCCESS.value)
 
-    def test_POST_failure(self):
+    def test_POST_emptyDataField(self):
         self.test_invalid_commentData1 = self.add_valid_postID_to_commentData(self.test_invalid_commentData1)
         
         self.user_login(self.credentials2)           
@@ -1163,7 +1163,8 @@ class EditUserPostViewTests(SharedTestMethods):
         cls.user1 = cls.createUserRecord(cls, cls.credentials1)
         cls.user2 = cls.createUserRecord(cls, cls.credentials2)                                          
                                           
-        cls.test_newPostText = cls.test_postText2
+        cls.test_newPostText = cls.test_postText2                                          
+        cls.test_newPostTitle = cls.test_postTitle2
 
     def test_GET_loggedout(self):
         self.get_loggedout_redirect_tests()
@@ -1185,12 +1186,31 @@ class EditUserPostViewTests(SharedTestMethods):
 
         self.response_contains_status_code(response, StatusCode.ERROR.value)    
 
+    def test_POST_emptyDataField(self):
+        posts = self.create_n_UserPosts(1, [self.user1])
+        test_postID = posts[0].postID
+        test_validEdit = {
+            'postID': test_postID,
+            'postText': self.test_newPostText,
+            'postTitle': ''
+        }
+        self.user_login(self.credentials1)
+        response = self.client.post(reverse(self.viewname), 
+                                    test_validEdit, follow=True)
+        editedPost = UserPost.objects.get(pk=test_postID)
+        editedField = editedPost.postText
+
+        self.assertEqual(response.status_code, 200)
+        self.response_contains_status_code(response, StatusCode.ERROR.value) 
+        self.assertNotEqual(self.test_newPostText, editedField)  
+
     def test_POST_validEdit(self):
         posts = self.create_n_UserPosts(1, [self.user1])
         test_postID = posts[0].postID
         test_validEdit = {
             'postID': test_postID,
-            'postText': self.test_newPostText
+            'postText': self.test_newPostText,
+            'postTitle': self.test_newPostTitle
         }
         self.user_login(self.credentials1)
         response = self.client.post(reverse(self.viewname), 
@@ -1207,7 +1227,8 @@ class EditUserPostViewTests(SharedTestMethods):
         test_postID = posts[0].postID
         test_validEdit = {
             'postID': test_postID,
-            'postText': self.test_bannedText
+            'postText': self.test_bannedText,
+            'postTitle': self.test_newPostTitle
         }
         self.user_login(self.credentials1)
         response = self.client.post(reverse(self.viewname), 
@@ -1224,7 +1245,8 @@ class EditUserPostViewTests(SharedTestMethods):
         test_postID = posts[0].postID
         test_invalidEdit = {
             'postID': test_postID,
-            'postText': self.test_newPostText
+            'postText': self.test_newPostText,
+            'postTitle': self.test_newPostTitle
         }
 
         self.user_login(self.credentials2)
@@ -1241,7 +1263,8 @@ class EditUserPostViewTests(SharedTestMethods):
         test_postID = 9999
         test_invalidEdit = {
             'postID': test_postID,
-            'postText': self.test_newPostText
+            'postText': self.test_newPostText,
+            'postTitle': self.test_newPostTitle
         }
         self.user_login(self.credentials2)
         response = self.client.post(reverse(self.viewname), 

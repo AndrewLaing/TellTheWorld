@@ -13,6 +13,7 @@ $(document).ready(function(){
      *  -------------------------------------------------------------
      */
     var originalPostText;
+    var originalPostTitle;
     var editingPost = false;
     var originalCommentText;
     var editingComment = false;
@@ -778,7 +779,12 @@ $(document).ready(function(){
     $.save_edit_comment = function (in_commentID) {
       var textCommentID = "#text_comment_" + in_commentID;
       var currentText = $("#edit_comment_box").val();
-  
+
+      if(currentText.length == 0) {
+        alert(messages.completeAllFields);
+        return false;
+      }
+      
       if($.confirm_edit_comment()==true) {
         var csrftoken = getCookie('csrftoken');
   
@@ -833,6 +839,23 @@ $(document).ready(function(){
       return confirm(messages.confirmSaveChanges);
     };
   
+    /**
+     * Creates the HTML for the edit userpost inputbox.
+     */
+    $.create_postTitle_inputbox = function(in_postID) {
+      var titlePostID = "#postTitle_" + in_postID;
+      var titleElement = $(titlePostID);
+      return '<input type="text" id="postTitle_' + in_postID + '" name="postTitle" size="40" maxlength="34" value="' + titleElement.text() + '">';
+    }
+  
+    /**
+     * Creates the HTML for the putting the userpost posttitle span
+     * back on the page after editing.
+     */
+    $.create_postTitle_span = function(in_postID, postText) {
+      var titlePostID = "#postTitle_" + in_postID;
+      return '<span id="postTitle_' + in_postID + '">' + postText + '</span>';
+    }
   
     /**
      * Handles the edit user post link click.
@@ -846,8 +869,15 @@ $(document).ready(function(){
       
       editingPost = true;
       
-      var textPostID = "#text_post_" + in_postID;
-      originalPostText = $(textPostID).html();  // Store the current post text
+      var titlePostID = "#postTitle_" + in_postID;  
+      var textPostID  = "#text_post_" + in_postID;    
+
+      originalPostText = $(textPostID).html();  // Store the current post text      
+      originalPostTitle = $(titlePostID).html();  // Store the current post title
+
+      var titleElement = $(titlePostID);
+      var newHTML = $.create_postTitle_inputbox(in_postID);
+      titleElement.replaceWith(newHTML);
       
       // If the collapse is not showing, show it
       var collapsePostID = "#collapse" + in_postID;
@@ -865,19 +895,34 @@ $(document).ready(function(){
   
   
     /**
-     * Replaces the edit box with the edited post after saving.
+     * Adds the edited post to the page after saving.
      */
-    $.show_new_post_text = function(textPostID, postText) {
-      editingPost = false;
+    $.show_new_post_text = function(in_postID, postText, postTitle) {
+      var textPostID = "#text_post_" + in_postID;
+      var titlePostID = "#postTitle_" + in_postID;
+
       $(textPostID).html(postText);
+
+      var titleElement = $(titlePostID);
+      var newHTML = $.create_postTitle_span(in_postID, postTitle);
+      titleElement.replaceWith(newHTML);
+
+      editingPost = false;
     } 
   
     /**
-     * Handles saving changes to a user's postText.
+     * Handles saving changes to a user's post.
      */
     $.save_edit_post = function (in_postID) {
-      var textPostID = "#text_post_" + in_postID;
+      var titlePostID = "#postTitle_" + in_postID;
+
       var currentText = $("#edit_post_box").val();
+      var currentTitle = $(titlePostID).val();
+
+      if(currentText.length == 0 || currentTitle.length==0) {
+           alert(messages.completeAllFields);
+           return false;
+      }
   
       if($.confirm_edit_post()==true) {
         var csrftoken = getCookie('csrftoken');
@@ -886,16 +931,18 @@ $(document).ready(function(){
         {
           postID: in_postID,
           postText: currentText,
+          postTitle: currentTitle,
           csrfmiddlewaretoken: csrftoken,
         },
         function (data, status) {
           if (status === 'success') {
             if (data.status == StatusCode.SUCCESS) {
               alert(data.message);
-              $.show_new_post_text(textPostID, currentText);
+              $.show_new_post_text(in_postID, currentText, currentTitle);
             } 
             else if (data.status == StatusCode.CENSORED) {
               $.censorElementText($("#edit_post_box"));
+              $.censorElementText($(titlePostID));
               alert(data.message);
             } 
             else {
@@ -913,10 +960,16 @@ $(document).ready(function(){
     /**
      * Retores the original postText when editing is cancelled.
      */
-    $.cancel_edit_post = function (postID) {
-      var textPostID = "#text_post_" + postID;
+    $.cancel_edit_post = function (in_postID) {
+      var textPostID = "#text_post_" + in_postID;
+      var titlePostID = "#postTitle_" + in_postID;
   
       $(textPostID).html(originalPostText);  
+
+      var titleElement = $(titlePostID);
+      var newHTML = $.create_postTitle_span(in_postID, originalPostTitle);
+      titleElement.replaceWith(newHTML);
+      
       editingPost = false;
     };
   
