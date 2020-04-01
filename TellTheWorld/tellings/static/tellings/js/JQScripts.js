@@ -2,7 +2,7 @@
  * Filename:     JQScripts.js
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 26/03/2020.
+ * Last updated: 01/04/2020.
  * Description:  JQuery scripts used by the 'Tell the World' website.
  */
 
@@ -17,6 +17,8 @@ $(document).ready(function(){
     var editingPost = false;
     var originalCommentText;
     var editingComment = false;
+
+    var timeoutLength = 5000;
   
     var StatusCode = {
       ERROR: 0,
@@ -145,15 +147,23 @@ $(document).ready(function(){
      */
     $("#loginBtn").on("click", function(e) {   
       $('#modal_container').empty();
-  
-      $('#modal_container').load("/loginmodal/", function(result){
-        // Focus the username field when the modal is shown
-        $('#loginModal').on('shown.bs.modal', function () {
-          $('#username').focus();
-        });
-  
-        $('#loginModal').modal('show');
-      });
+
+      $.ajax({
+        url: "/loginmodal/",
+        type: 'get',
+        timeout: timeoutLength, 
+        success: function (data) {        
+          // Focus the username field when the modal is shown
+          $('#loginModal').on('shown.bs.modal', function () {
+            $('#username').focus();
+          });
+          $('#modal_container').html(data);  
+          $('#loginModal').modal('show');
+        },
+        error: function () {
+          alert(messages.ajaxResponseError);
+        }
+      }); 
     }); 
   
   
@@ -197,14 +207,22 @@ $(document).ready(function(){
     $.load_addUpdateModal = function() {
       $('#modal_container').empty();
   
-      $('#modal_container').load("/addupdatemodal/", function(result){
-        // Focus the username field when the modal is shown
-        $('#addUpdateModal').on('shown.bs.modal', function () {
-          $('#postTitle').focus();
-        });
-  
-        $('#addUpdateModal').modal('show');
-      });
+      $.ajax({
+        url: "/addupdatemodal/",
+        type: 'get',
+        timeout: timeoutLength, 
+        success: function (data) {        
+          // Focus the postTitle field when the modal is shown
+          $('#addUpdateModal').on('shown.bs.modal', function () {
+            $('#postTitle').focus();
+          });
+          $('#modal_container').html(data);  
+          $('#addUpdateModal').modal('show');
+        },
+        error: function () {
+          alert(messages.ajaxResponseError);
+        }
+      }); 
     };
   
   
@@ -226,6 +244,7 @@ $(document).ready(function(){
       $.ajax({
         url: "/hasexceededmaxposts/",
         type: 'get',
+        timeout: timeoutLength, 
         success: function (data) {
           if (data.status == StatusCode.SUCCESS) {
             // Show the add update modal 
@@ -278,15 +297,17 @@ $(document).ready(function(){
       var p_postTags = $("#tagDiv").val();
       var csrftoken = getCookie('csrftoken');
   
-      $.post("/addnewupdate/",
-      {
-        postTitle: p_postTitle,
-        postText: p_postText,
-        postTags: JSON.stringify(p_postTags),
-        csrfmiddlewaretoken: csrftoken,
-      },
-      function(data, status) {
-        if (status === 'success') {
+      $.ajax({
+        url: "/addnewupdate/",
+        type: 'post',
+        data: {
+                postTitle: p_postTitle,
+                postText: p_postText,
+                postTags: JSON.stringify(p_postTags),
+                csrfmiddlewaretoken: csrftoken,
+              },
+        timeout: timeoutLength, 
+        success: function (data) {
           if (data.status == StatusCode.SUCCESS) {
             alert(data.message);
             location.reload();
@@ -297,8 +318,8 @@ $(document).ready(function(){
           else {
             $.errorAddUpdateModal(data.message);
           }
-        }
-        else {
+        },
+        error: function () {
           alert(messages.ajaxResponseError);
           $("#postTitle").val("");
         }
@@ -337,9 +358,18 @@ $(document).ready(function(){
   
       $('#modal_container').empty();
   
-      $('#modal_container').load("/deleteaccountmodal/", function(result){
-        $('#deleteAccountModal').modal('show');
-      });
+      $.ajax({
+        url: "/deleteaccountmodal/",
+        type: 'get',
+        timeout: timeoutLength, 
+        success: function (data) {
+          $('#modal_container').html(data);  
+          $('#deleteAccountModal').modal('show');
+        },
+        error: function () {
+          alert(messages.ajaxResponseError);
+        }
+      }); 
     });
   
   
@@ -406,13 +436,15 @@ $(document).ready(function(){
       result = false;
       var csrftoken = getCookie('csrftoken');
   
-      $.post("/checkuserpassword/",
-      {
-        pwd: p_password,
-        csrfmiddlewaretoken: csrftoken
-      },
-      function (data, status) {
-        if (status === 'success') {
+      $.ajax({
+        url: "/checkuserpassword/",
+        type: 'post',
+        data: {
+                pwd: p_password,
+                csrfmiddlewaretoken: csrftoken
+              },
+        timeout: timeoutLength, 
+        success: function (data) {
           if (data.status == StatusCode.SUCCESS) {
             $.confirm_deleteAccount(data);
           } 
@@ -423,8 +455,8 @@ $(document).ready(function(){
             alert(data.message);
             $("#deleteAccountModal").modal('toggle');
           }
-        }
-        else {
+        },
+        error: function () {
           alert(messages.ajaxResponseError);
           $("#deleteAccountModal").modal('toggle');
         }
@@ -474,20 +506,22 @@ $(document).ready(function(){
       var in_toCensor = ele.val();
       var csrftoken = getCookie('csrftoken');
   
-      $.post("/censortext/",
-      {
-        textToCensor: in_toCensor,
-        csrfmiddlewaretoken: csrftoken,
-      },
-      function(data, status) {
-        if (status === 'success') { 
+      $.ajax({
+        url: "/censortext/",
+        type: 'post',
+        data: {
+                textToCensor: in_toCensor,
+                csrfmiddlewaretoken: csrftoken,
+              },
+        timeout: timeoutLength, 
+        success: function (data) {
           if (data.status == StatusCode.SUCCESS) {
             $.updateElementText(ele, data.message);  
           } else {
             alert(data.message);
           }
-        }
-        else {
+        },
+        error: function () {
           alert(messages.ajaxResponseError);
         }
       });
@@ -518,22 +552,22 @@ $(document).ready(function(){
       var csrftoken = getCookie('csrftoken');
       var p_postTags = ele_postTags.val();
   
-      $.post("/censortext/",
-      {
-        textToCensor: JSON.stringify(p_postTags),
-        csrfmiddlewaretoken: csrftoken,
-      },
-      function(data, status) {
-        if (status === 'success') {
-          if (status === 'success') { 
-            if (data.status == StatusCode.SUCCESS) {
-              $.updatePostTags(ele_postTags, data.message); 
-            } else {
-              alert(data.message);
-            }
-          }               
-        }
-        else {
+      $.ajax({
+        url: "/censortext/",
+        type: 'post',
+        data: {
+                textToCensor: JSON.stringify(p_postTags),
+                csrfmiddlewaretoken: csrftoken,
+              },
+        timeout: timeoutLength, 
+        success: function (data) {
+          if (data.status == StatusCode.SUCCESS) {
+            $.updatePostTags(ele_postTags, data.message); 
+          } else {
+            alert(data.message);
+          }
+        },
+        error: function () {
           alert(messages.ajaxResponseError);
         }
       });
@@ -559,7 +593,7 @@ $(document).ready(function(){
 
 
     $.confirm_block_user = function(username) {
-      return confirm(message.confirmBlockUser);
+      return confirm(messages.confirmBlockUser);
     };
 
     $.block_user = function(in_username) {
@@ -571,24 +605,26 @@ $(document).ready(function(){
       if($.confirm_block_user(in_username)==true) {
         var csrftoken = getCookie('csrftoken');
 
-        $.post("/blockuser/",
-        {
-          username: in_username,
-          csrfmiddlewaretoken: csrftoken,
-        },
-        function (data, status) {
-          if (status === 'success') {
-            if (data.status == StatusCode.SUCCESS) {
-              alert(data.message);
-              location.reload();
-            } else {
-              alert(data.message);
-            }
-          }
-          else {
+        $.ajax({
+          url: "/blockuser/",
+          type: 'post',
+          data: {
+                  username: in_username,
+                  csrfmiddlewaretoken: csrftoken,
+                },
+          timeout: timeoutLength, 
+          success: function (data) {
+              if (data.status == StatusCode.SUCCESS) {
+                alert(data.message);
+                location.reload();
+              } else {
+                alert(data.message);
+              }
+          },
+          error: function () {
             alert(messages.ajaxResponseError);
           }
-        });     
+        });    
       }
     };
 
@@ -601,24 +637,26 @@ $(document).ready(function(){
       if($.confirm_unblock_user(in_username)==true) {
         var csrftoken = getCookie('csrftoken');
 
-        $.post("/unblockuser/",
-        {
-          username: in_username,
-          csrfmiddlewaretoken: csrftoken,
-        },
-        function (data, status) {
-          if (status === 'success') {
-            if (data.status == StatusCode.SUCCESS) {
-              alert(data.message);
-              location.reload();
-            } else {
-              alert(data.message);
-            }
-          }
-          else {
+        $.ajax({
+          url: "/unblockuser/",
+          type: 'post',
+          data: {
+                  username: in_username,
+                  csrfmiddlewaretoken: csrftoken,
+                },
+          timeout: timeoutLength, 
+          success: function (data) {
+              if (data.status == StatusCode.SUCCESS) {
+                alert(data.message);
+                location.reload();
+              } else {
+                alert(data.message);
+              }
+          },
+          error: function () {
             alert(messages.ajaxResponseError);
           }
-        });     
+        });   
       }
     };
 
@@ -642,21 +680,23 @@ $(document).ready(function(){
       if($.confirm_hide_post()==true) {
         var csrftoken = getCookie('csrftoken');
 
-        $.post("/hidepost/",
-        {
-          postID: in_postID,
-          csrfmiddlewaretoken: csrftoken,
-        },
-        function (data, status) {
-          if (status === 'success') {
-            if (data.status == StatusCode.SUCCESS) {
-              alert(data.message);
-              location.reload();
-            } else {
-              alert(data.message);
-            }
-          }
-          else {
+        $.ajax({
+          url: "/hidepost/",
+          type: 'post',
+          data: {
+                  postID: in_postID,
+                  csrfmiddlewaretoken: csrftoken,
+                },
+          timeout: timeoutLength, 
+          success: function (data) {
+              if (data.status == StatusCode.SUCCESS) {
+                alert(data.message);
+                location.reload();
+              } else {
+                alert(data.message);
+              }
+          },
+          error: function () {
             alert(messages.ajaxResponseError);
           }
         });     
@@ -673,24 +713,26 @@ $(document).ready(function(){
       if($.confirm_unhide_all_user_posts()==true) {
         var csrftoken = getCookie('csrftoken');
 
-        $.post("/unhideuserposts/",
-        {
-          user: in_user,
-          csrfmiddlewaretoken: csrftoken,
-        },
-        function (data, status) {
-          if (status === 'success') {
-            if (data.status == StatusCode.SUCCESS) {
-              alert(data.message);
-              window.location = window.location.href.split("?")[0];
-            } else {
-              alert(data.message);
-            }
-          }
-          else {
+        $.ajax({
+          url: "/unhideuserposts/",
+          type: 'post',
+          data: {
+                  user: in_user,
+                  csrfmiddlewaretoken: csrftoken,
+                },
+          timeout: timeoutLength, 
+          success: function (data) {
+              if (data.status == StatusCode.SUCCESS) {
+                alert(data.message);
+                window.location = window.location.href.split("?")[0];
+              } else {
+                alert(data.message);
+              }
+          },
+          error: function () {
             alert(messages.ajaxResponseError);
           }
-        });     
+        });    
       }
     };    
 
@@ -704,24 +746,26 @@ $(document).ready(function(){
       if($.confirm_unhide_post()==true) {
         var csrftoken = getCookie('csrftoken');
 
-        $.post("/unhidepost/",
-        {
-          postID: in_postID,
-          csrfmiddlewaretoken: csrftoken,
-        },
-        function (data, status) {
-          if (status === 'success') {
-            if (data.status == StatusCode.SUCCESS) {
-              alert(data.message);
-              window.location = window.location.href.split("?")[0];
-            } else {
-              alert(data.message);
-            }
-          }
-          else {
+        $.ajax({
+          url: "/unhidepost/",
+          type: 'post',
+          data: {
+                  postID: in_postID,
+                  csrfmiddlewaretoken: csrftoken,
+                },
+          timeout: timeoutLength, 
+          success: function (data) {
+              if (data.status == StatusCode.SUCCESS) {
+                alert(data.message);
+                window.location = window.location.href.split("?")[0];
+              } else {
+                alert(data.message);
+              }
+          },
+          error: function () {
             alert(messages.ajaxResponseError);
           }
-        });     
+        });    
       }
     };
 
@@ -756,11 +800,20 @@ $(document).ready(function(){
       originalCommentText = $(textCommentID).html();  // Store the current comment text
 
       // Load the page element and insert it into the panel
-      url = '/editusercomment/' + in_commentID;
-      $(textCommentID).load(url, function() {
-        // Focus on the input and position cursor at end of text to edit
-        $("#edit_comment_box").focus().val(originalCommentText);
-      });
+      url_to_fetch = '/editusercomment/' + in_commentID;
+
+      $.ajax({
+        url: url_to_fetch,
+        type: 'get',
+        timeout: timeoutLength, 
+        success: function (data) {
+          $(textCommentID).html(data);  
+          $("#edit_comment_box").focus().val(originalCommentText);
+        },
+        error: function () {
+          alert(messages.ajaxResponseError);
+        }
+      }); 
     };
   
   
@@ -788,27 +841,29 @@ $(document).ready(function(){
       if($.confirm_edit_comment()==true) {
         var csrftoken = getCookie('csrftoken');
   
-        $.post("/editusercomment/",
-        {
-          commentID: in_commentID,
-          commentText: currentText,
-          csrfmiddlewaretoken: csrftoken,
-        },
-        function (data, status) {
-          if (status === 'success') {
-            if (data.status == StatusCode.SUCCESS) {
-              alert(data.message);
-              $.show_new_comment_text(textCommentID, currentText);
-            } 
-            else if (data.status == StatusCode.CENSORED) {
-              $.censorElementText($("#edit_comment_box"));
-              alert(data.message);
-            } 
-            else {
-              alert(data.message);
-            }
-          }
-          else {
+        $.ajax({
+          url: "/editusercomment/",
+          type: 'post',
+          data: {
+                    commentID: in_commentID,
+                    commentText: currentText,
+                    csrfmiddlewaretoken: csrftoken,
+                },
+          timeout: timeoutLength, 
+          success: function (data) {
+              if (data.status == StatusCode.SUCCESS) {
+                alert(data.message);
+                $.show_new_comment_text(textCommentID, currentText);
+              } 
+              else if (data.status == StatusCode.CENSORED) {
+                $.censorElementText($("#edit_comment_box"));
+                alert(data.message);
+              } 
+              else {
+                alert(data.message);
+              }
+          },
+          error: function () {
             alert(messages.ajaxResponseError);
           }
         });
@@ -885,12 +940,20 @@ $(document).ready(function(){
       $(collapsePostID).siblings('.panel-header').children('.align-panel-text-right').children('.collapse_btn').text(btnTexts.hideUpdate);
 
       // Load the page element and insert it into the panel
-      url = '/edituserpost/' + in_postID;
-      
-      $(textPostID).load(url, function() {
-        // Focus on the input and position cursor at end of text to edit
-        $("#edit_post_box").focus().val(originalPostText);
-      });
+      url_to_fetch = '/edituserpost/' + in_postID;
+
+      $.ajax({
+        url: url_to_fetch,
+        type: 'get',
+        timeout: timeoutLength, 
+        success: function (data) {
+          $(textPostID).html(data);  
+          $("#edit_post_box").focus().val(originalPostText);
+        },
+        error: function () {
+          alert(messages.ajaxResponseError);
+        }
+      }); 
     };
   
   
@@ -927,29 +990,31 @@ $(document).ready(function(){
       if($.confirm_edit_post()==true) {
         var csrftoken = getCookie('csrftoken');
   
-        $.post("/edituserpost/",
-        {
-          postID: in_postID,
-          postText: currentText,
-          postTitle: currentTitle,
-          csrfmiddlewaretoken: csrftoken,
-        },
-        function (data, status) {
-          if (status === 'success') {
-            if (data.status == StatusCode.SUCCESS) {
-              alert(data.message);
-              $.show_new_post_text(in_postID, currentText, currentTitle);
-            } 
-            else if (data.status == StatusCode.CENSORED) {
-              $.censorElementText($("#edit_post_box"));
-              $.censorElementText($(titlePostID));
-              alert(data.message);
-            } 
-            else {
-              alert(data.message);
-            }
-          }
-          else {
+        $.ajax({
+          url: "/edituserpost/",
+          type: 'post',
+          data: {
+                    postID: in_postID,
+                    postText: currentText,
+                    postTitle: currentTitle,
+                    csrfmiddlewaretoken: csrftoken,
+                },
+          timeout: timeoutLength, 
+          success: function (data) {
+              if (data.status == StatusCode.SUCCESS) {
+                alert(data.message);
+                $.show_new_post_text(in_postID, currentText, currentTitle);
+              } 
+              else if (data.status == StatusCode.CENSORED) {
+                $.censorElementText($("#edit_post_box"));
+                $.censorElementText($(titlePostID));
+                alert(data.message);
+              } 
+              else {
+                alert(data.message);
+              }
+          },
+          error: function () {
             alert(messages.ajaxResponseError);
           }
         });
@@ -1018,21 +1083,23 @@ $(document).ready(function(){
       if($.confirm_delete_post()==true) {
         var csrftoken = getCookie('csrftoken');
   
-        $.post("/deleteuserpost/",
-        {
-          postID: in_postID,
-          csrfmiddlewaretoken: csrftoken,
-        },
-        function (data, status) {
-          if (status === 'success') {
-            if (data.status == StatusCode.SUCCESS) {
-              alert(data.message);
-              location.reload();
-            } else {
-              alert(data.message);
-            }
-          }
-          else {
+        $.ajax({
+          url: "/deleteuserpost/",
+          type: 'post',
+          data: {
+                    postID: in_postID,
+                    csrfmiddlewaretoken: csrftoken,
+                },
+          timeout: timeoutLength, 
+          success: function (data) {
+              if (data.status == StatusCode.SUCCESS) {
+                alert(data.message);
+                location.reload();
+              } else {
+                alert(data.message);
+              }
+          },
+          error: function () {
             alert(messages.ajaxResponseError);
           }
         });
@@ -1105,11 +1172,22 @@ $(document).ready(function(){
     /**
       * Fetches comments attached to a post and adds them to the user-comment-section.
       */
-    $.fetchComments = function ($this, in_postID) {
-      var url="/usercomments/?postID=" + in_postID;
+     $.fetchComments = function ($this, in_postID) {
+      var url_to_fetch = "/usercomments/?postID=" + in_postID;
   
-      $this.siblings('.user-comment-section').empty();
-      $this.siblings('.user-comment-section').load(url);        
+      $.ajax({
+        url: url_to_fetch,
+        type: 'get',
+        timeout: timeoutLength, 
+        success: function (data) {
+          $this.siblings('.user-comment-section').empty();
+          $this.siblings('.user-comment-section').html(data);  
+        },
+        error: function () {
+          $this.siblings('.user-comment-section').empty();
+          $this.siblings('.user-comment-section').html(messages.ajaxResponseError); 
+        }
+      });      
     };
   
   
@@ -1214,14 +1292,16 @@ $(document).ready(function(){
       // Disable the post button to stop the user from spamming comments
       postBtnElement.prop('disabled', true);
 
-      $.post("/addusercomment/",
-      {
-        postID: in_postID,
-        commentText: in_commentText,
-        csrfmiddlewaretoken: csrftoken,
-      },
-      function(data, status) {
-        if (status === 'success') {
+      $.ajax({
+        url: "/addusercomment/",
+        type: 'post',
+        data: {
+                postID: in_postID,
+                commentText: in_commentText,
+                csrfmiddlewaretoken: csrftoken,
+              },
+        timeout: timeoutLength, 
+        success: function (data) {
           if (data.status == StatusCode.SUCCESS) {
             $.postedCommentCallback(postBtnElement, data.message);
           } 
@@ -1231,8 +1311,8 @@ $(document).ready(function(){
           else {
             $.unable_to_add_comment(postBtnElement, data.message);            
           }
-        }
-        else {
+        },
+        error: function () {
           $.unable_to_add_comment(postBtnElement,  messages.ajaxResponseError);
         }
       });
@@ -1286,7 +1366,7 @@ $(document).ready(function(){
      */
     $.delete_comment = function (in_commentID) {
       if(editingPost || editingComment) {
-        alert(message.unsavedChanges);
+        alert(messages.unsavedChanges);
         return;
       } 
 
@@ -1295,21 +1375,23 @@ $(document).ready(function(){
         var textCommentID = "#text_comment_" + in_commentID;
         var viewCommentsBtn = $(textCommentID).parent().parent().parent().children('.view_comments_btn');
   
-        $.post("/deleteusercomment/",
-        {
-            commentID: in_commentID,
-            csrfmiddlewaretoken: csrftoken,
-        },
-        function (data, status) {
-          if (status === 'success') {
-            if (data.status == StatusCode.SUCCESS) {
-              alert(data.message);
-              $.comment_deleted(viewCommentsBtn);
-            } else {
-              alert(data.message);
-            }
-          }
-          else {
+        $.ajax({
+          url: "/deleteusercomment/",
+          type: 'post',
+          data: {
+                    commentID: in_commentID,
+                    csrfmiddlewaretoken: csrftoken,
+                },
+          timeout: timeoutLength, 
+          success: function (data) {
+              if (data.status == StatusCode.SUCCESS) {
+                alert(data.message);
+                $.comment_deleted(viewCommentsBtn);
+              } else {
+                alert(data.message);
+              }
+          },
+          error: function () {
             alert(messages.ajaxResponseError);
           }
         });
