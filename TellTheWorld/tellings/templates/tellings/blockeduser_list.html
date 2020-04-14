@@ -6,16 +6,18 @@
  * Filename:     blockeduser_list.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 05/03/2020
+ * Last updated: 14/04/2020
  * Description:  Template used for creating the BlockedUsers html.
  * -------------------------------------------------------------------------------
 {% endcomment %}
 
 {% block content %}
 <div class="container-fluid main-content"> 
-  <div class="container">
+  <main class="container">
+    <header>
+      <h1>Blocked Users</h1>
+    </header>
 
-    <h2>Blocked Users</h2>
     <div class="row white-blockedusers-container">
       {% if blockeduser_list %}
         {% for item in blockeduser_list %}
@@ -35,6 +37,6 @@
       </div>
       {% endif %} 
     </div>
-  </div>
+  </main>
 </div>
 {% endblock %}

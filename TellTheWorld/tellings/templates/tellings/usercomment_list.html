@@ -3,7 +3,7 @@
  * Filename:     usercomment_list.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 24/02/2020
+ * Last updated: 14/04/2020
  * Description:  Template used for creating the User Comments html.
  * -------------------------------------------------------------------------------
 {% endcomment %}
@@ -12,51 +12,53 @@
   {% if usercomment_list %}
     {% for item in usercomment_list %}
 
-       <div class="user-comment-container">
-         <div class="align_between"> 
-           <span class="user-comment-details align-panel-footer-text-left"><a href="{% url 'tellings:newupdates' %}?userName={{ item.user }}">{{ item.user }}</a>{{ item.dateOfComment }}</span>    
-           
+    <div class="user-comment-container">
+      <div class="align_between"> 
+        <span class="user-comment-details align-panel-footer-text-left">
+          <a href="{% url 'tellings:newupdates' %}?userName={{ item.user }}">{{ item.user }}</a>{{ item.dateOfComment }}
+        </span>    
+        
       {% if current_username and author_of_post %}
         {% if item.user.username == current_username or current_username == author_of_post %}
-          <div class="btn-group">
-            <button type="button" class="btn dropdown-toggle align-panel-footer-text-right comment-cog-btn" 
-                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              <img src="/static/tellings/imgs/settings_medium_cog.png" alt="">
-              <span class = "caret"></span>
-            </button>
+        <div class="btn-group">
+          <button type="button" class="btn dropdown-toggle align-panel-footer-text-right comment-cog-btn" 
+                  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <img src="/static/tellings/imgs/settings_medium_cog.png" alt="">
+            <span class = "caret"></span>
+          </button>
 
-            <ul class="dropdown-menu dropdown-menu-right">
+          <ul class="dropdown-menu dropdown-menu-right">
             {# Only comment posters can edit their own comments #}
             {% if item.user.username == current_username %}
-              <li>
-                <a onclick="$.edit_comment({{ item.commentID }});">Edit Comment</a>
-              </li>
+            <li>
+              <a onclick="$.edit_comment({{ item.commentID }});">Edit Comment</a>
+            </li>
             {% endif %}
 
             {# Both comment posters and authors of the post being commented upon can delete comments #}
-              <li>
-                <a onclick="$.delete_comment({{ item.commentID }});">Delete Comment</a>
-              </li>
+            <li>
+              <a onclick="$.delete_comment({{ item.commentID }});">Delete Comment</a>
+            </li>
 
             {# Users cannot block themselves #}
             {% if item.user.username != current_username %}
-              <li>
-                <a onclick="$.block_user('{{ item.user }}');">Block User</a>
-              </li>
-            {% endif %}
-            </ul>
-          </div>  
+            <li>
+              <a onclick="$.block_user('{{ item.user }}');">Block User</a>
+            </li>
+          {% endif %}
+          </ul>
+        </div>  
         {% endif %}
       {% endif %}
-          </div>
-      
-         <p class="user-comment-text" id="text_comment_{{ item.commentID }}">{{ item.commentText }}</p>
-      {% if item.dateOfEdit %}
-         <p class="last-edited-text">(Last edited on {{ item.dateOfEdit|date:"d/m/Y" }})</p>   
-      {% endif %}
       </div>
+      
+      <p class="user-comment-text" id="text_comment_{{ item.commentID }}">{{ item.commentText }}</p>
+      {% if item.dateOfEdit %}
+      <p class="last-edited-text">(Last edited on {{ item.dateOfEdit|date:"d/m/Y" }})</p>   
+      {% endif %}
+    </div>
     {% endfor %}
   {% else %}
-      <p class="user-no-comments-text">Be the first person to make a comment on this post.</p>
+  <p class="user-no-comments-text">Be the first person to make a comment on this post.</p>
   {% endif %} 
 {% endblock %}

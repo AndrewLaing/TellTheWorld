@@ -6,7 +6,7 @@
  * Filename:     newupdates_list.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 27/01/2020
+ * Last updated: 14/04/2020
  * Description:  Template used for the NewUpdates page.
  * -------------------------------------------------------------------------------
 {% endcomment %}
@@ -14,129 +14,129 @@
 {% block content %}
 
   <div class="container-fluid main-content"> 
-    <div class="container allUserUpdates" id="userUpdates">
-      <h2>New updates</h2>
-        {% if userpost_list %}
-        {% load static %}
-        {% regroup userpost_list by dateOfPost|date:"M. jS Y" as ordered_post_list  %}
+    <main class="container allUserUpdates" id="userUpdates">
+      <header>
+        <h1>New updates</h1>
+      </header>
+      {% if userpost_list %}
+      {% load static %}
+      {% regroup userpost_list by dateOfPost|date:"M. jS Y" as ordered_post_list  %}
 
-        {% for mypost in ordered_post_list %}
-        <div class="row">
-          <h1>{{ mypost.grouper }}</h1>
-          <div class="panel-group">
-            {% for item in mypost.list %}
-            {# UPDATE PANEL #}
-              <div class="panel panel-default" id="panel_post_{{ item.postID }}">
-                {# PANEL HEADER #} 
-                <div class="panel-header"> 
-                  {# Post title and username #}
-                  <div class="col-sm-8 panel-postTitle">
-                    <p><a href="{% url 'tellings:newupdates' %}?userName={{ item.user }}" name="{{ item.user }}">
-                       {{ item.user }} says</a> ... <span id="postTitle_{{ item.postID }}">{{ item.postTitle }}</span></p>
-                  </div>
+      {% for mypost in ordered_post_list %}
+      <article>
+        <h2>{{ mypost.grouper }}</h2>
+        <div class="panel-group">
+        {% for item in mypost.list %}
+        {# UPDATE PANEL #}
+          <div class="panel panel-default" id="panel_post_{{ item.postID }}">
+            {# PANEL HEADER #} 
+            <div class="panel-header"> 
+              {# Post title and username #}
+              <div class="col-sm-8 panel-postTitle">
+                <p><a href="{% url 'tellings:newupdates' %}?userName={{ item.user }}" name="{{ item.user }}">
+                    {{ item.user }} says</a> ... <span id="postTitle_{{ item.postID }}">{{ item.postTitle }}</span></p>
+              </div>
 
-                  {# Show collapse, edit/hide/delete dropdown #} 
-                  <div class="col-sm-4 align-panel-text-right">
-                    {# View Update button #}
-                    <button class="btn btn-info collapse_btn" data-toggle="collapse" data-target="#collapse{{ item.postID }}">View Update</button>
-          
-                    {# Only allow the user to edit their own posts #}
-                    {% if current_username %}
-                      {% if item.user.username == current_username %}
-                        {# Edit post #}
-                        <div class="btn-group">
-                          <button type="button" class="btn dropdown-toggle post-cog-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <img src="{% static 'tellings/imgs/settings_cog.png' %}" alt="">
-                            <span class = "caret"></span>
-                          </button>
+              {# Show collapse, edit/hide/delete dropdown #} 
+              <div class="col-sm-4 align-panel-text-right">
+                {# View Update button #}
+                <button class="btn btn-info collapse_btn" data-toggle="collapse" data-target="#collapse{{ item.postID }}">View Update</button>
+      
+                {# Only allow the user to edit their own posts #}
+                {% if current_username %}
+                  {% if item.user.username == current_username %}
+                  {# Edit post #}
+                  <div class="btn-group">
+                    <button type="button" class="btn dropdown-toggle post-cog-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      <img src="{% static 'tellings/imgs/settings_cog.png' %}" alt="">
+                      <span class = "caret"></span>
+                    </button>
 
-                          <div class="dropdown-menu dropdown-menu-right">
-                            <li>
-                              <a id="edit_post_{{ item.postID }}" onclick="$.edit_post({{ item.postID }});">Edit Post</a>
-                            </li>
-                            <li> 
-                              <a id="delete_post_{{ item.postID }}" onclick="$.delete_post({{ item.postID }});">Delete Post</a>
-                            </li>
-                          </div>
-                        </div>  
-                      {% else %} 
-                      <div class="btn-group">
-                        <button type="button" class="btn dropdown-toggle post-cog-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                          <img src="{% static 'tellings/imgs/settings_cog.png' %}" alt="">
-                          <span class = "caret"></span>
-                        </button>
-
-                        <div class="dropdown-menu dropdown-menu-right">
-                          <li> 
-                            <a id="hide_post_{{ item.postID }}" onclick="$.hide_post({{ item.postID }});">Hide post</a>
-                          </li>                      
-                          <li> 
-                            <a id="block_user_{{ item.user }}" onclick="$.block_user('{{ item.user }}');">Block user</a>
-                          </li>
-                        </div>
-                    </div>  
-                      {% endif %}
-                    {% endif %}
-                  </div>
-                </div> {# END OF Panel header #}
-
-                {# PANEL BODY #}
-                <div id="collapse{{ item.postID }}" class="panel-collapse collapse">
-                  <div class="panel-body">
-                    <p id="text_post_{{ item.postID }}">{{ item.postText }}</p>
-                  </div>
-                </div>                
-
-                <div class="panel-footer align_between"> 
-                  <span class="align-panel-footer-text-left last-edited-text">
-                    {% if item.dateOfEdit %}
-                      (Last edited on {{ item.dateOfEdit|date:"d/m/Y" }})
-                    {% else %}
-                      &nbsp;
-                    {% endif %}
-                  </span>
-                  {# Add the tags #}
-                    <span class="align-panel-footer-text-right">
-                  {% for tag in item.post_tags %}
-                    <a class="tagLink" href="{% url 'tellings:newupdates' %}?tagName={{ tag }}" name="{{ tag }}">{{ tag }}</a>
-                  {% endfor %}  
-                  </span>          
-                </div>
-
-                {# COMMENT PANEL #}
-                <div class="comment-panel panel-footer" id="comments{{ item.postID }}">
-                  <button class="btn btn-info reply_btn">Reply</button>
-                  <button class="btn btn-info view_comments_btn">View all comments</button>
-                  
-                  <div class="user-reply-section">
-                    <textarea class="form-control user-comment-input-area"  
-                              placeholder="Enter your reply" rows="2" cols="2"
-                              name="postText" maxlength="254" required></textarea>
-                    <button class="btn btn-info post_reply_btn">POST REPLY</button>
-                    <button class="btn btn-info cancel_reply_btn">CANCEL</button>
-                  </div>
-                                   
-                  <div class="user-comment-section">
-                    <p class="user-comment-text">Be the first person to make a comment on this post.</p>
+                    <div class="dropdown-menu dropdown-menu-right">
+                      <li>
+                        <a id="edit_post_{{ item.postID }}" onclick="$.edit_post({{ item.postID }});">Edit Post</a>
+                      </li>
+                      <li> 
+                        <a id="delete_post_{{ item.postID }}" onclick="$.delete_post({{ item.postID }});">Delete Post</a>
+                      </li>
+                    </div>
                   </div>  
-                </div>
+                  {% else %} 
+                  <div class="btn-group">
+                    <button type="button" class="btn dropdown-toggle post-cog-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      <img src="{% static 'tellings/imgs/settings_cog.png' %}" alt="">
+                      <span class = "caret"></span>
+                    </button>
 
-              </div> {# END OF UPDATE PANEL #}
-              <br />
+                    <div class="dropdown-menu dropdown-menu-right">
+                      <li> 
+                        <a id="hide_post_{{ item.postID }}" onclick="$.hide_post({{ item.postID }});">Hide post</a>
+                      </li>                      
+                      <li> 
+                        <a id="block_user_{{ item.user }}" onclick="$.block_user('{{ item.user }}');">Block user</a>
+                      </li>
+                    </div>
+                  </div>  
+                  {% endif %}
+                {% endif %}
+              </div>
+            </div> {# END OF Panel header #}
 
-            {% endfor %}
-          </div>            {# END OF PANEL GROUP #}
-        </div>              {# END OF ROW #}
+            {# PANEL BODY #}
+            <div id="collapse{{ item.postID }}" class="panel-collapse collapse">
+              <div class="panel-body">
+                <p id="text_post_{{ item.postID }}">{{ item.postText }}</p>
+              </div>
+            </div>                
+
+            <div class="panel-footer align_between"> 
+              <span class="align-panel-footer-text-left last-edited-text">
+                {% if item.dateOfEdit %}
+                (Last edited on {{ item.dateOfEdit|date:"d/m/Y" }})
+                {% else %}
+                &nbsp;
+                {% endif %}
+              </span>
+              {# Add the tags #}
+              <span class="align-panel-footer-text-right">
+                {% for tag in item.post_tags %}
+                <a class="tagLink" href="{% url 'tellings:newupdates' %}?tagName={{ tag }}" name="{{ tag }}">{{ tag }}</a>
+                {% endfor %}  
+              </span>          
+            </div>
+
+            {# COMMENT PANEL #}
+            <div class="comment-panel panel-footer" id="comments{{ item.postID }}">
+              <button class="btn btn-info reply_btn">Reply</button>
+              <button class="btn btn-info view_comments_btn">View all comments</button>
+              
+              <div class="user-reply-section">
+                <textarea class="form-control user-comment-input-area"  
+                          placeholder="Enter your reply" rows="2" cols="2"
+                          name="postText" maxlength="254" required></textarea>
+                <button class="btn btn-info post_reply_btn">POST REPLY</button>
+                <button class="btn btn-info cancel_reply_btn">CANCEL</button>
+              </div>
+                                
+              <div class="user-comment-section">
+                <p class="user-comment-text">Be the first person to make a comment on this post.</p>
+              </div>  
+            </div>
+
+          </div> {# END OF UPDATE PANEL #}
+
         {% endfor %}
+        </div>            {# END OF PANEL GROUP #}
+      </article>              {# END OF ROW #}
+      {% endfor %}
 
-        {% else %}
-        <div class="row white-inner-container">
-          <br />
-          <p>No results found.</p>
-        </div> 
-        {% endif %}  
+      {% else %}
+      <div class="row white-inner-container">
+        <p>No results found.</p>
+      </div> 
+      {% endif %}  
 
-    </div>              {# END OF CONTAINER #}
-  </div>                {# END OF CONTAINER-FLUID #}
+    </main>
+  </div>
 
 {% endblock %}

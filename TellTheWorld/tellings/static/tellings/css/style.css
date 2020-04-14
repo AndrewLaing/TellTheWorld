@@ -2,7 +2,7 @@
  * Filename:    style.css
  * Author:      Andrew Laing
  * Email:       parisianconnections@gmail.com
- * Date:        24/02/2020.
+ * Date:        14/04/2020.
  * Description: The main CSS file used to style the 'Tell the World' website.
  */
 
@@ -212,7 +212,7 @@ body {
   margin: 0em;
 } 
 
-.footer h1 {
+.footer h2 {
   padding-top: 10px;
 	padding-left: 20px;
 }

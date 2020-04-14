@@ -2,7 +2,7 @@
  * Filename:     base.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 24/02/2020
+ * Last updated: 14/04/2020
  * Description:  Main base template for site pages.
 {% endcomment %}
 
@@ -32,93 +32,92 @@
 </head> 
 
 <body>
-    <header class="header">
-      {# Page title #} 
-      <div id="title" class="jumbotron jumbotron-fluid">
-        <h1>Tell the World</h1>
-        <p>LET THE PEOPLE KNOW</p>
-      </div>
-  
-      {# Navigation bar #} 
-      <nav class="navbar navbar-inverse">
-        {% include "tellings/includes/navbar.html" %}
-      </nav> 
-    </header>
-
-    {# Div for dynamically adding modals. (if necessary) #} 
-    <div id="modal_container">
+  <header class="header">
+    {# Page title #} 
+    <div id="title" class="jumbotron jumbotron-fluid">
+      <h1>Tell the World</h1>
+      <p>LET THE PEOPLE KNOW</p>
     </div>
 
-    <noscript>
-        <style type="text/css">
-            .main-content {
-                display: none;
-            }
-        </style>
-        <div class="noscriptmsg">
-            You must have JavaScript enabled to be able to use the full functionality of this website.
-            Here are <a href="https://www.enable-javascript.com/">
-                instructions for how to enable JavaScript in your web browser
-            </a>.
-        </div>
-    </noscript>
+    {# Navigation bar #} 
+    <nav class="navbar navbar-inverse">
+      {% include "tellings/includes/navbar.html" %}
+    </nav> 
+  </header>
 
-    
-    {% block content %}{% endblock %}
+  {# Div for holding dynamically added modals. (if necessary) #} 
+  <div id="modal_container"></div>
 
-    {% block pagination %}
-      {% if is_paginated %}
-      {% load my_tags %}
-      <div id="paginationDiv">
-        <ul class="pagination pull-right">
-          {% if page_obj.has_previous %}
-            <li><a href="?{% param_replace page=page_obj.previous_page_number %}">&#60;</a></li>            
-          {% else %}
-            <li class="disabled"><span>&#60;</span></li>
-          {% endif %}
+  <noscript>
+    <style type="text/css">
+      .main-content {
+        display: none;
+      }
+    </style>
+    <div class="noscriptmsg">
+      You must have JavaScript enabled to be able to use the full functionality of this website.
+      Here are <a href="https://www.enable-javascript.com/">
+      instructions for how to enable JavaScript in your web browser
+      </a>.
+    </div>
+  </noscript>
 
-          {# Show link to first page #}
-          {% if page_obj.number > 4 %}
-             <li><a href="?{% param_replace page=1 %}">{{ 1 }}</a></li>
-             <li><a href="javascript: void(0);">...</a></li>
-          {% elif page_obj.number == 4 %}
-             <li><a href="?{% param_replace page=1 %}">{{ 1 }}</a></li>
-          {% endif %}
+  
+  {% block content %}{% endblock %}
 
-          {# Only show the 3 page numbers before and after the current one #}
-          {% for i in paginator.page_range %}
-            {% if i <= page_obj.number|add:2 and i >= page_obj.number|add:-2 %}
-              {% if page_obj.number == i %}
-                <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
-              {% else %}
-                <li><a href="?{% param_replace page=i %}">{{ i }}</a></li>
-              {% endif %}
+  {% block pagination %}
+    {% if is_paginated %}
+    {% load my_tags %}
+    <div id="paginationDiv">
+      <ul class="pagination pull-right">
+        {% if page_obj.has_previous %}
+        <li><a href="?{% param_replace page=page_obj.previous_page_number %}">&#60;</a></li>            
+        {% else %}
+        <li class="disabled"><span>&#60;</span></li>
+        {% endif %}
+
+        {# Show link to first page #}
+        {% if page_obj.number > 4 %}
+        <li><a href="?{% param_replace page=1 %}">{{ 1 }}</a></li>
+        <li><a href="javascript: void(0);">...</a></li>
+        {% elif page_obj.number == 4 %}
+        <li><a href="?{% param_replace page=1 %}">{{ 1 }}</a></li>
+        {% endif %}
+
+        {# Only show the 3 page numbers before and after the current one #}
+        {% for i in paginator.page_range %}
+          {% if i <= page_obj.number|add:2 and i >= page_obj.number|add:-2 %}
+            {% if page_obj.number == i %}
+            <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+            {% else %}
+            <li><a href="?{% param_replace page=i %}">{{ i }}</a></li>
             {% endif %}
-          {% endfor %}
-
-          {# Show link to last page #}
-          {% if page_obj.number < paginator.num_pages|add:-3 %}
-             <li><a href="javascript: void(0);">...</a></li>
-             <li><a href="?{% param_replace page=paginator.num_pages %}">{{ paginator.num_pages }}</a></li>
-          {% elif page_obj.number < paginator.num_pages|add:-2 %}
-             <li><a href="?{% param_replace page=paginator.num_pages %}">{{ paginator.num_pages }}</a></li>
           {% endif %}
+        {% endfor %}
 
-          {% if page_obj.has_next %}
-            <li><a href="?{% param_replace page=page_obj.next_page_number %}">&#62;</a></li>
-          {% else %}
-            <li class="disabled"><span>&#62;</span></li>
-          {% endif %}
-        </ul>
-      </div>
-      {% endif %}
-    {% endblock %} 
-    
+        {# Show link to last page #}
+        {% if page_obj.number < paginator.num_pages|add:-3 %}
+        <li><a href="javascript: void(0);">...</a></li>
+        <li><a href="?{% param_replace page=paginator.num_pages %}">{{ paginator.num_pages }}</a></li>
+        {% elif page_obj.number < paginator.num_pages|add:-2 %}
+        <li><a href="?{% param_replace page=paginator.num_pages %}">{{ paginator.num_pages }}</a></li>
+        {% endif %}
 
-    {# FOOTER SECTION #} 
-    <footer class="footer footerDivs">
-      {% include "tellings/includes/footerContents.html" %}
-    </footer>
+        {% if page_obj.has_next %}
+        <li><a href="?{% param_replace page=page_obj.next_page_number %}">&#62;</a></li>
+        {% else %}
+        <li class="disabled"><span>&#62;</span></li>
+        {% endif %}
+      </ul>
+    </div>
+    {% endif %}
+  {% endblock %} 
+  
+
+  {# FOOTER SECTION #} 
+  <footer class="footer footerDivs">
+    {% include "tellings/includes/footerContents.html" %}
+  </footer>
 </body>
 
 </html>

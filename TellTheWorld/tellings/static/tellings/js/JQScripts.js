@@ -2,7 +2,7 @@
  * Filename:     JQScripts.js
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 01/04/2020.
+ * Last updated: 14/04/2020.
  * Description:  JQuery scripts used by the 'Tell the World' website.
  */
 
@@ -12,11 +12,11 @@ $(document).ready(function(){
      *           VARIABLES USED WITHIN THIS FILE
      *  -------------------------------------------------------------
      */
+    var originalCommentText;
     var originalPostText;
     var originalPostTitle;
-    var editingPost = false;
-    var originalCommentText;
     var editingComment = false;
+    var editingPost = false;
 
     var timeoutLength = 5000;
   
@@ -29,16 +29,20 @@ $(document).ready(function(){
 
     var messages = {
       accountDeleted: "Your account will now be deleted!",
-      ajaxResponseError: "Error: Something went wrong whilst trying to process your request. Please contact the site's administrator.",
+      ajaxResponseError: "Error: Something went wrong whilst trying to process your request. "
+                       + "Please contact the site's administrator.",
       completeAllFields: "Please complete ALL of the required data fields!",
       enterReplyFieldEmpty: "The 'Enter your reply' field cannot be left empty!",
       methodNotAllowedOnPage: "Sorry, you cannot perform the action on this page!",
       operationCancelled: "Operation cancelled.",
       unsavedChanges: "You must first save all changes before performing this action",
       userLoggedOut: "You are now logged out.",
-      confirmBlockUser: "Are you sure that you want to block this user? Blocking users means that you will no longer be able to see their posts or comments, and that they will no longer be able to see your posts/comments.",
+      confirmBlockUser: "Are you sure that you want to block this user? "
+                      + "Blocking users means that you will no longer be able to see their posts or comments, "
+                      + "and that they will no longer be able to see your posts/comments.",
       confirmUnblockUser: "Are you sure you want to unblock this user?",
-      confirmShowBlockedContent: "Proceeding further will show you content from a user that you have blocked. If you do not wish to see this content, press CANCEL.",
+      confirmShowBlockedContent: "Proceeding further will show you content from a user that you have blocked. "
+                               + "If you do not wish to see this content, press CANCEL.",
       confirmDeleteComment: "Are you sure you want to delete this comment?",
       confirmDeletePost: "Are you sure you want to delete this post?",
       confirmDeleteAccount: "Are you sure you want to delete your account?",
@@ -614,12 +618,12 @@ $(document).ready(function(){
                 },
           timeout: timeoutLength, 
           success: function (data) {
-              if (data.status == StatusCode.SUCCESS) {
-                alert(data.message);
-                location.reload();
-              } else {
-                alert(data.message);
-              }
+            if (data.status == StatusCode.SUCCESS) {
+              alert(data.message);
+              location.reload();
+            } else {
+              alert(data.message);
+            }
           },
           error: function () {
             alert(messages.ajaxResponseError);
@@ -646,12 +650,12 @@ $(document).ready(function(){
                 },
           timeout: timeoutLength, 
           success: function (data) {
-              if (data.status == StatusCode.SUCCESS) {
-                alert(data.message);
-                location.reload();
-              } else {
-                alert(data.message);
-              }
+            if (data.status == StatusCode.SUCCESS) {
+              alert(data.message);
+              location.reload();
+            } else {
+              alert(data.message);
+            }
           },
           error: function () {
             alert(messages.ajaxResponseError);
@@ -689,12 +693,12 @@ $(document).ready(function(){
                 },
           timeout: timeoutLength, 
           success: function (data) {
-              if (data.status == StatusCode.SUCCESS) {
-                alert(data.message);
-                location.reload();
-              } else {
-                alert(data.message);
-              }
+            if (data.status == StatusCode.SUCCESS) {
+              alert(data.message);
+              location.reload();
+            } else {
+              alert(data.message);
+            }
           },
           error: function () {
             alert(messages.ajaxResponseError);
@@ -722,12 +726,12 @@ $(document).ready(function(){
                 },
           timeout: timeoutLength, 
           success: function (data) {
-              if (data.status == StatusCode.SUCCESS) {
-                alert(data.message);
-                window.location = window.location.href.split("?")[0];
-              } else {
-                alert(data.message);
-              }
+            if (data.status == StatusCode.SUCCESS) {
+              alert(data.message);
+              window.location = window.location.href.split("?")[0];
+            } else {
+              alert(data.message);
+            }
           },
           error: function () {
             alert(messages.ajaxResponseError);
@@ -755,12 +759,12 @@ $(document).ready(function(){
                 },
           timeout: timeoutLength, 
           success: function (data) {
-              if (data.status == StatusCode.SUCCESS) {
-                alert(data.message);
-                window.location = window.location.href.split("?")[0];
-              } else {
-                alert(data.message);
-              }
+            if (data.status == StatusCode.SUCCESS) {
+              alert(data.message);
+              window.location = window.location.href.split("?")[0];
+            } else {
+              alert(data.message);
+            }
           },
           error: function () {
             alert(messages.ajaxResponseError);
@@ -768,7 +772,6 @@ $(document).ready(function(){
         });    
       }
     };
-
 
 
     /** -----------------------------------------------------------------
@@ -845,23 +848,23 @@ $(document).ready(function(){
           url: "/editusercomment/",
           type: 'post',
           data: {
-                    commentID: in_commentID,
-                    commentText: currentText,
-                    csrfmiddlewaretoken: csrftoken,
+                  commentID: in_commentID,
+                  commentText: currentText,
+                  csrfmiddlewaretoken: csrftoken,
                 },
           timeout: timeoutLength, 
           success: function (data) {
-              if (data.status == StatusCode.SUCCESS) {
-                alert(data.message);
-                $.show_new_comment_text(textCommentID, currentText);
-              } 
-              else if (data.status == StatusCode.CENSORED) {
-                $.censorElementText($("#edit_comment_box"));
-                alert(data.message);
-              } 
-              else {
-                alert(data.message);
-              }
+            if (data.status == StatusCode.SUCCESS) {
+              alert(data.message);
+              $.show_new_comment_text(textCommentID, currentText);
+            } 
+            else if (data.status == StatusCode.CENSORED) {
+              $.censorElementText($("#edit_comment_box"));
+              alert(data.message);
+            } 
+            else {
+              alert(data.message);
+            }
           },
           error: function () {
             alert(messages.ajaxResponseError);
@@ -900,7 +903,10 @@ $(document).ready(function(){
     $.create_postTitle_inputbox = function(in_postID) {
       var titlePostID = "#postTitle_" + in_postID;
       var titleElement = $(titlePostID);
-      return '<input type="text" id="postTitle_' + in_postID + '" name="postTitle" size="40" maxlength="34" value="' + titleElement.text() + '">';
+      return '<input type="text" id="postTitle_' 
+            + in_postID 
+            + '" name="postTitle" size="40" maxlength="34" value="' 
+            + titleElement.text() + '">';
     }
   
     /**
@@ -937,7 +943,10 @@ $(document).ready(function(){
       // If the collapse is not showing, show it
       var collapsePostID = "#collapse" + in_postID;
       $(collapsePostID).collapse("show");
-      $(collapsePostID).siblings('.panel-header').children('.align-panel-text-right').children('.collapse_btn').text(btnTexts.hideUpdate);
+      $(collapsePostID).siblings('.panel-header')
+                       .children('.align-panel-text-right')
+                       .children('.collapse_btn')
+                       .text(btnTexts.hideUpdate);
 
       // Load the page element and insert it into the panel
       url_to_fetch = '/edituserpost/' + in_postID;
@@ -983,8 +992,8 @@ $(document).ready(function(){
       var currentTitle = $(titlePostID).val();
 
       if(currentText.length == 0 || currentTitle.length==0) {
-           alert(messages.completeAllFields);
-           return false;
+        alert(messages.completeAllFields);
+        return false;
       }
   
       if($.confirm_edit_post()==true) {
@@ -994,25 +1003,25 @@ $(document).ready(function(){
           url: "/edituserpost/",
           type: 'post',
           data: {
-                    postID: in_postID,
-                    postText: currentText,
-                    postTitle: currentTitle,
-                    csrfmiddlewaretoken: csrftoken,
+                  postID: in_postID,
+                  postText: currentText,
+                  postTitle: currentTitle,
+                  csrfmiddlewaretoken: csrftoken,
                 },
           timeout: timeoutLength, 
           success: function (data) {
-              if (data.status == StatusCode.SUCCESS) {
-                alert(data.message);
-                $.show_new_post_text(in_postID, currentText, currentTitle);
-              } 
-              else if (data.status == StatusCode.CENSORED) {
-                $.censorElementText($("#edit_post_box"));
-                $.censorElementText($(titlePostID));
-                alert(data.message);
-              } 
-              else {
-                alert(data.message);
-              }
+            if (data.status == StatusCode.SUCCESS) {
+              alert(data.message);
+              $.show_new_post_text(in_postID, currentText, currentTitle);
+            } 
+            else if (data.status == StatusCode.CENSORED) {
+              $.censorElementText($("#edit_post_box"));
+              $.censorElementText($(titlePostID));
+              alert(data.message);
+            } 
+            else {
+              alert(data.message);
+            }
           },
           error: function () {
             alert(messages.ajaxResponseError);
@@ -1087,17 +1096,17 @@ $(document).ready(function(){
           url: "/deleteuserpost/",
           type: 'post',
           data: {
-                    postID: in_postID,
-                    csrfmiddlewaretoken: csrftoken,
+                  postID: in_postID,
+                  csrfmiddlewaretoken: csrftoken,
                 },
           timeout: timeoutLength, 
           success: function (data) {
-              if (data.status == StatusCode.SUCCESS) {
-                alert(data.message);
-                location.reload();
-              } else {
-                alert(data.message);
-              }
+            if (data.status == StatusCode.SUCCESS) {
+              alert(data.message);
+              location.reload();
+            } else {
+              alert(data.message);
+            }
           },
           error: function () {
             alert(messages.ajaxResponseError);
@@ -1212,7 +1221,6 @@ $(document).ready(function(){
      *           ADD COMMENT METHODS
      * ------------------------------------------------------------------
      */
-  
 
     /**
      * Triggers the reply_btn click when the user clicks on the
@@ -1373,23 +1381,26 @@ $(document).ready(function(){
       if($.confirm_delete_comment()==true) {
         var csrftoken = getCookie('csrftoken');
         var textCommentID = "#text_comment_" + in_commentID;
-        var viewCommentsBtn = $(textCommentID).parent().parent().parent().children('.view_comments_btn');
+        var viewCommentsBtn = $(textCommentID).parent()
+                                              .parent()
+                                              .parent()
+                                              .children('.view_comments_btn');
   
         $.ajax({
           url: "/deleteusercomment/",
           type: 'post',
           data: {
-                    commentID: in_commentID,
-                    csrfmiddlewaretoken: csrftoken,
+                  commentID: in_commentID,
+                  csrfmiddlewaretoken: csrftoken,
                 },
           timeout: timeoutLength, 
           success: function (data) {
-              if (data.status == StatusCode.SUCCESS) {
-                alert(data.message);
-                $.comment_deleted(viewCommentsBtn);
-              } else {
-                alert(data.message);
-              }
+            if (data.status == StatusCode.SUCCESS) {
+              alert(data.message);
+              $.comment_deleted(viewCommentsBtn);
+            } else {
+              alert(data.message);
+            }
           },
           error: function () {
             alert(messages.ajaxResponseError);

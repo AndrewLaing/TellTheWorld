@@ -6,92 +6,89 @@
  * Filename:     hiddenpost_list.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 11/03/2020
+ * Last updated: 14/04/2020
  * Description:  Template used for creating the HiddenPost html.
  * -------------------------------------------------------------------------------
 {% endcomment %}
 
 {% block content %}
 <div class="container-fluid main-content"> 
-  <div class="container">
-    <h2>Hidden Posts</h2>
-    <div class="row">
-      {% if hiddenpost_list %}
-        {% load static %}
-        {% regroup hiddenpost_list by postID.dateOfPost|date:"M. d Y" as ordered_post_list  %}
-        {% for mypost in ordered_post_list %}
-        <div class="row">
-          <h1>{{ mypost.grouper }}</h1>
-          <div class="panel-group">
-            {% for item in mypost.list %}
-            {# UPDATE PANEL #}
-              <div class="panel panel-default" id="panel_post_{{ item.postID.postID }}">
-                {# PANEL HEADER #} 
-                <div class="panel-header hiddenposts-panel-header align_between"> 
-                  {# Post title and username #}
-                  <div class="panel-postTitle align-panel-footer-text-left">
-                    <p><a href="{% url 'tellings:hiddenposts' %}?username={{ item.postID.user }}" name="{{ item.postID.user }}">
-                      {{ item.postID.user }} says</a> ... {{ item.postID.postTitle }}
-                    </p>
-                  </div>
+  <main class="container">
+    <header>
+      <h1>Hidden Posts</h1>
+    </header>
+    
+    {% if hiddenpost_list %}
+      {% load static %}
+      {% regroup hiddenpost_list by postID.dateOfPost|date:"M. d Y" as ordered_post_list  %}
+      {% for mypost in ordered_post_list %}
+      <article>
+        <h2>{{ mypost.grouper }}</h2>
+        <div class="panel-group">
+          {% for item in mypost.list %}
+          <div class="panel panel-default" id="panel_post_{{ item.postID.postID }}">
+            <div class="panel-header hiddenposts-panel-header align_between"> 
+              {# Post title and username #}
+              <div class="panel-postTitle align-panel-footer-text-left">
+                <p><a href="{% url 'tellings:hiddenposts' %}?username={{ item.postID.user }}" name="{{ item.postID.user }}">
+                  {{ item.postID.user }} says</a> ... {{ item.postID.postTitle }}
+                </p>
+              </div>
 
-                  {# Blocked posts #} 
-                  <div class="btn-group align-panel-footer-text-right">
-                    <button type="button" class="btn dropdown-toggle post-cog-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                      <img src="{% static 'tellings/imgs/settings_cog.png' %}" alt="">
-                      <span class = "caret"></span>
-                    </button>
+              {# Blocked post #} 
+              <div class="btn-group align-panel-footer-text-right">
+                <button type="button" class="btn dropdown-toggle post-cog-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <img src="{% static 'tellings/imgs/settings_cog.png' %}" alt="">
+                  <span class = "caret"></span>
+                </button>
 
-                    <div class="dropdown-menu dropdown-menu-right">
-                      <li>
-                        <a onclick="$.unhide_post({{ item.postID.postID }});">Unhide post</a>
-                      </li>
-                      <li>
-                        <a onclick="$.unhide_all_user_posts('{{ item.postID.user }}');">Unhide all posts by user</a>
-                      </li>
-                      <li>
-                        <a onclick="$.block_user('{{ item.postID.user }}');">Block user</a>
-                      </li>
-                    </div>
-                  </div> 
-                </div> {# END OF Panel header #}
-
-                {# PANEL BODY #}
-                <div>
-                  <div class="panel-body">
-                    <p id="text_post_{{ item.postID.postID }}">{{ item.postID.postText }}</p>
-                  </div>
-                </div>                
-
-                <div class="panel-footer align_between"> 
-                  <span class="align-panel-footer-text-left last-edited-text">
-                    {% if item.postID.dateOfEdit %}
-                      (Last edited on {{ item.postID.dateOfEdit|date:"d/m/Y" }})
-                    {% else %}
-                      &nbsp;
-                    {% endif %}
-                  </span>
-                  {# Add the tags #}
-                    <span class="align-panel-footer-text-right">
-                  {% for tag in item.postID.post_tags %}
-                    <span class="false-link tagLink">{{ tag }}</span>
-                  {% endfor %}  
-                  </span>          
+                <div class="dropdown-menu dropdown-menu-right">
+                  <li>
+                    <a onclick="$.unhide_post({{ item.postID.postID }});">Unhide post</a>
+                  </li>
+                  <li>
+                    <a onclick="$.unhide_all_user_posts('{{ item.postID.user }}');">Unhide all posts by user</a>
+                  </li>
+                  <li>
+                    <a onclick="$.block_user('{{ item.postID.user }}');">Block user</a>
+                  </li>
                 </div>
-              </div> {# END OF UPDATE PANEL #}
-              <br />
+              </div> 
+            </div> {# END OF Panel header #}
 
-            {% endfor %}
-          </div>            {# END OF PANEL GROUP #}
-        </div>              {# END OF ROW #}
-        {% endfor %}
+            <div>
+              <div class="panel-body">
+                <p id="text_post_{{ item.postID.postID }}">{{ item.postID.postText }}</p>
+              </div>
+            </div>                
 
-      {% else %}
-      <div class="user-comment-container">
-        <p class="user-no-comments-text">You have not hidden any posts.</p>
-      </div>
-      {% endif %} 
+            <div class="panel-footer align_between"> 
+              <span class="align-panel-footer-text-left last-edited-text">
+                {% if item.postID.dateOfEdit %}
+                  (Last edited on {{ item.postID.dateOfEdit|date:"d/m/Y" }})
+                {% else %}
+                  &nbsp;
+                {% endif %}
+              </span>
+              {# Add the tags #}
+                <span class="align-panel-footer-text-right">
+              {% for tag in item.postID.post_tags %}
+                <span class="false-link tagLink">{{ tag }}</span>
+              {% endfor %}  
+              </span>          
+            </div>
+          </div> {# END OF UPDATE PANEL #}
+          {% endfor %}
+        </div>            {# END OF PANEL GROUP #}
+      </article> 
+      {% endfor %}
+
+    {% else %}
+    <div class="user-comment-container">
+      <p class="user-no-comments-text">You have not hidden any posts.</p>
     </div>
-  </div>
+    {% endif %} 
+
+  </main>
 </div>
 {% endblock %}

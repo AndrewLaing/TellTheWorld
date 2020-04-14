@@ -6,35 +6,39 @@
  * Filename:     tag_list.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 27/01/2020
+ * Last updated: 14/04/2020
  * Description:  Template used for the Tags page.
  * -------------------------------------------------------------------------------
 {% endcomment %}
 
 {% block content %}
 
-  <div class="container-fluid main-content"> 
-    <div class="container allUserUpdates" id="userUpdates">
-      <h2>Tags</h2>
-      <div class="row white-inner-container"> 
-        {% if tag_list %}
-          {% regroup tag_list by first_char as first_char_list %}
-        
-          {% for sort_by_first_char in first_char_list %}
-            <h1>{{ sort_by_first_char.grouper }}</h1>
-              {% for item in sort_by_first_char.list %}
-                <p>
-                  <a href="{% url 'tellings:newupdates' %}?tagName={{ item.tagName }}" name="{{ item.tagName }}">{{ item.tagName }}</a>
-                </p>
-              {% endfor %}
-           {% endfor %}
-        {% else %}
-          <p>No results found.</p>
-        {% endif %}  
-
-      </div>          {# END OF ROW #}
-    </div>            {# END OF CONTAINER #}
-  </div>              {# END OF CONTAINER-FLUID #}
-
+<div class="container-fluid main-content"> 
+  <main class="container allUserUpdates">
+    <header>
+      <h1>Tags</h1>
+    </header>
+    
+    <div class="row white-inner-container"> 
+      {% if tag_list %}
+        {% regroup tag_list by first_char as first_char_list %}
+        {% for sort_by_first_char in first_char_list %}
+        <article>
+          <h2>{{ sort_by_first_char.grouper }}</h2>
+          {% for item in sort_by_first_char.list %}
+          <p>
+            <a href="{% url 'tellings:newupdates' %}?tagName={{ item.tagName }}" name="{{ item.tagName }}">{{ item.tagName }}</a>
+          </p>
+          {% endfor %}
+        </article>  
+        {% endfor %}
+      {% else %}
+      <article>
+        <p>No results found.</p>
+      </article>
+      {% endif %}  
+    </div>  
+  </main>
+</div>
 
 {% endblock %}

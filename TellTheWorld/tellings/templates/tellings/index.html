@@ -6,7 +6,7 @@
  * Filename:     index.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 29/01/2020
+ * Last updated: 14/04/2020
  * Description:  Template for the site's home page.
  * -------------------------------------------------------------------------------
 {% endcomment %}
@@ -14,9 +14,7 @@
 {% load static %}
 
 {% block content %}
-
-
-<div class="img-wrapper"> 
-    <img class="img-responsive" id="homepage-image" src="{% static 'tellings/imgs/ttwLogo.jpg' %}" title="" alt="">
-</div>    
+<main class="img-wrapper"> 
+  <img class="img-responsive" id="homepage-image" src="{% static 'tellings/imgs/ttwLogo.jpg' %}" title="" alt="">
+</main>    
 {% endblock %}

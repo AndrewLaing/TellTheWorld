@@ -3,14 +3,13 @@
  * Filename:     navbar.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 26/02/2020
+ * Last updated: 14/04/2020
  * Description:  This is used to create the navbar according to the user's 
  *               logged in status.
 
  * Note:         Files which include this script must also extend base.html.
  * -------------------------------------------------------------------------------
 {% endcomment %} 
-
 
   <!-- Brand and toggle get grouped for better mobile display -->
   <div class="navbar-header">
@@ -27,18 +26,18 @@
     {# LEFT NAVBAR #}
     <ul class="nav navbar-nav">
       {% if user.is_authenticated %}
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'tellings:newupdates' %}">New Updates</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'tellings:tags' %}">Tags</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'tellings:myupdates' %}">My Updates</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" id="addUpdateBtn" href="javascript:void(0);">Add New Update</a>
-        </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'tellings:newupdates' %}">New Updates</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'tellings:tags' %}">Tags</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'tellings:myupdates' %}">My Updates</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="addUpdateBtn" href="javascript:void(0);">Add New Update</a>
+      </li>
       {% endif %}
     </ul>
 
@@ -56,7 +55,7 @@
           <li class="nav-item dropdown-menu-item">
             <a class="nav-link" href="{% url 'tellings:acceptableusage' %}">Acceptable Usage Policy</a>
           </li>
-              <li class="nav-item dropdown-menu-item">
+          <li class="nav-item dropdown-menu-item">
             <a class="nav-link" href="{% url 'tellings:privacypolicy' %}">Privacy Policy</a>
           </li>
           <li class="nav-item dropdown-menu-item">
@@ -65,36 +64,36 @@
         </ul>
 
       {% if user.is_authenticated %}
-        <li class="dropdown">
-          <a class="dropdown-toggle" data-toggle="dropdown" href="#">My Account</a>
-          <ul class="dropdown-menu">
-            <li class="nav-item dropdown-menu-item">
-              <a class="nav-link" href="{% url 'tellings:changeuserdetails' %}">Change Account Details</a>
-            </li>
-            <li class="nav-item dropdown-menu-item">
-              <a class="nav-link" href="{% url 'tellings:changepassword' %}">Change Password</a>
-            </li>
-            <li class="nav-item dropdown-menu-item">
-              <a class="nav-link" id="deleteAccountBtn" href="javascript:void(0);">Delete My Account</a>
-            </li>
-            <li class="nav-item dropdown-menu-item">
-              <a class="nav-link" href="{% url 'tellings:hiddenposts' %}">Hidden Posts</a>
-            </li>
-            <li class="nav-item dropdown-menu-item">
-              <a class="nav-link"  href="{% url 'tellings:blockedusers' %}">Blocked Users</a>
-            </li>
-          </ul>
-        </li>
-        <li class="nav-item">
-            <a href="{% url 'logout' %}" onclick="return $.confirm_logout();">Log out</a>
-        </li>
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#">My Account</a>
+        <ul class="dropdown-menu">
+          <li class="nav-item dropdown-menu-item">
+            <a class="nav-link" href="{% url 'tellings:changeuserdetails' %}">Change Account Details</a>
+          </li>
+          <li class="nav-item dropdown-menu-item">
+            <a class="nav-link" href="{% url 'tellings:changepassword' %}">Change Password</a>
+          </li>
+          <li class="nav-item dropdown-menu-item">
+            <a class="nav-link" id="deleteAccountBtn" href="javascript:void(0);">Delete My Account</a>
+          </li>
+          <li class="nav-item dropdown-menu-item">
+            <a class="nav-link" href="{% url 'tellings:hiddenposts' %}">Hidden Posts</a>
+          </li>
+          <li class="nav-item dropdown-menu-item">
+            <a class="nav-link"  href="{% url 'tellings:blockedusers' %}">Blocked Users</a>
+          </li>
+        </ul>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'logout' %}" onclick="return $.confirm_logout();">Log out</a>
+      </li>
       {% else %}
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'tellings:signup' %}">Sign Up</a>
-        </li>
-        <li class="nav-item">
-            <a href="javascript:void(0);" id="loginBtn">Login</a>
-        </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'tellings:signup' %}">Sign Up</a>
+      </li>
+      <li class="nav-item">
+        <a href="javascript:void(0);" id="loginBtn">Login</a>
+      </li>
       {% endif %}
     </ul>
 

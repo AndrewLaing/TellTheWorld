@@ -6,7 +6,7 @@
  * Filename:     signup.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 29/01/2020
+ * Last updated: 14/04/2020
  * Description:  Template for the SignUp page.
  * -------------------------------------------------------------------------------
 {% endcomment %}
@@ -14,48 +14,51 @@
 {% block content %}
 
 <div class="container-fluid main-content">
-    <div class="container">
-        <h2>Sign Up</h2>
-        <form method="post">
-            {% csrf_token %}
-            <div class="form-group">
-            {% for field in form %}
-              <br />
-              <label class="control-label" for="id_{{ field.name }}">{{ field.label }}</label>
-                <div>
-                  {% if field.name == "password1" or field.name == "password2" %}
-                    <input type="password" class="form-control input-lg"
-                  {% else %}
-                    <input type="text" class="form-control input-lg"
-                  {% endif %}
+  <main class="container">
+    <header>
+      <h1>Sign Up</h1>
+    </header>
+    
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        {% for field in form %}
+        <label class="control-label" for="id_{{ field.name }}">{{ field.label }}</label>
+        <div>
+          <input 
+          {% if field.name == "password1" or field.name == "password2" %}
+                  type="password" class="form-control input-lg"
+          {% else %}
+                  type="text" class="form-control input-lg"
+          {% endif %}
+                  name="{{ field.name }}"
+                  id="id_{{ field.name }}"
 
-                    name="{{ field.name }}"
-                    id="id_{{ field.name }}"
+          {% if field.name == "username" %}
+                  value="" autofocus>
+          {% else %}
+                  value="" >
+          {% endif %}
 
-                  {% if field.name == "username" %}
-                    value="" autofocus>
-                  {% else %}
-                    value="" >
-                  {% endif %}
+          <p class="help-text">{{ field.help_text }} </p>
+        </div>
+        {% endfor %}
 
-                    <p class="help-text">{{ field.help_text }} </p>
-                </div>
-            {% endfor %}
-            <br />
+        <p><input type="checkbox" name="terms" required> I have read and accept the <a href="{% url 'tellings:termsandconditions' %}" target="_blank">Terms and Conditions</a>.</p>
+        <p><input type="checkbox" name="usage" required> I have read and agree to abide by the <a href="{% url 'tellings:acceptableusage' %}" target="_blank">Acceptable Usage Policy</a>.</p>
+      </div>
 
-            <p><input type="checkbox" name="terms" required> I have read and accept the <a href="{% url 'tellings:termsandconditions' %}" target="_blank">Terms and Conditions</a>.</p>
-            <p><input type="checkbox" name="usage" required> I have read and agree to abide by the <a href="{% url 'tellings:acceptableusage' %}" target="_blank">Acceptable Usage Policy</a>.</p>
-            </div>
+      {% include "tellings/includes/formErrors.html" %}
+      
+      <div>
+        <button type="submit" class="btn btn-success btn-block btn-lg">SAVE CHANGES</button>
+      </div>  
+    </form>
 
-            {% include "tellings/includes/formErrors.html" %}
-            
-            <br />
-            <button type="submit" class="btn btn-success btn-block btn-lg">SAVE CHANGES</button>
-        </form>
-        <br />
-        <a href="{% url 'tellings:index' %}" class="btn btn-danger btn-block btn-lg">CANCEL</a> 
-        <br /><br />
+    <div>
+      <a href="{% url 'tellings:index' %}" class="btn btn-danger btn-block btn-lg">CANCEL</a> 
+    </div>>
 
-    </div>          {# END OF CONTAINER #}
-</div>              {# END OF CONTAINER-FLUID #}
+  </main> 
+</div>  
 {% endblock %}
