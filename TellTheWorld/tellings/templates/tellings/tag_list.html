@@ -6,7 +6,7 @@
  * Filename:     tag_list.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 14/04/2020
+ * Last updated: 14/05/2020
  * Description:  Template used for the Tags page.
  * -------------------------------------------------------------------------------
 {% endcomment %}
@@ -14,16 +14,54 @@
 {% block content %}
 
 <div class="container-fluid main-content"> 
-  <main class="container allUserUpdates">
+  <main class="container">
     <header>
-      <h1>Tags</h1>
+      <h1>Search for posts by tag</h1>
     </header>
     
     <div class="row white-inner-container">
 
+      <div class="glossary-search">       
+        <div class="input-group col-sm-12 align-panel-text-right">
+            <input type="text" id="search-field" size="25" maxlength="15" class="form-control input-md" placeholder="Search" />
+            <button id="glossary-search-btn" class="btn btn-info" type="button">?</button>
+        </div>
+      </div>
 
+      {# Script used for search tag suggestions and search field submit #}
+      {# Placed here because urls loaded from static #}
 
+      {% load static %}
+      <script>
+        
+        $.perform_search = function() {
+          var inputVal = $("#search-field").val();
+          var searchURL = "{% url 'tellings:tags' %}?search=" + inputVal
+          document.location.href = searchURL;
+        };
 
+        $("#search-field").on("keypress", function(e){
+          if(e.which == 13){
+            $.perform_search();
+          }
+        });
+
+        $("#glossary-search-btn").on("click", function(e){
+          $.perform_search();
+        });
+
+        var tagnames = new Bloodhound({
+          datumTokenizer: Bloodhound.tokenizers.whitespace,
+          queryTokenizer: Bloodhound.tokenizers.whitespace,
+          prefetch: "{% static 'tellings/data/tagNames.json' %}"
+        });
+
+        $('#search-field').typeahead(null, {
+          name: 'name',
+          displayKey: 'name',
+          source: tagnames
+        });
+      </script>
 
       <div class="glossary-filter"> 
         {% if glossary_filter %}
@@ -33,7 +71,9 @@
         {% endif %}
       </div>
 
-      <hr>
+    </div>
+
+    <div class="row white-inner-container">
 
       {% if tag_list %}
         {% regroup tag_list by first_char as first_char_list %}

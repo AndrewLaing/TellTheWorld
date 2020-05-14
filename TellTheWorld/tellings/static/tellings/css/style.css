@@ -2,7 +2,7 @@
  * Filename:    style.css
  * Author:      Andrew Laing
  * Email:       parisianconnections@gmail.com
- * Date:        14/04/2020.
+ * Date:        14/05/2020.
  * Description: The main CSS file used to style the 'Tell the World' website.
  */
 
@@ -258,10 +258,14 @@ body {
 }
 
 .glossary-filter {
-  margin-top: 10px;
-  margin-bottom: 10px;    
+  margin-top: 10px;  
   text-align: center;
   font-size: large;
+}
+
+.glossary-search {
+  margin-top: 10px;
+  margin-bottom: 10px;   
 }
 
 #paginationDiv {
@@ -499,8 +503,7 @@ hr {
 /* -------------------------------------------------------- */
 .tt-input, 
 .tt-hint {
-  width: 396px;
-  height: 30px;
+  width: 274px;
   padding: 8px 12px;
   font-size: 1.3em;
   line-height: 30px;
@@ -517,10 +520,8 @@ hr {
   color: #999;
 }
 
-
-
 .tt-menu { 
-  width: 422px;
+  width: 300px;
   margin-top: 12px;
   padding: 8px 0;
   background-color: #fff;
@@ -534,6 +535,7 @@ hr {
   padding: 3px 20px;
   font-size: 18px;
   line-height: 24px;
+  text-align: left;
 }
 
 .tt-suggestion.tt-cursor { 
@@ -543,4 +545,13 @@ hr {
 
 .tt-suggestion p {
   margin: 0em;
+}
+
+#search-field {
+  float: none;
+  vertical-align: middle !important;
+}
+
+#glossary-search-btn {
+  font-weight: bold;
 }

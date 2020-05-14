@@ -1,7 +1,7 @@
 # Filename:     views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last updated: 26/03/2020
+# Last updated: 14/05/2020
 # Description:  Contains the views for the website.
 
 import django.utils.timezone
