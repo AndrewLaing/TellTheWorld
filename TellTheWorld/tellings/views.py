@@ -668,6 +668,37 @@ class TagListView(LoginRequiredMixin, generic.ListView):
     paginate_by = 20
     http_method_names = ['get', 'post']
 
+    def get_queryset(self):
+        """ Returns a queryset. This will be filtered if the user passes either a search letter/term.
+
+            :returns: A queryset of Tags.
+        """
+        search_val = False
+        qs = super().get_queryset()
+
+        if 'search' in self.request.GET:
+            search_val = self.request.GET.get('search', False)
+            
+            if search_val == "0-9":   # find all rows that start with non-alpha character
+                qs = Tag.objects.exclude(tagName__regex=r'^[a-zA-Z]').order_by('tagName') 
+            else:
+                qs = Tag.objects.filter(tagName__startswith=search_val).order_by('tagName') 
+                
+        return qs
+
+    def get_context_data(self, **kwargs):
+        glossary_filter = ["0-9","A","B","C","D","E","F","G","H",
+                           "I","J","K","L","M","N","O","P","Q","R",
+                           "S","T","U","V","W","X","Y","Z"]
+        context = super(TagListView, self).get_context_data(**kwargs)  
+        current_username = self.request.user.username
+        context["glossary_filter"] = glossary_filter
+
+        if 'search' in self.request.GET:
+            context['search'] = self.request.GET.get('search', '')
+
+        context['username'] = current_username
+        return context
 
 class TermsAndConditionsPage(View):
     """ Creates the Terms and Conditions page for the website."""

@@ -257,6 +257,13 @@ body {
   background-color: #FFF;
 }
 
+.glossary-filter {
+  margin-top: 10px;
+  margin-bottom: 10px;    
+  text-align: center;
+  font-size: large;
+}
+
 #paginationDiv {
   padding-left: 30px;
   padding-right: 60px;
@@ -509,6 +516,8 @@ hr {
 .tt-hint {
   color: #999;
 }
+
+
 
 .tt-menu { 
   width: 422px;

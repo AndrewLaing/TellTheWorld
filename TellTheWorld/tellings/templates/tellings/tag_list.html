@@ -19,12 +19,28 @@
       <h1>Tags</h1>
     </header>
     
-    <div class="row white-inner-container"> 
+    <div class="row white-inner-container">
+
+
+
+
+
+      <div class="glossary-filter"> 
+        {% if glossary_filter %}
+        {% for glossary in glossary_filter %}
+        <a class="btn btn-link" href="{% url 'tellings:tags' %}?search={{ glossary }}">{{ glossary }}</a>
+        {% endfor %}
+        {% endif %}
+      </div>
+
+      <hr>
+
       {% if tag_list %}
         {% regroup tag_list by first_char as first_char_list %}
         {% for sort_by_first_char in first_char_list %}
         <article>
-          <h2>{{ sort_by_first_char.grouper }}</h2>
+          <h2>{{ sort_by_first_char.grouper|title }}</h2>
+          <hr>
           {% for item in sort_by_first_char.list %}
           <p>
             <a href="{% url 'tellings:newupdates' %}?tagName={{ item.tagName }}" name="{{ item.tagName }}">{{ item.tagName }}</a>
@@ -34,6 +50,10 @@
         {% endfor %}
       {% else %}
       <article>
+        {% if search %}
+        <h2>{{ search }}</h2>
+        <hr>
+        {% endif %}
         <p>No results found.</p>
       </article>
       {% endif %}  
