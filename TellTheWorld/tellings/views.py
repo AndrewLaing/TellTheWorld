@@ -51,12 +51,13 @@ def contains_banned_word(text):
 
 
 def has_exceeded_max_posts(request): 
-    """ Used to determine if the user has exceeded the max number of allowed posts.
+    """ Used to determine if the user has exceeded the max number of daily allowed posts.
     
     :param request: A dictionary-like object containing the HTTP POST parameters, 
                     sent by a site visitor. Note that admins can make as many posts
                     as they need to!
-    :returns: True if the user has exceeded the max number of allowed posts, otherwise false.
+    :returns: True if the user has exceeded the max number of daily allowed posts, 
+              otherwise false.
     """
     if request.user.username in adminNameList:
         return False
@@ -239,7 +240,6 @@ class ChangePasswordPage(LoginRequiredMixin, View):
         form = PasswordChangeForm(request.user, request.POST)
 
         if form.is_valid():
-            form.save()
             user = form.save()
             update_session_auth_hash(request, user)  # Important!
             return render(request, 'tellings/changePassword.html', 

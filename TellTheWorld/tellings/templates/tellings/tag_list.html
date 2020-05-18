@@ -51,10 +51,18 @@
         });
 
         var tagnames = new Bloodhound({
-          datumTokenizer: Bloodhound.tokenizers.whitespace,
+          datumTokenizer: Bloodhound.tokenizers.obj.whitespace('name'),
           queryTokenizer: Bloodhound.tokenizers.whitespace,
-          prefetch: "{% static 'tellings/data/tagNames.json' %}"
+          prefetch: {
+            url: "{% static 'tellings/data/tagNames.json' %}",
+            filter: function(list) {
+              return $.map(list, function(tagname) {
+                return { name: tagname }; });
+            }
+          }
         });
+
+        tagnames.initialize();
 
         $('#search-field').typeahead(null, {
           name: 'name',
