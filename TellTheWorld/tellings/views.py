@@ -1,7 +1,7 @@
 # Filename:     views.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last updated: 14/05/2020
+# Last updated: 19/05/2020
 # Description:  Contains the views for the website.
 
 import django.utils.timezone
@@ -199,8 +199,9 @@ class BlockedUserListView(LoginRequiredMixin, generic.ListView):
     http_method_names = ['get']
  
     def get_queryset(self):
-      current_user = self.request.user
-      return BlockedUser.objects.filter(blockedBy=current_user).order_by('blockedUser__username')
+        current_user = self.request.user
+        qs = super().get_queryset()
+        return qs.filter(blockedBy=current_user).order_by('blockedUser__username')
 
 
 class ChangePasswordPage(LoginRequiredMixin, View):
@@ -311,18 +312,19 @@ class HiddenPostListView(LoginRequiredMixin, generic.ListView):
     http_method_names = ['get']
 
     def get_queryset(self):
-      current_user = self.request.user
-      blockedPosts = self.get_blockedPosts_list()  
+        current_user = self.request.user
+        blockedPosts = self.get_blockedPosts_list()  
+        qs = super().get_queryset()
 
-      if self.request.method == 'GET' and 'username' in self.request.GET:
-          username_val = self.request.GET.get('username')
-          if User.objects.filter(username=username_val).exists():
-              userToBlock = User.objects.get(username=username_val)
-              return HiddenPost.objects.filter(postID__user=userToBlock, hideFrom=current_user).exclude(postID__in=blockedPosts).order_by('-postID__dateOfPost')
-          else:
-              return HiddenPost.objects.filter(hideFrom=current_user).exclude(postID__in=blockedPosts).order_by('-postID__dateOfPost')
-      else:
-          return HiddenPost.objects.filter(hideFrom=current_user).exclude(postID__in=blockedPosts).order_by('-postID__dateOfPost')
+        if self.request.method == 'GET' and 'username' in self.request.GET:
+            username_val = self.request.GET.get('username')
+            if User.objects.filter(username=username_val).exists():
+                userToBlock = User.objects.get(username=username_val)
+                return qs.filter(postID__user=userToBlock, hideFrom=current_user).exclude(postID__in=blockedPosts).order_by('-postID__dateOfPost')
+            else:
+                return qs.filter(hideFrom=current_user).exclude(postID__in=blockedPosts).order_by('-postID__dateOfPost')
+        else:
+            return qs.filter(hideFrom=current_user).exclude(postID__in=blockedPosts).order_by('-postID__dateOfPost')
 
     def blockedUsers(self):
         """ Returns a list of the users blocked by the currently loggedin user. 
@@ -1079,8 +1081,11 @@ class DeleteUserComment(LoginRequiredMixin, View):
             comment_username = self.getUsernameForCommentID(in_commentID)
             post_username = self.getUsernameOfPostAuthor(in_commentID)
             
+            # Normal users cannot delete comments left by an administrator
+            if (comment_username in adminNameList) and (request.user.username not in adminNameList):
+                response = {'status': StatusCode.ERROR.value, 'message': _("Error: You cannot delete comments left by an administrator!")} 
             # Comments can either be deleted by the people who made them ...
-            if( comment_username == request.user.username ):
+            elif( comment_username == request.user.username ):
                 comment = UserComment.objects.get(commentID=in_commentID)
                 comment.delete()
                 response = {'status': StatusCode.SUCCESS.value, 'message': _("The comment has been deleted.")}  

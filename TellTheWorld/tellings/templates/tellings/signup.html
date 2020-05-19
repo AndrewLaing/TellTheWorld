@@ -6,7 +6,7 @@
  * Filename:     signup.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 14/04/2020
+ * Last updated: 19/05/2020
  * Description:  Template for the SignUp page.
  * -------------------------------------------------------------------------------
 {% endcomment %}
@@ -26,20 +26,20 @@
         <label class="control-label" for="id_{{ field.name }}">{{ field.label }}</label>
         <div>
           <input 
-          {% if field.name == "password1" or field.name == "password2" %}
+            {% if field.name == "password1" or field.name == "password2" %}
                   type="password" class="form-control input-lg"
-          {% else %}
+            {% else %}
                   type="text" class="form-control input-lg"
-          {% endif %}
+            {% endif %}
                   name="{{ field.name }}"
                   id="id_{{ field.name }}"
 
-          {% if field.name == "username" %}
-                  value="" autofocus>
-          {% else %}
-                  value="" >
-          {% endif %}
-
+            {% if field.name == "username" %}
+                  value="{{ field.value|default_if_none:'' }}" autofocus
+            {% else %}
+                  value="{{ field.value|default_if_none:'' }}"
+            {% endif %}
+          >
           <p class="help-text">{{ field.help_text }} </p>
         </div>
         {% endfor %}
