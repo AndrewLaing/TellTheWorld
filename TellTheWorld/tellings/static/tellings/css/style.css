@@ -271,11 +271,11 @@
 
 
 .login-modal-header {
-  padding: 0.9375em 3.125em;
+  padding: 0.9375em;
 }
 
 .addUpdate-modal-header {
-  padding: 0.9375em 3.125em;
+  padding: 0.9375em
 } 
 
 
@@ -480,6 +480,25 @@ hr {
   padding: 0.625em;
 }
 
+.glossary-filter {
+  margin-top: 0.625em;  
+  text-align: center;
+  font-size: large;
+}
+
+.glossary-search {
+  margin-top: 0.625em;
+  margin-bottom: 0.625em;   
+}
+
+#search-field {
+  float: none;
+  vertical-align: middle !important;
+}
+
+#glossary-search-btn {
+  font-weight: bold;
+}
 
 /* -------------------------------------------------------- */
 /* Styling for the tags typeahead in the addNewUpdate modal */
@@ -528,24 +547,4 @@ hr {
 
 .tt-suggestion p {
   margin: 0;
-}
-
-.glossary-filter {
-  margin-top: 0.625em;  
-  text-align: center;
-  font-size: large;
-}
-
-.glossary-search {
-  margin-top: 0.625em;
-  margin-bottom: 0.625em;   
-}
-
-#search-field {
-  float: none;
-  vertical-align: middle !important;
-}
-
-#glossary-search-btn {
-  font-weight: bold;
 }

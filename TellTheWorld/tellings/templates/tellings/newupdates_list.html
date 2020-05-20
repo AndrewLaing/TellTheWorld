@@ -40,45 +40,37 @@
               {# Show collapse, edit/hide/delete dropdown #} 
               <div class="col-sm-4 align-panel-text-right">
                 {# View Update button #}
-                <button class="btn btn-info collapse_btn" data-toggle="collapse" data-target="#collapse{{ item.postID }}">View Update</button>
-      
-                {# Only allow the user to edit their own posts #}
-                {% if current_username %}
-                  {% if item.user.username == current_username %}
-                  {# Edit post #}
+                <button class="btn btn-info collapse_btn view_update_btn" data-toggle="collapse" 
+                        data-target="#collapse{{ item.postID }}">View Update</button>
+  
+                  {# START OF Edit Post Cog Button #}
                   <div class="btn-group">
                     <button type="button" class="btn dropdown-toggle post-cog-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                       <img src="{% static 'tellings/imgs/settings_cog.png' %}" alt="">
                       <span class = "caret"></span>
-                    </button>
-
+                    </button>  
                     <div class="dropdown-menu dropdown-menu-right">
+
+                {# Only allow the user to edit their own posts #}
+                {% if current_username %}
+                  {% if item.user.username == current_username %}
                       <li>
                         <a id="edit_post_{{ item.postID }}" onclick="$.edit_post({{ item.postID }});">Edit Post</a>
                       </li>
                       <li> 
                         <a id="delete_post_{{ item.postID }}" onclick="$.delete_post({{ item.postID }});">Delete Post</a>
                       </li>
-                    </div>
-                  </div>  
                   {% else %} 
-                  <div class="btn-group">
-                    <button type="button" class="btn dropdown-toggle post-cog-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                      <img src="{% static 'tellings/imgs/settings_cog.png' %}" alt="">
-                      <span class = "caret"></span>
-                    </button>
-
-                    <div class="dropdown-menu dropdown-menu-right">
                       <li> 
                         <a id="hide_post_{{ item.postID }}" onclick="$.hide_post({{ item.postID }});">Hide post</a>
                       </li>                      
                       <li> 
                         <a id="block_user_{{ item.user }}" onclick="$.block_user('{{ item.user }}');">Block user</a>
                       </li>
-                    </div>
-                  </div>  
                   {% endif %}
                 {% endif %}
+                    </div>
+                  </div>  {# END OF Edit Post Cog Button#}
               </div>
             </div> {# END OF Panel header #}
 
