@@ -95,6 +95,7 @@ class UserPostForm(forms.ModelForm):
             and create Tagmaps for the post.
         """
         for tagName in self.tagList:
+            tagName = tagName.lower()
             if Tag.objects.filter(tagName=tagName).exists():
                 tag = Tag.objects.get(tagName=tagName)
             else:
