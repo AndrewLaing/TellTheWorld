@@ -2,7 +2,7 @@
  * Filename:     JQScripts.js
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 14/04/2020.
+ * Last updated: 27/05/2020.
  * Description:  JQuery scripts used by the 'Tell the World' website.
  */
 
@@ -1257,6 +1257,9 @@ $(document).ready(function(){
       * This callback is used because of the Asychronous nature of AJAX
       */
     $.comment_was_censored = function(post_reply_btn, message) {
+      var ele_commentText = post_reply_btn.siblings(".user-comment-input-area");
+
+      $.censorElementText(ele_commentText);
       post_reply_btn.prop('disabled', false);
       alert(message);
       return false;
