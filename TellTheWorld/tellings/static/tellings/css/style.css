@@ -2,16 +2,16 @@
  * Filename:    style.css
  * Author:      Andrew Laing
  * Email:       parisianconnections@gmail.com
- * Date:        18/05/2020.
+ * Date:        12/06/2020.
  * Description: The main CSS file used to style the 'Tell the World' website.
  */
 
  * {
+  color: #333333;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 16px;
   margin: 0;
   padding: 0;
-  color: #333;
 }
 
 
@@ -22,38 +22,27 @@
 
 
 .jumbotron {
-  padding-top: 0;
-  padding-bottom: 0.4em;
-  text-align: center;
+  background-color: #333333;
+  font-weight: bold;
   margin-bottom: 1.5em;
-  background-color: #03062F;
+  text-align: center;
 }
 
-
 .jumbotron h1 {
+  color: #ffffff;
+  font-family: Arial, Helvetica, sans-serif;
   letter-spacing: .2em;
-  line-height: normal;
-  color: white;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
-  padding-top: .4em;
   padding-bottom: .15em;
 }
 
 .jumbotron p {
-  letter-spacing: .5em;
+  color: #969696;
   font-size: calc(0.875em + (0.75) * ((100vw - 18.75em)/1300));
-  line-height: calc(1.3em + (0.3) * ((100vw - 18.75em)/1300));
-  color: rgb(150, 150, 150);
-  font-weight: bold;
   font-style: italic;
-  padding: 0;
-  padding-bottom: .4em;
-  margin-bottom: 0;
+  letter-spacing: .5em;
+  line-height: calc(1.3em + (0.3) * ((100vw - 18.75em)/1300));
 }
 
-.img-wrapper img {
-  width: 100%;
-}
 
 @media screen and (max-width: 767px) {   
   #homepage-image {
@@ -61,24 +50,7 @@
   } 
 }
 
-
-#title h1 {
-  font-family: Arial, Helvetica, sans-serif;
-  font-weight: bold;
-  margin: 0;
-}
-
-
-#title img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: fill;
-}
-
-
 .navbar {
-  padding-left: 1em;
-  padding-right: 1em;
   margin: 0;
   margin-bottom: 0;
   text-shadow: 0 0 0.6875em rgba(232,0,0,0.5);
@@ -150,6 +122,10 @@
   margin: 0;
   padding: 0;
   padding-left: 0.625em;
+}
+
+.date-grouper {
+  padding-top: 1em;
 }
 
 
@@ -230,11 +206,11 @@
   text-align: left;
 }
 
-.modal-header, h4, .close {
-  background-color: #5CB85C;
+.modal-header {
   color: #FFF !important;
-  text-align: center;
+  background-color: #5CB85C;
   font-size: 1.875em;
+  text-align: center;
 }
 
 .white-inner-container {
@@ -270,36 +246,19 @@
 }
 
 
-.login-modal-header {
-  padding: 0.9375em;
-}
-
-.addUpdate-modal-header {
-  padding: 0.9375em
-} 
-
-
-.login-modal-body {
+.modal-body {
   padding: 2.5em 3.125em;
 }
 
-.addUpdate-modal-body {
-  padding: 2.5em 3.125em;
+.modal-footer {
+  background-color: #F9F9F9;
 }
 
-.addUpdate-modal-body #tagDiv {
-  font-size: 1.3em;
-  width: 100%;
-}
 
 .tagLink {
   padding-left: 1em;
 }
 
-
-.modal-footer {
-  background-color: #F9F9F9;
-}
 
 
 .blockeduser-link {
@@ -307,7 +266,7 @@
 }
 
 .blockeduser-link:hover {
-  color: rgb(148, 42, 42);
+  color: #942a2a;
 }
 
 .btn-icon {
@@ -368,20 +327,15 @@
  * so this allows one to be included if necessary */
 hr {
   display: block;
-  position: relative;
   padding: 0;
-  margin: auto;
+  margin: 0 auto;
 
-  margin-bottom: 1em; 
   height: 0;
-  width: 100%;
-  max-height: 0;
-  font-size: 0.0625em;
+  width: 100%;;
   line-height: 0;
   clear: both;
-  border:none;
-  border-top: .15em solid #575757;
-  border-bottom: 0.009375em solid #575757;
+  border: 0;
+  border-bottom: solid #808080 1px;
 }
 
 
@@ -449,7 +403,7 @@ hr {
 }
 
 .user-comment-container {
-  border: solid rgb(179, 179, 179) 0.0625em; 
+  border: solid #b3b3b3 0.0625em; 
   padding: 0.625em;
 }
 

@@ -3,7 +3,7 @@
  * Filename:     addUpdate_modal.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 27/01/2020
+ * Last updated: 12/06/2020
  * Description:  This is used to create the addUpdate modal.
 
  * Note:         Files which include this modal must extend base.html.
@@ -17,14 +17,12 @@
     <div class="modal-content">
 
       {# MODAL HEADER #}
-      <div class="modal-header addUpdate-modal-header">
-        {# Close button #}
-        <button type="button" class="close" data-dismiss="modal">&times;</button>  
-        <h3>Add new update</h3>
+      <div class="modal-header">
+        <h1>Add new update</h1>
       </div>
 
       {# MODAL BODY #}
-      <div class="modal-body addUpdate-modal-body">
+      <div class="modal-body">
         <form role="form" name="frmAddUpdate" id="frmAddUpdate" action="javascript:void(0);">
           {% csrf_token %}
           <div class="form-group">
