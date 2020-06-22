@@ -6,7 +6,7 @@
  * Filename:     changeUserDetails.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 14/04/2020
+ * Last updated: 22/06/2020
  * Description:  Template for the Change User Details page.
  * -------------------------------------------------------------------------------
 {% endcomment %}
@@ -36,12 +36,16 @@
 
       {% include "tellings/includes/formErrors.html" %}
 
-      <div>
+      <div class="page-vertical-divider">
+        <hr>
+      </div>
+
+      <div class="page-action-btn">
         <button type="submit" class="btn btn-success btn-block btn-lg">SAVE CHANGES</button>
       </div>
     </form>
 
-    <div>
+    <div class="page-action-btn">
       <a href="{% url 'tellings:index' %}" class="btn btn-danger btn-block btn-lg">CANCEL</a> 
     </div>
 

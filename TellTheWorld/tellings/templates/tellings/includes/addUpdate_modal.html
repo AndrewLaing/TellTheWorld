@@ -3,7 +3,7 @@
  * Filename:     addUpdate_modal.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 12/06/2020
+ * Last updated: 22/06/2020
  * Description:  This is used to create the addUpdate modal.
 
  * Note:         Files which include this modal must extend base.html.
@@ -18,7 +18,7 @@
 
       {# MODAL HEADER #}
       <div class="modal-header">
-        <h1>Add new update</h1>
+        <h2>Add new update</h2>
       </div>
 
       {# MODAL BODY #}
@@ -78,12 +78,16 @@
 
             </script>
           </div>
-          <div class="modal-login-btn">
+
+          <div class="modal-vertical-divider">
+            <hr>
+          </div>
+
+          <div class="modal-action-btn">
             <button type="button" class="btn btn-success btn-block" id="addNewUpdatePostBtn" 
                     value="postBtn" >Post Update</button>
-            <br />
           </div>      
-          <div class="modal-login-btn">
+          <div class="modal-action-btn">
             <button type="button" class="btn btn-danger btn-block" data-dismiss="modal">Cancel</button> 
           </div>     
 

@@ -3,7 +3,7 @@
  * Filename:     deleteAccount_modal.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 12/06/2020
+ * Last updated: 22/06/2020
  * Description:  This is used to create the deleteAccount modal.
 
  * Note:         Files which include this modal must extend base.html.
@@ -19,7 +19,7 @@
 
       {# MODAL HEADER #}
       <div class="modal-header">
-        <h1>Delete Your Account</h1>
+        <h2>Delete Your Account</h2>
       </div>
       
       {# MODAL BODY #}
@@ -30,7 +30,10 @@
         <br>
         <p><strong>Protecting Your Data</strong></p>
         <p>We take the safety and security of the Tell the World community very seriously. People place their trust in us when they share their hopes and dreams on Tell the World. We will make no compromises when it comes to safeguarding your data.</p>   
-        <hr>
+        
+        <div class="modal-vertical-divider">
+          <hr>
+        </div>
         
         <form role="form" name="frmDeleteAccount" id="frmDeleteAccount" action="javascript:void(0);">
           {% csrf_token %}
@@ -56,15 +59,16 @@
             <p><a href="mailto:admin@tellings.com?Subject=Forgotten%20Password">Forgotten your Password?</a></p>
             <br />
             <p>When you press the button below, your posts and all other data will be removed forever and will not be recoverable in the future.</p>
-            <br />
-            <hr>
+
+            <div class="modal-vertical-divider">
+              <hr>
+            </div>
           </div>
-          <div class="modal-login-btn">
+          <div class="modal-action-btn">
             <button type="submit" class="btn btn-success btn-block" name="deleteBtn" 
                     value="deleteBtn" onClick="return $.validate_deleteAccount();">Permanently delete my account</button>
-            <br />
           </div>      
-          <div class="modal-login-btn">
+          <div class="modal-action-btn">
             <button type="button" class="btn btn-danger btn-block" data-dismiss="modal">Cancel</button> 
           </div>     
 

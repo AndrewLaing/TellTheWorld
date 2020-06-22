@@ -3,7 +3,7 @@
  * Filename:     login_modal.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 12/06/2020
+ * Last updated: 22/06/2020
  * Description:  This is used to create the login modal.
 
  * Note:         Files which include this modal must also extend base.html.
@@ -18,7 +18,7 @@
 
       {# MODAL HEADER #}
       <div class="modal-header">
-        <h1>Login to your Account</h1>
+        <h2>Login to your Account</h2>
       </div>
 
       {# MODAL BODY #}
@@ -35,13 +35,16 @@
             <input type="password" class="form-control" id="pwd" 
                    name="pwd" placeholder="Enter password" maxlength="50">
           </div>
-          <div class="modal-login-btn">
-            <br />
+
+          <div class="modal-vertical-divider">
+            <hr>
+          </div>
+
+          <div class="modal-action-btn">
             <button type="submit" class="btn btn-success btn-block" name="LoginBtn" 
                     value="LoginBtn" onClick="return $.validate_login();">Login</button>
-            <br />
           </div>
-          <div class="modal-login-btn">
+          <div class="modal-action-btn">
             <button type="button" class="btn btn-danger btn-block" data-dismiss="modal">Cancel</button> 
           </div>     
         </form>

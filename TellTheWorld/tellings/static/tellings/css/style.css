@@ -2,7 +2,7 @@
  * Filename:    style.css
  * Author:      Andrew Laing
  * Email:       parisianconnections@gmail.com
- * Date:        12/06/2020.
+ * Date:        22/06/2020.
  * Description: The main CSS file used to style the 'Tell the World' website.
  */
 
@@ -201,7 +201,6 @@
 	margin:0;
 }
 
-
 .form-group {
   text-align: left;
 }
@@ -209,8 +208,25 @@
 .modal-header {
   color: #FFF !important;
   background-color: #5CB85C;
-  font-size: 1.875em;
+  padding: 0 0 .25em;
   text-align: center;
+}
+
+.modal-body {
+  padding: 1em 1em 0.5em;
+}
+
+.modal-footer {
+  background-color: #F9F9F9;
+  padding: 1em 1em .25em;
+}
+
+.modal-action-btn {
+  margin-bottom: .5em;
+}
+
+.modal-vertical-divider {
+  margin: 1em 0 1em 0;
 }
 
 .white-inner-container {
@@ -227,6 +243,15 @@
   padding-top: 0;
   background-color: #FFF;
 }
+
+.page-action-btn {
+  margin-bottom: .5em;
+}
+
+.page-vertical-divider {
+  margin: 1em 0 1em 0;
+}
+
 
 #paginationDiv {
   padding-left: 1.875em;
@@ -246,20 +271,9 @@
 }
 
 
-.modal-body {
-  padding: 2.5em 3.125em;
-}
-
-.modal-footer {
-  background-color: #F9F9F9;
-}
-
-
 .tagLink {
   padding-left: 1em;
 }
-
-
 
 .blockeduser-link {
   font-size: x-large;
@@ -441,8 +455,7 @@ hr {
 }
 
 .glossary-search {
-  margin-top: 0.625em;
-  margin-bottom: 0.625em;   
+  margin-top: 1.25em; 
 }
 
 #search-field {
@@ -454,9 +467,9 @@ hr {
   font-weight: bold;
 }
 
-/* -------------------------------------------------------- */
-/* Styling for the tags typeahead in the addNewUpdate modal */
-/* -------------------------------------------------------- */
+/* ------------------------------- */
+/* Styling for the tags typeahead  */
+/* ------------------------------- */
 .tt-input, 
 .tt-hint {
   width: 17.125em;
