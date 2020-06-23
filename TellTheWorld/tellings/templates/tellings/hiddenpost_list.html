@@ -6,7 +6,7 @@
  * Filename:     hiddenpost_list.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 22/06/2020
+ * Last updated: 23/06/2020
  * Description:  Template used for creating the HiddenPost html.
  * -------------------------------------------------------------------------------
 {% endcomment %}
@@ -15,7 +15,7 @@
 <div class="container-fluid main-content"> 
   <main class="container">
     <header>
-      <h1>Hidden Posts</h1>
+      <h1>HIDDEN POSTS</h1>
     </header>
     
     {% if hiddenpost_list %}
@@ -23,7 +23,7 @@
       {% regroup hiddenpost_list by postID.dateOfPost|date:"M. d Y" as ordered_post_list  %}
       {% for mypost in ordered_post_list %}
       <article>
-        <h2>{{ mypost.grouper }}</h2>
+        <h2 class="date-grouper">{{ mypost.grouper }}</h2>
         <div class="panel-group">
           {% for item in mypost.list %}
           <div class="panel panel-default" id="panel_post_{{ item.postID.postID }}">

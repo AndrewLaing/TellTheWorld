@@ -2,7 +2,7 @@
  * Filename:    style.css
  * Author:      Andrew Laing
  * Email:       parisianconnections@gmail.com
- * Date:        22/06/2020.
+ * Date:        23/06/2020.
  * Description: The main CSS file used to style the 'Tell the World' website.
  */
 
@@ -51,9 +51,8 @@
 }
 
 .navbar {
+  border-color: #555555;
   margin: 0;
-  margin-bottom: 0;
-  text-shadow: 0 0 0.6875em rgba(232,0,0,0.5);
 }
 
 /* Adjust the navbar for smaller screens to display vertically */
@@ -84,14 +83,20 @@
 }
 
 
+.dropdown-menu-item {
+  padding: 0.3125em;
+  text-align: center;
+}
+
+
 .dropdown-menu > li > a {
   padding: .6em 1.2em;
 }
 
 
-.dropdown-menu-item {
-  padding: 0.3125em;
-  text-align: center;
+.dropdown-menu > li > a:hover {
+  color: #FFF;
+  background-color: #000000;
 }
 
 
@@ -106,6 +111,9 @@
   min-height: 34.375em;
 }
 
+.user-details-section {
+  margin: 3em 0 3em 0;
+}
 
 .col {
   margin: 0;
@@ -177,14 +185,14 @@
 }
 
 .footer {
+  clear: both;
   overflow-y: auto;
   position: relative;
-  clear: both;
   margin: 0;
 } 
 
 .footer h2 {
-  padding-top: 0.625em;
+  padding-top: 0.3em;
 	padding-left: 0.625em;
 }
 
@@ -211,6 +219,15 @@
   padding: 0 0 .25em;
   text-align: center;
 }
+
+.modal-header h2 {
+  padding-left: 1em;
+}
+
+.modal-header button {
+  padding: .35em;
+}
+
 
 .modal-body {
   padding: 1em 1em 0.5em;

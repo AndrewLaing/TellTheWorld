@@ -3,7 +3,7 @@
  * Filename:     deleteAccount_modal.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 22/06/2020
+ * Last updated: 23/06/2020
  * Description:  This is used to create the deleteAccount modal.
 
  * Note:         Files which include this modal must extend base.html.
@@ -19,6 +19,7 @@
 
       {# MODAL HEADER #}
       <div class="modal-header">
+        <button type="button" class="close" aria-label="Close" data-dismiss="modal" aria-hidden="true"><span style="">&times;</span></button>
         <h2>Delete Your Account</h2>
       </div>
       
@@ -66,10 +67,10 @@
           </div>
           <div class="modal-action-btn">
             <button type="submit" class="btn btn-success btn-block" name="deleteBtn" 
-                    value="deleteBtn" onClick="return $.validate_deleteAccount();">Permanently delete my account</button>
+                    value="deleteBtn" onClick="return $.validate_deleteAccount();">PERMANENTLY DELETE MY ACCOUNT</button>
           </div>      
           <div class="modal-action-btn">
-            <button type="button" class="btn btn-danger btn-block" data-dismiss="modal">Cancel</button> 
+            <button type="button" class="btn btn-danger btn-block" data-dismiss="modal">CANCEL</button> 
           </div>     
 
         </form>
