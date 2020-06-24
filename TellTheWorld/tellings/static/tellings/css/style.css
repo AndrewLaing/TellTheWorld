@@ -2,7 +2,7 @@
  * Filename:    style.css
  * Author:      Andrew Laing
  * Email:       parisianconnections@gmail.com
- * Date:        23/06/2020.
+ * Date:        24/06/2020.
  * Description: The main CSS file used to style the 'Tell the World' website.
  */
 
@@ -15,7 +15,7 @@
 }
 
 
-.header {       
+.page-banner {       
   background-color: #222222; 
   padding: 1.5em;
 }
@@ -25,6 +25,7 @@
   background-color: #333333;
   font-weight: bold;
   margin-bottom: 1.5em;
+  padding: 1em;
   text-align: center;
 }
 
@@ -32,7 +33,6 @@
   color: #ffffff;
   font-family: Arial, Helvetica, sans-serif;
   letter-spacing: .2em;
-  padding-bottom: .15em;
 }
 
 .jumbotron p {
@@ -139,13 +139,13 @@
 
 .indented-list-item {
   list-style-type: none;
-  padding-left: 1.875em;
+  padding-left: 1em;
   padding-bottom: 0.625em;
 }
 
 .double-indented-list-item {
   list-style-type: none;
-  padding-left: 3.75em;
+  padding-left: 2.5em;
   padding-bottom: 0.625em;
 }
 
@@ -254,7 +254,7 @@
   background-color: #FFF;
 }
 
-.white-blockedusers-container {
+.blockeduser-container {
   margin-top: 1.875em;
   margin-bottom: 1.875em;
   padding-top: 0;
@@ -365,6 +365,17 @@ hr {
   clear: both;
   border: 0;
   border-bottom: solid #808080 1px;
+}
+
+
+/* Styling for the about/informational pages */
+.info-text-block {
+  margin-top: 2em;
+}
+
+.info-text-block h2 {
+  padding-bottom: .5em;
+  padding-top: .5em;
 }
 
 
