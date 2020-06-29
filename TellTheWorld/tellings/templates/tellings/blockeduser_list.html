@@ -6,7 +6,7 @@
  * Filename:     blockeduser_list.html
  * Author:       Andrew Laing
  * Email:        parisianconnections@gmail.com
- * Last updated: 24/06/2020
+ * Last updated: 29/06/2020
  * Description:  Template used for creating the BlockedUsers html.
  * -------------------------------------------------------------------------------
 {% endcomment %}
@@ -18,25 +18,24 @@
       <h1>BLOCKED USERS</h1>
     </header>
 
+    {% if blockeduser_list %}
     <div class="row blockeduser-container">
-      {% if blockeduser_list %}
-        {% for item in blockeduser_list %}
-        <div class="user-comment-container">
-          <div class="align_between">
-            <span class="user-comment-details align-panel-footer-text-left"><a class="blockeduser-link" href="{% url 'tellings:newupdates' %}?userName={{ item.blockedUser }}" onclick="return $.confirm_view_blockeduser_posts()">{{ item.blockedUser|upper }} </a></span>    
-
-            <div class="btn-group">
-              <button type="button" class="btn btn-danger align-panel-footer-text-right " onclick="$.unblock_user('{{ item.blockedUser }}');">Unblock User</button>
-            </div>
-          </div>   
-        </div>
-        {% endfor %}
-      {% else %}
+      {% for item in blockeduser_list %}
       <div class="user-comment-container">
-        <p class="user-no-comments-text">You have not blocked any users.</p>
+        <div class="align_between">
+          <span class="user-comment-details align-panel-footer-text-left"><a class="blockeduser-link" href="{% url 'tellings:newupdates' %}?userName={{ item.blockedUser }}" onclick="return $.confirm_view_blockeduser_posts()">{{ item.blockedUser|upper }} </a></span>
+          <div class="btn-group">
+            <button type="button" class="btn btn-danger align-panel-footer-text-right " onclick="$.unblock_user('{{ item.blockedUser }}');">Unblock User</button>
+          </div>
+        </div>   
       </div>
-      {% endif %} 
+      {% endfor %}
     </div>
+    {% else %}
+    <div class="row white-inner-container">
+      <h2>You have not blocked any users.</h2>
+    </div> 
+    {% endif %} 
 
     {% include "tellings/includes/pagination.html" %}
   </main>
