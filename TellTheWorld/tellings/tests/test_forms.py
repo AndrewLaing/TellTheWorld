@@ -2,7 +2,7 @@
 # Filename:     test_forms.py
 # Author:       Andrew Laing
 # Email:        parisianconnections@gmail.com
-# Last Updated: 14/03/2020
+# Last Updated: 02/07/2020
 # Description:  Test cases for tellings forms
 """
 
@@ -197,22 +197,18 @@ class UserPostFormTests(TestCase):
         self.assertFalse(form.is_valid())
 
     def test_tags_added(self): 
-        # simulate a pre-existant tag
-        tag = Tag.objects.create(tagName="testTag3")
-        tag.save()
-
         valid_data = {'user': self.user1.id, 
                       'dateOfPost': self.test_postDate, 
                       'postTitle': 'Another post', 
                       'postText': 'Text for another post',
-                      'postTags': ['["testTag1","testTag2","testTag3"]']} 
+                      'postTags': ['["testtag1","testtag2","testtag3"]']} 
 
         form = UserPostForm(valid_data)
         form.save()
 
-        self.assertTrue(Tag.objects.filter(tagName="testTag1").exists())
-        self.assertTrue(Tag.objects.filter(tagName="testTag2").exists())
-        self.assertTrue(Tag.objects.filter(tagName="testTag3").exists())
+        self.assertTrue(Tag.objects.filter(tagName="testtag1").exists())
+        self.assertTrue(Tag.objects.filter(tagName="testtag2").exists())
+        self.assertTrue(Tag.objects.filter(tagName="testtag3").exists())
 
     def test_blank_data(self):
         form = UserPostForm({})
